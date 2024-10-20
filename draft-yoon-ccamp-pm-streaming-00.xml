@@ -1,0 +1,1354 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE rfc [
+  <!ENTITY nbsp "&#160;">
+  <!ENTITY zwsp "&#8203;">
+  <!ENTITY nbhy "&#8209;">
+  <!ENTITY wj "&#8288;">
+]>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" ipr="trust200902"
+  docName="draft-yoon-ccamp-pm-streaming-00" category="std" consensus="true" submissionType="IETF"
+  tocInclude="true" sortRefs="true" symRefs="true" version="3">
+  <!-- xml2rfc v3 conversion -->
+  <front>
+    <title abbrev="VN YANG Model">A YANG Data Model of Performance Management Streaming</title>
+    <seriesInfo name="Internet-Draft" value="draft-yoon-ccamp-pm-streaming-00" />
+    <author fullname="Bin Yeong Yoon" initials="B.Y." surname="Yoon" role="editor">
+      <organization>ETRI</organization>
+      <address>
+        <postal>
+          <street />
+          <city />
+          <region />
+          <code />
+          <country />
+        </postal>
+        <email>byyun@etri.re.kr</email>
+      </address>
+    </author>
+    <author initials="I" surname="Busi" fullname="Italo Busi">
+      <organization>Huawei Technologies</organization>
+      <address>
+        <postal>
+          <street>HUAWEI TECHNOLOGIES ITALIA Srl Centro Direzionale Milano 2</street>
+          <city>Milan</city>
+          <region></region>
+          <code></code>
+          <country>20090</country>
+        </postal>
+        <email>Italo.Busi@huawei.com</email>
+      </address>
+    </author>
+    <author initials="A." surname="Guo" fullname="Aihua Guo">
+      <organization>Futurewei Technologies</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city></city>
+          <region></region>
+          <code></code>
+          <country></country>
+        </postal>
+        <email>aihuaguo.ietf@gmail.com</email>
+      </address>
+    </author>
+    <author initials="C." surname="Yu" fullname="Chaode Yu">
+      <organization>Huawei Technologies</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city></city>
+          <region></region>
+          <code></code>
+          <country></country>
+        </postal>
+        <email>yuchaode@huawei.com</email>
+      </address>
+    </author>
+    <date year="2024" month="October"/>
+    <workgroup>CCAMP Working Group</workgroup>
+    <abstract>
+      <t>
+        This document provides a YANG data model of performance management streaming in network
+        equipment. It defines types of parameters, and their measurements and reporting methods 
+        by periodic and event notifications.</t>
+    </abstract>
+  </front>
+  <middle>
+    <section anchor="sect-1" numbered="true" toc="default">
+      <name>Introduction</name>
+      <t>
+        With the rise of AI-driven applications, network digital twins, and increasingly dynamic
+        network environments, there is growing demand for performance management (PM) streaming 
+        capabilities. PM streaming enables proactive issue detection,
+        allowing network operators to identify and address potential problems before they affect
+        service. It also helps optimize resource allocation, ensuring efficient use of bandwidth 
+        and other network resources.</t>
+      <t> The ITU-T G.7710 standard provides a foundational framework for managing transport network
+        elements, addressing requirements, parameters, and measurement methods for performance
+        management. However, G.7710 does not define YANG data models or specific protocols needed
+        for PM streaming, which are essential for modern network management. To support PM
+        streaming, various IETF documents and protocols (<xref target="RFC9232" format="default" />, <xref
+          target="RFC8639" format="default" />, <xref target="RFC8640" format="default" />, <xref
+          target="RFC8641"
+          format="default" />) can be utilized. This document provides a YANG data model for PM
+        streaming in network equipment based on ITU-T G.7710, demonstrating how to subscribe to the
+        YANG model using the IETF push model.</t>
+    </section>
+
+    <section anchor="sect-2" numbered="true" toc="default">
+      <name>Terminology</name>
+      <t>
+        The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+        "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted 
+        as described in BCP 14 <xref target="RFC2119" format="default" />
+        <xref target="RFC8174" format="default" /> when, and only when, they appear in all capitals, as shown here.</t>
+    </section>
+
+    <section anchor="sect-3" numbered="true" toc="default">
+      <name>PM Streaming</name>
+      <figure anchor="ure-pm-streaming">
+        <name>PM streaming telemetry</name>
+        <artwork name="" type="" align="left" alt=""><![CDATA[
+        +------+  +-----+     +--------+ 
+        |  OS  |  | NDT | ... | AI APP |  
+        +---+--+  +--+--+     +----+---+ 
+            |        |             |
+        +---+--------+-------------+---+ 
+        |            NE                |
+        +------------------------------+  
+        OS: Operation System     
+        NDT: Network Digital Twins
+        APP: Application 
+]]></artwork>
+      </figure>
+      <t>
+        PM streaming is a real-time method for measuring and transmitting data to monitor the
+        performance and health of network devices and systems. It provides valuable insights 
+        into key metrics like errored seconds (ES), latency, and packet loss, helping to optimize 
+        networks, detect anomalies, and manage faults proactively. Unlike traditional periodic 
+        data collection, PM streaming delivers continuous updates, enabling faster, more
+        responsive network adjustments.</t>
+      <t>
+        Using telemetry protocols like YANG Push, PM streaming allows for more frequent and detailed
+        performance monitoring. By integrating this data into AI-driven analytics, it supports 
+        preemptive interventions, enhancing overall network reliability. Additionally, it keeps 
+        digital twins synchronized with the physical network, offering real-time insights 
+        for predictive maintenance, planning, and optimization.</t>
+      <t>
+        The procedures for Performance Management (PM) streaming between a network node and clients
+        such as operation systems (OS), AI applications, Network digital twins (NDT) involve 
+        continuous measurement of performance metrics on PM parameters using three methods: 
+        counts (tracking event occurrences), snapshots (instantaneous
+        metric values), and tidemarks (extreme values over a period). Clients can initiate the
+        process by sending a subscription request specifying the metrics, measurement methods, 
+        intervals, and filtering criteria. Once the node confirms the subscription, it collects 
+        and aggregates PM data based on the requested metrics and intervals. Notifications with 
+        PM data, including timestamps, metrics, and measurement
+        methods, are sent to clients at each interval via protocols like NETCONF or RESTCONF. 
+        Clients then process the data, using it for real-time monitoring, historical analysis, 
+        or triggering alerts based on thresholds. They can also
+        manage subscriptions by modifying parameters or suspending them as needed.</t>
+    </section>
+
+    <section anchor="sect-4" numbered="true" toc="default">
+      <name>Measurement Methods</name>
+      <t>
+        In network performance monitoring, ITU-T G.7710 defines two measurement methods that
+        measures a metric value with a periodic interval such as 15-minute or 24-hour periods: 
+        counter measurements and gauge measurements. These complementary methods provide a 
+        holistic view of network behavior by capturing both long-term trends and real-time 
+        conditions. The counter measurements (referred to as "counts") provide
+        data on the frequency of specific events, enabling long-term analysis of recurring issues.
+        Meanwhile, the gauge measurements offer real-time insight and capture extreme conditions, 
+        helping to identify immediate performance problems or deviations from normal behavior. 
+        The gauge measurements include snapshots and tidemarks.</t>
+
+      <section anchor="sect-4.1" numbered="true" toc="default">
+        <name>Counts</name>
+        <t>
+          Counts track the cumulative occurrence of specific network events over set intervals.
+          Gauge measurements offer a complementary approach to counters by capturing the
+          instantaneous values of performance parameters or recording their extreme values 
+          over a defined period. Unlike counters, which focus on accumulation, gauge measurements 
+          provide a real-time snapshot of the network's state or track the maximum and minimum 
+          values a parameter reaches within a monitoring period. Gauge measurements are typically 
+          divided into two types: snapshots and tidemarks. Counters provide data on how frequently 
+          specific events occur, allowing for long-term analysis of recurring issues. Meanwhile, 
+          gauge measurements offer real-time insight and capture extreme conditions, helping 
+          to identify immediate performance problems or deviations from normal behavior.</t>
+      </section>
+
+      <section anchor="sect-4.2" numbered="true" toc="default">
+        <name>Snapshots</name>
+        <t>
+          Snapshots are instantaneous measurements taken at a specific point in time. They
+          capture the instantaneous value of specific performance parameters at a regular,
+          predefined point (uniform time) within each time interval. Snapshots provide a "momentary
+          view" of network conditions, allowing operators to observe the network's status at
+          specific intervals or upon request. The data from these uniform-time snapshots is
+          then aggregated and analyzed to understand the immediate state across the entire network.
+          By taking snapshots simultaneously across all network elements, operators can correlate
+          data between different parts of the transport network. Snapshots are collected at
+          pre-determined uniform time within fixed intervals (e.g., every 15 minutes, 24 hours).
+          The uniform time and fixed intervals can be configured based on the needs of the network.</t>
+      </section>
+
+      <section anchor="sect-4.3" numbered="true" toc="default">
+        <name>Tidemarks</name>
+        <t>
+          Tidemark measurements record the maximum (high tidemark) and minimum (low tidemark)
+          values that a performance parameter reaches during a specified observation window.
+          These extreme values offer insight into the range of performance fluctuations,
+          highlighting the best and worst conditions that occur within the monitoring period.
+          Tidemarks are particularly valuable for diagnosing issues that may not be visible
+          in average or cumulative data. For instance, while the average error rate over a
+          period may appear acceptable, a high tidemark could reveal intermittent spikes in
+          errors that require attention. Conversely, a low tidemark may expose periods of
+          severely degraded signal quality or throughput.</t>
+      </section>
+    </section>
+
+    <section anchor="sect-5" numbered="true" toc="default">
+      <name>Periodic Notifications</name>
+      <t>
+        Clients can receive a streaming of value of the PM parameters (PM data) by the
+        measurement methods of counts, snapshots, and tidemarks with various time intervals,
+        after subscribing to them in equipment. The streaming data measured on the PM
+        parameters are used for maintenance and QoS monitoring in networks.. </t>
+
+      <section anchor="sect-5.1" numbered="true" toc="default">
+        <name>Maintenance and QoS monitoring</name>
+        <t>
+          Performance management data contribute to enhancing overall network reliability.
+          It consists of Maintenance and Quality of Service (QoS) data generated by maintenance
+          and QoS parameters respectively. These two categories serve different purposes and
+          focus on distinct aspects of network management. By continuously tracking different
+          aspects of network performance, they ensure that the network infrastructure remains
+          robust, capable of meeting operational demands, and able to deliver consistent and
+          high-quality services to users.</t>
+        <t>
+          The Maintenance data is to ensure the overall operational integrity and reliability
+          of the network. It is focused on maintaining the health of the physical network
+          infrastructure, detecting and diagnosing faults, and addressing any issues that could
+          compromise network stability. Maintenance-related performance parameters are typically
+          aimed at identifying physical layer issues, equipment malfunctions, or any performance
+          degradation. These metrics are particularly useful for preventive and corrective
+          maintenance activities. Common maintenance metrics might include error counts, signal
+          degradation measurements, and transmission errors. These types of data help in triggering
+          alarms or initiating repairs to physical network elements, such as optical fiber problems
+          or electrical signal faults. </t>
+        <t>
+          On the other hand, the QoS data is primarily concerned with monitoring and ensuring
+          the quality of services delivered over the network. While maintenance focuses on network
+          health at the infrastructure level, QoS is centered on the performance of data
+          transmission
+          and how effectively the network meets the needs of end-users. QoS data is used to measure
+          the quality of services such as voice, video, and other data applications that require
+          stable and reliable network performance. Metrics for QoS often include latency (the delay
+          in data transmission), jitter (the variation in packet arrival times), packet loss,
+          bandwidth utilization, and throughput. These metrics are crucial in ensuring that the
+          network delivers services at a level that meets or exceeds the expectations outlined in
+          service-level agreements (SLAs).</t>
+        <t>
+          In network performance management, periodic time intervals of 15 minutes and 24 hours
+          are commonly used for network nodes to measure and notify performance data of clients.
+          These intervals serve distinct purposes, helping network operators monitor both short-term
+          fluctuations and long-term trends in network performance.
+        </t>
+      </section>
+
+      <section anchor="sect-5.2" numbered="true" toc="default">
+        <name>Time intervals</name>
+        <t>
+          In network performance management, periodic time intervals of 15 minutes and 24
+          hours are commonly used for network nodes to measure and notify performance data of
+          clients. These intervals serve distinct purposes, helping network operators monitor
+          both short-term fluctuations and long-term trends in network performance.</t>
+        <t>
+          The 15-minute interval provides granular, real-time monitoring, allowing network
+          operators to quickly detect and address short-term issues such as spikes in latency
+          or packet loss. It is particularly useful for ensuring compliance with Service-Level
+          Agreements (SLAs) and for managing highly dynamic networks where rapid changes can
+          occur. In contrast, the 24-hour interval is used for long-term performance monitoring
+          and trend analysis, helping operators understand overall network health, detect
+          slow-developing issues, and plan for future capacity needs. This longer interval offers
+          a broader view of the network's performance over a full day, making it ideal for
+          strategic planning and infrastructure maintenance. Together, these intervals enable
+          both immediate responses to network conditions and long-term network optimization.</t>
+        <t>
+          In the context of recent emerging technologies like AI and network digital twins,
+          smaller sampling intervals are becoming increasingly necessary. These technologies
+          demand real-time or near-real-time performance data to function optimally. As these
+          technologies become more integral to advanced network operations, the shift towards
+          smaller sampling intervals ensures that they can operate efficiently, react to network
+          changes faster, and improve overall network reliability and performance.
+        </t>
+      </section>
+
+      <section anchor="sect-5.3" numbered="true" toc="default">
+        <name>PM Parameters</name>
+        <t>
+          Matric value of PM parameters is measured for maintenance and QoS monitoring over
+          networks. Key PM parameters focused on circuit networks are listed as follows.
+          Additional parameters will be needed for packet networks.</t>
+        <artwork name="" type="" align="left" alt=""><![CDATA[
+       ES      Errored Seconds
+       SES     Severely Errored Seconds
+       BBE     Background Block Errors
+       BBC     Background Block Count
+       UAS     Unavailable Seconds
+       SEP     Severely Errored Period
+       PJE     Pointer Justification Events
+       UAS     Unavailable Seconds</t> 
+]]></artwork>
+        <t>
+          According to the types of the measurement methods, purposes, and time intervals,
+          different parameters are used.</t>
+      </section>
+    </section>
+
+    <section anchor="sect-6" numbered="true" toc="default">
+      <name>Threshold Events</name>
+      <t>
+        Threshold Events are triggered when a matric value reaches or crosses a pre-defined
+        threshold. There are two types of threshold event notifications: Periodic
+        and non-periodic event notifications.</t>
+
+      <section anchor="sect-6.1" numbered="true" toc="default">
+        <name>Periodic threshold events</name>
+        <t>
+          Periodic events are triggered when the count or gauge value reaches a pre-defined
+          threshold during periodic measurements including counts, snapshots, and tidemarks
+          only for maintenance-based performance parameters. They are reliable enough to
+          declare the unacceptable (15-minute) or degraded (24-hour) level of performance.
+          The periodic events for QoS-based performance parameters is outside the scope;
+          the evaluation period is typically 30 days.</t>
+        <t>
+          [Counter measurement events]</t>
+        <t>
+          Counter measurement, "counts", has two types of threshold reporting methods:
+          transient and standing condition methods. The transient condition method
+          (count-transient-event in YANG model) treats each measurement period separately.
+          As soon as a threshold is reached or crossed in a 15-minute/24-hour period,
+          for a given performance measurement, a threshold report (TR) is
+          generated. The standing condition method (count-standing-event) is an option
+          for 15-minute periods. The standing condition is raised, and a TR (Threshold
+          Report) is generated, when the set threshold
+          is reached or crossed. The standing condition is cleared, and a reset threshold
+          report (RTR) is generated, when at the end of the period the current value
+          is below or equal to the reset threshold,
+          provided that there was no unavailable time during that period.</t>
+        <t>
+          [Gauge measurement events]</t>
+        <t>
+          For gauge measurements including snapshots (snapshot-event) and tidemarks
+          (tidemark-event), an overflow condition is determined and an out of range
+          report (High-ORR-event) is generated as soon as the gauge value reaches or
+          crosses the high threshold. an underflow condition is determined and an
+          out of range report (Low-ORR-event) is generated as soon as the gauge value
+          is at or below the low threshold. The out of range methods are applicable
+          for 15-minute and 24-hour measurements.</t>
+      </section>
+
+      <section anchor="sect-6.2" numbered="true" toc="default">
+        <name>Non-Periodic threshold events</name>
+        <t>
+          Non-periodic events are triggered regardless of the measurement methods such as counts,
+          snapshots, and tidemarks. The following parameters are used for the non-periodic events.</t>
+        <ul spacing="normal">
+          <li>BUT (Begin Unavailable Time): The event marking the start of a period when a network
+            element or connection is unavailable.</li>
+          <li>EUT (End Unavailable Time): The event marking the end of a period when a network
+            element or connection was unavailable.</li>
+          <li>CSES (Consecutive Severely Errored Seconds): A sequence of severely errored seconds
+            (SES) detected consecutively within a specified time interval. The reporting metrics
+            include BUT, EUT, and amount of error counts.</li>
+        </ul>
+      </section>
+    </section>
+    <section anchor="sect-7" numbered="true" toc="default">
+      <name>YANG Data Tree</name>
+      <t>
+        The YANG data tree structure is as follows:</t>
+      <artwork name="" type="" align="left" alt=""><![CDATA[
+module: ietf-pm-streaming
+  +--rw pm-periodic-measurement
+     +--rw measurement-interval?   uint32
+     +--rw maintenance-15min
+     |  +--rw pm-parameter* [parameter-name]
+     |     +--rw parameter-name          maintenance-parameters
+     |     +--rw count-measurement
+     |     |  +--ro count-value?                  uint32
+     |     |  +--ro count-unit?                   parameter-unit
+     |     |  +--rw transient-condition-config
+     |     |  |  +--rw high-oor-threshold?   uint32
+     |     |  |  +--rw low-oor-threshold?    uint32
+     |     |  +--rw standing-condition-config
+     |     |     +--rw standing-threshold?         uint32
+     |     |     +--rw standing-reset-threshold?   uint32
+     |     +--rw snapshot-measurement
+     |     |  +--rw uniform-time?         uint32
+     |     |  +--ro snapshot-value?       uint32
+     |     |  +--ro snapshot-unit?        parameter-unit
+     |     |  +--rw high-oor-threshold?   uint32
+     |     |  +--rw low-oor-threshold?    uint32
+     |     +--rw tidemark-maintenance
+     |        +--ro high-tide-value?      uint32
+     |        +--ro high-tide-unit?       parameter-unit
+     |        +--ro low-tide-value?       uint32
+     |        +--ro low-tide-unit?        parameter-unit
+     |        +--rw high-oor-threshold?   uint32
+     |        +--rw low-oor-threshold?    uint32
+     +--rw maintenance-24hr
+     |  +--rw pm-parameter* [parameter-name]
+     |     +--rw parameter-name   maintenance-parameters-extended
+     |     +--rw count-measurement
+     |     |  +--ro count-value?          uint32
+     |     |  +--ro count-unit?           parameter-unit
+     |     |  +--rw transient-condition-config
+     |     |     +--rw high-oor-threshold?   uint32
+     |     |     +--rw low-oor-threshold?    uint32
+     |     +--rw snapshot-measurement
+     |     |  +--rw uniform-time?         uint32
+     |     |  +--ro snapshot-value?       uint32
+     |     |  +--ro snapshot-unit?        parameter-unit
+     |     |  +--rw high-oor-threshold?   uint32
+     |     |  +--rw low-oor-threshold?    uint32
+     |     +--rw tidemark-maintenance
+     |        +--ro high-tide-value?      uint32
+     |        +--ro high-tide-unit?       parameter-unit
+     |        +--ro low-tide-value?       uint32
+     |        +--ro low-tide-unit?        parameter-unit
+     |        +--rw high-oor-threshold?   uint32
+     |        +--rw low-oor-threshold?    uint32
+     +--rw qos-24hr
+        +--rw pm-parameter* [parameter-name]
+           +--rw parameter-name       qos-parameters
+           +--rw count-measurement
+              +--ro count-value?             uint32
+              +--ro count-unit?            parameter-unit
+              +--rw transient-condition-config
+                 +--rw high-oor-threshold?   uint32
+                 +--rw low-oor-threshold?    uint32
+
+  notifications:
+    +---n threshold-events
+       +--ro periodic-threshold-events
+       |  +--ro maintenance-15min
+       |  |  +--ro pm-parameter* [parameter-name]
+       |  |     +--ro parameter-name   maintenance-parameters
+       |  |     +--ro count-transient-event
+       |  |     |  +--ro event-type?       enumeration
+       |  |     |  +--ro event-occurred?   boolean
+       |  |     |  +--ro event-time?       yang:date-and-time
+       |  |     +--ro count-standing-event
+       |  |     |  +--ro event-type?       enumeration
+       |  |     |  +--ro event-occurred?   boolean
+       |  |     |  +--ro event-time?       yang:date-and-time
+       |  |     +--ro snapshot-event
+       |  |     |  +--ro event-type?       enumeration
+       |  |     |  +--ro event-occurred?   boolean
+       |  |     |  +--ro event-time?       yang:date-and-time
+       |  |     +--ro tidemark-event
+       |  |        +--ro event-type?       enumeration
+       |  |        +--ro event-occurred?   boolean
+       |  |        +--ro event-time?       yang:date-and-time
+       |  +--ro maintenance-24hr
+       |  |  +--ro pm-parameter* [parameter-name]
+       |  |     +--ro parameter-name     maintenance-parameters
+       |  |     +--ro count-transient-event
+       |  |     |  +--ro event-type?       enumeration
+       |  |     |  +--ro event-occurred?   boolean
+       |  |     |  +--ro event-time?       yang:date-and-time
+       |  |     +--ro snapshot-event
+       |  |     |  +--ro event-type?       enumeration
+       |  |     |  +--ro event-occurred?   boolean
+       |  |     |  +--ro event-time?       yang:date-and-time
+       |  |     +--ro tidemark-event
+       |  |        +--ro event-type?       enumeration
+       |  |        +--ro event-occurred?   boolean
+       |  |        +--ro event-time?       yang:date-and-time
+       |  +--ro qos-24hr
+       |     +--ro pm-parameter* [parameter-name]
+       |        +--ro parameter-name           qos-parameters
+       |        +--ro count-transient-event
+       |           +--ro event-type?       enumeration
+       |           +--ro event-occurred?   boolean
+       |           +--ro event-time?       yang:date-and-time
+       +--ro non-periodic-threshold-events
+          +--ro BUT-event
+          |  +--ro event-occurred?   boolean
+          |  +--ro event-time?       yang:date-and-time
+          +--ro EUT-event
+          |  +--ro event-occurred?           boolean
+          |  +--ro event-time?               yang:date-and-time
+          |  +--ro total-unavailable-time?   uint32
+          +--ro CSES-event
+             +--ro event-occurred?   boolean
+             +--ro begin-time?       yang:date-and-time
+             +--ro end-time?         yang:date-and-time
+             +--ro duration?         uint32
+             +--ro error-count?      uint32
+]]></artwork>
+    </section>
+
+    <section anchor="sect-8" numbered="true" toc="default">
+      <name>YANG Data Model</name>
+      <sourcecode name="ietf-pm-streaming@2024-10-10.yang" type="" markers="true"><![CDATA[
+module ietf-pm-streaming {
+  yang-version 1.1;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-pm-streaming";
+  prefix pm-str;
+
+  /*
+  * Import YANG Type
+  */
+  import ietf-yang-types { 
+    prefix yang;     
+    reference
+    "RFC 6991: Common YANG Data Types";
+  }
+
+  organization 
+    "IETF Common Control and Measurement Plane (ccamp) 
+    Working Group";
+
+  contact 
+    "WG Web:    <https://datatracker.ietf.org/wg/ccamp/>
+    Editor:     Bin Yeong Yoon
+                <mailto:byyun@etri.re.kr>";
+
+  description
+    "This YANG module defines a data model for performance 
+    management streaming, based on ITU-T G.7710 for 
+    equipment. It specifies measurement types, performance 
+    parameters, their streaming subscriptions, and event 
+    notifications.";
+
+  revision 2024-10-10 {
+    description "Initial version";
+  }
+
+  /*
+   * TYPEDEFs
+   */
+  typedef parameter-unit {
+    type string;
+    description
+      "Unit of measurement for performance management 
+      parameters defined by network elements (servers).";
+  }
+
+  typedef maintenance-parameters { 
+    type enumeration {
+      enum es {
+        description 
+          "Errored Second";
+      }
+      enum ses {
+        description 
+          "Severely Errored Second";
+      }
+      enum bbe {
+        description 
+          "Background Block Error";
+      }
+      enum bbc {
+        description 
+          "Background Block Count";
+      }
+      enum uas {
+        description 
+          "Unavailable Second";
+      }                                       
+    }
+      description
+        "Enumeration of performance parameters used for
+        maintenance monitoring with 15 minute time 
+        interval.";        
+  }
+
+  typedef maintenance-parameters-extended {
+    type enumeration {
+      enum es {
+        description 
+          "Errored Second";
+      }
+      enum ses {
+        description 
+          "Severely Errored Second";
+      }
+      enum bbe {
+        description 
+          "Background Block Error";
+      }
+      enum bbc {
+        description 
+          "Background Block Count";
+      }
+      enum uas {
+        description 
+          "Unavailable Second";
+      }                                    
+      enum pje {
+        description 
+          "Pointer Justification Event";
+      }
+    }
+    description
+      "Enumeration of performance parameters used for
+      maintenance monitoring with 24 hour time 
+      interval.";          
+  }
+
+  typedef qos-parameters {
+    type enumeration {
+      enum es {
+        description 
+          "Errored Second";
+      }
+      enum ses {
+        description 
+          "Severely Errored Second";
+      }
+      enum bbe {
+        description 
+          "Background Block Error";
+      }
+      enum bbc {
+        description 
+          "Background Block Count";
+      }
+      enum uas {
+        description 
+          "Unavailable Second";
+      }    
+      enum sep {
+        description 
+          "Severely Errored Period";
+        }
+    }
+    description
+      "Enumeration of performance parameters used for
+      QoS monitoring with 24 hours.";         
+  }
+
+  /*
+   * GROUPINGS
+   */
+
+  grouping count-standing-condition-config {
+    container standing-condition-config {
+      description 
+        "Optional configuration, applicable only for 15-minute 
+        intervals of the count measurements";
+      leaf standing-threshold {
+        type uint32;
+        description "configuring the standing threshold";            
+      }
+      leaf standing-reset-threshold {
+        type uint32;
+        description 
+          "configuring the reset standing threshold"; 
+      }
+    }
+  }
+
+  grouping count-transient-condition-config {
+    container transient-condition-config {
+      uses out-of-range-config;
+    }
+  }
+
+  grouping count-measurement-15min-gr {
+    description 
+      "Counts are cumulative measurements that track the 
+      total occurrences of specific network events or 
+      activities over 15 minutes. Counts are reset at 
+      regular intervals to start fresh measurements.";
+
+    container count-measurement {
+      leaf count-value {
+        type uint32;
+        config false;
+        description 
+          "The cumulative value of the count over the 
+          15-minute interval.";
+      }
+      leaf count-unit {
+        type parameter-unit;
+        config false;
+        description
+          "Unit of measurement for the count-value.";
+      }
+      uses count-transient-condition-config;
+      uses count-standing-condition-config; 
+    }
+  }
+
+  grouping count-measurement-24hr-gr {
+    description 
+        "Counts are cumulative measurements that track 
+        the total  occurrences of specific network
+        events or activities over 24 hours. Counts are 
+        reset at regular intervals to start 
+        fresh measurements. ";  
+
+    container count-measurement {
+      leaf count-value {
+        type uint32;
+        config false;
+      }
+      leaf count-unit {
+        type parameter-unit;
+        config false;
+        description
+            "Unit of measurement for the 
+            counts-value.";
+      }        
+      uses count-transient-condition-config;
+    }
+  }
+
+
+  grouping snapshot-measurement-gr{
+    container snapshot-measurement {
+      description 
+        "Snapshots are instantaneous measurements 
+        taken at a specific point in time. They
+        provide a momentary view of network conditions.
+        Snapshots are collected at pre-determined
+        uniform times within fixed intervals (e.g., 
+        every 15 minutes, 24 hours).";
+
+      leaf uniform-time {
+        type uint32;
+        units "seconds";
+        description 
+            "Consistent intervals for capturing 
+            network performance data.";
+      }
+      leaf snapshot-value {
+        type uint32;
+        config false;
+      }
+      leaf snapshot-unit {
+        type parameter-unit;
+        config false;
+        description
+            "Unit of measurement for the snapshot-value.";
+      }                                   
+      uses out-of-range-config;
+    }
+  }
+
+  grouping tidemark-measurement-gr{
+    container tidemark-maintenance {
+      description 
+        "Tidemarks record the highest (maximum) or lowest 
+        (minimum) values of a specific performance metric 
+        over a defined period, such as 15 minutes or 24 
+        hours. They are designed to capture extreme values 
+        that reflect significant performance peaks.";
+
+      leaf high-tide-value {
+        type uint32;
+        config false;
+      }
+      leaf high-tide-unit {
+        type parameter-unit;
+        config false;
+        description
+          "Unit of measurement for the high-tide-value.";
+      }    
+      leaf low-tide-value {
+        type uint32;
+        config false;
+      }
+      leaf low-tide-unit {
+        type parameter-unit;
+        config false;
+        description
+          "Unit of measurement for the low-tide-value.";
+      }                
+      uses out-of-range-config;
+    }
+  }    
+
+  grouping out-of-range-config {
+    description 
+      "An out-of-range (OOR) event is triggered to indicate 
+      an overflow or underflow condition when a measured 
+      metric exceeds its high threshold or falls below its 
+      low threshold. These events apply to count (transient), 
+      snapshot, and tidemark measurements.";
+
+    leaf high-oor-threshold {
+      type uint32;
+      description 
+        "Configuring the high out of range (OOR) report";
+    }
+    leaf low-oor-threshold {
+      type uint32;
+      description
+        "Configuring the low out of range (OOR) report";
+    }
+  }
+
+  grouping event-state-info {
+    leaf event-occurred {
+      type boolean;
+        description 
+          "Indicates whether an event occurs or not.";
+    }
+    leaf event-time {
+      type yang:date-and-time;
+        description 
+          "A timestamp indicating when the event occurred";
+    }
+  }
+        
+  grouping triggered-oor-event-info {
+    uses oor-event-type;
+    uses event-state-info;
+  }
+
+  grouping count-transient-event-gr {
+    description 
+      "Threshold report (TR) is generated for the 
+      counter measurement when the threshold is 
+      reached or is reached or crossed for a given 
+      performance measurement";
+
+    container count-transient-event {
+      uses triggered-oor-event-info;
+    }      
+  }
+
+  grouping count-standing-event-gr {
+    description 
+      "A Threshold Report (TR) is generated when the 
+      set threshold is exceeded, and a Reset Threshold 
+      Report (RTR) is issued at the end of the period 
+      if the value drops below or equals the reset 
+      threshold.";
+
+    container count-standing-event {
+      leaf event-type {
+        description 
+          "Indicates whether TR or RTR was generated";
+
+        type enumeration {
+          enum Threshold-Report {
+            description 
+              "High OOR threshold reached";
+          }
+          enum Reset-Threshold-Report {
+            description 
+              "Low OOR threshold reached";
+          }
+        }
+      }
+      uses event-state-info;
+    }
+  }    
+
+  grouping snapshot-events-gr{
+    description 
+      "High (or low) snapshot event is triggered 
+        as the high (or low) out of range when the 
+        snapshot value reaches or crosses the high 
+        (or low) threshold.";
+
+    container snapshot-event{
+      uses oor-event-type;
+      leaf event-occurred {
+        type boolean;
+          description 
+            "Indicates whether the snapshot-value has 
+            reached the high(or low)-oor-threshold.";
+      }
+      leaf event-time {
+          type yang:date-and-time;
+              description 
+              "A timestamp indicating when the snapshot-value 
+              reached the high(or low)-oor-threshold";      
+      }
+    }        
+  }
+
+  grouping oor-event-type {
+    leaf event-type {
+      description 
+        "Indicates whether the high or low threshold 
+        was reached";
+
+      type enumeration {
+        enum High-OOR-event {
+          description "High OOR threshold reached";
+        }
+        enum Low-OOR-event {
+          description "Low OOR threshold reached";
+        }
+      }
+    }
+  }
+
+  grouping tidemark-events-gr {
+    description 
+      "High (or low) tidemark event is triggered 
+        as the high (or low) out of range when the 
+        tidemark value reaches or crosses the high 
+        (or low) threshold.";
+
+    container tidemark-event {
+      uses oor-event-type;
+      leaf event-occurred {
+        type boolean;
+          description 
+              "Indicates whether the tidemark-value has 
+              reached the high(or low)-oor-threshold.";
+      }
+      leaf event-time {
+        type yang:date-and-time;
+          description 
+            "A timestamp indicating when the tidemark-
+            value reached the high(or low)-oor-threshold";      
+      }
+    }        
+  }
+
+  grouping event-parameters-gr {
+    container BUT-event {
+      description 
+        "Begin Unavailable Time (BUT) event marking 
+        the start of a period when a network element 
+        or connection is unavailable.";
+
+      uses event-state-info;
+    }
+    container EUT-event {
+      description 
+        "End Unavailable Time (BUT) event marking the 
+        end of a period when a network element or 
+        connection was unavailable.";
+
+      leaf event-occurred {
+        type boolean;
+        description 
+            "Indicates whether EUT event is generated.";     
+      }
+      leaf event-time {
+        type yang:date-and-time;
+        description "End Unavailable Time (EUT)";
+      }
+      leaf total-unavailable-time {
+        type uint32;
+        units "seconds";
+        description 
+          "Total duration of unavailability.";
+      }        
+    }
+    container CSES-event {
+      description 
+        "A sequence of severely errored seconds (SES) 
+        event detected consecutively within a specified 
+        time frame.";
+
+      leaf event-occurred {
+        type boolean;
+        description 
+          "Indicates whether CSES event is generated.";     
+      }
+      leaf begin-time {
+        type yang:date-and-time;
+          description 
+              "A timestamp indicating when CSES period 
+              begins.";
+      }
+      leaf end-time {
+        type yang:date-and-time;
+        description 
+          "A timestamp indicating when CSES 
+          period ends.";
+      }
+      leaf duration {
+        type uint32;
+        units "seconds";
+        description 
+          "Duration of the CSES period.";
+      }
+      leaf error-count {
+        type uint32;
+        description 
+          "Number of errors during the CSES period.";
+      }   
+    }
+  }
+    
+  /*
+   * MAIN CONTAINER
+   */
+
+  container pm-periodic-measurement {
+    description 
+      "This container includes PM periodic measurements, 
+      such as count, snapshot, and tidemark, used for 
+      maintenance and QoS monitoring. These measurements 
+      are typically taken over 15-minute and 24-hour 
+      intervals and are categorized by their purpose 
+      (maintenance/QoS) and time interval, as each case 
+      involves different parameter types.";
+
+    leaf measurement-interval {
+      type uint32 {
+        range "1..max"; 
+      }
+      units "seconds";
+      description
+        "This interval defines the periodic measurement of 
+        PM parameters. Clients can select the interval based 
+        on the capabilities provided by network elements.";
+    }
+    container maintenance-15min {
+      description 
+        "Contains metric value of the PM parameters 
+        by the measurement methods for maintenance 
+        monitoring with 15 minute time interval.";    
+
+      list pm-parameter {
+        key "parameter-name";
+        description 
+          "List PM parameters for maintenance with 15 
+          minute time interval.";
+
+        leaf parameter-name {
+          type maintenance-parameters;
+          description 
+            "Name of the parameters for maintenance 
+            with 15 minute time interval.";
+        }
+        uses count-measurement-15min-gr;               
+        uses snapshot-measurement-gr;
+        uses tidemark-measurement-gr;
+      }
+    }
+    container maintenance-24hr {
+      description 
+        "Contains metric value of the PM parameters 
+        by the measurement methods for maintenance 
+        monitoring with 24 hour time interval."; 
+
+      list pm-parameter {
+        key "parameter-name";
+        description 
+          "List PM parameters for maintenance with 24 
+          hour time interval.";
+
+        leaf parameter-name {
+          type maintenance-parameters-extended;
+          description 
+            "Name of the parameters for maintenance 
+            with 24 hour interval.";
+        }                
+        uses count-measurement-24hr-gr; 
+        uses snapshot-measurement-gr;
+        uses tidemark-measurement-gr;
+      }
+    }
+
+    container qos-24hr {
+      description 
+            "Contains metric value of the PM parameters 
+            by the measurement methods for QoS 
+            monitoring with 24 hour time interval.";
+
+      list pm-parameter {
+        key "parameter-name";
+            description 
+                "List PM parameters for QoS with 24 
+                hours;";
+                
+        leaf parameter-name {
+            type qos-parameters;
+            description 
+                "Name of the parameters for QoS with 
+                24 hour interval.";
+        }
+        uses count-measurement-24hr-gr;          
+      }
+    }
+  }
+
+  /*
+   * NOTIFICATIONS
+   */
+
+  notification threshold-events {
+    container periodic-threshold-events {
+      description 
+        " Contains threshold events of the periodic 
+        measurements including counts, snapshots, 
+        and tidemarks.";
+
+      container maintenance-15min {
+        description 
+          "Contains threshold events of the PM 
+          parameters for maintenance monitoring 
+          with 15 minute time interval.";      
+
+        list pm-parameter {
+          key "parameter-name";
+          description 
+            "List PM parameters for maintenance 
+            with 15 min;";
+
+          leaf parameter-name {
+            type maintenance-parameters;
+            description 
+              "Name of the PM parameters for 
+              maintenance with 15 minute time 
+              interval.";
+          }
+          uses count-transient-event-gr;
+          uses count-standing-event-gr;                
+          uses snapshot-events-gr;
+          uses tidemark-events-gr;
+        }
+      }
+      container maintenance-24hr {
+        description 
+          "Contains threshold events of the PM 
+          parameters for maintenance monitoring 
+          with24 hour time interval.";   
+
+        list pm-parameter {
+          key "parameter-name";
+          description 
+            "List PM parameters for maintenance 
+            with 24 hours;";
+
+          leaf parameter-name {
+            type maintenance-parameters;
+            description 
+                "Name of the PM parameters for 
+                maintenance with 24 hour time 
+                interval.";    
+          }
+          uses count-transient-event-gr;             
+          uses snapshot-events-gr;
+          uses tidemark-events-gr;
+        }
+      }
+      container qos-24hr {
+        description 
+          "Contains threshold events of the PM 
+          parameters for QoS monitoring with 
+          24 hour time interval.";    
+
+        list pm-parameter {
+          key "parameter-name";
+            description 
+              "List PM parameters for QoS 
+              with 24 hours time interval;";
+
+          leaf parameter-name {
+            type qos-parameters;
+            description 
+              "Name of the PM parameters for 
+              QoS with 24 hour time interval.";
+          }
+          uses count-transient-event-gr;            
+        }
+      }
+    }
+    container non-periodic-threshold-events {
+      uses event-parameters-gr;
+    }
+  }
+}
+]]></sourcecode>
+    </section>
+
+    <section anchor="sect-9" numbered="true" toc="default">
+      <name>Subscription Examples</name>
+      <section anchor="sect-9.1" numbered="true" toc="default">
+        <name>Periodic Subscription</name>
+        <t>
+          <xref target="Periodic_Subscription_Example" /> shows an example of the NETCONF request
+          that subscribes to receive periodic notifications for the count-value and count-unit of
+          the Severely Errored Second (SES) parameter for the maintenance with 15 minutes time
+          interval.</t>
+        <figure anchor="Periodic_Subscription_Example">
+          <name>Periodic Subscription Example</name>
+          <artwork name="" type="" align="left" alt=""><![CDATA[
+<rpc message-id="101"
+     xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <establish-subscription
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push:1.0">
+    <filter type="subtree">
+      <pm-periodic-measurement xmlns="urn:ietf:params:
+          xml:ns:yang:ietf-pm-streaming">
+        <maintenance-15min>
+          <pm-parameter>
+            <parameter-name>ses</parameter-name>
+            <count-measurement>
+              <count-value/>
+              <count-unit/>
+            </count-measurement>
+          </pm-parameter>
+        </maintenance-15min>
+      </pm-periodic-measurement>
+    </filter>
+    <period>900</period>
+    <encoding>encode-xml</encoding>
+  </establish-subscription>
+</rpc>
+]]></artwork>
+        </figure>
+      </section>
+
+      <section anchor="sect-9.2" numbered="true" toc="default">
+        <name>Periodic Event Subscription</name>
+        <t>
+          <xref target="Periodic_Event_Subscription" /> shows an example of the NETCONF request to
+          subscribe to receive event notifications triggered by the high-oor-event of the Severely
+          Errored Second (SES) parameter for the maintenance with 15 minutes time interval. The
+          snapshots are taken every 2 minutes, and the high-oor-threshold that is the threshold
+          value of the event condition of the high out of range is set to 8 seconds.</t>
+        <figure anchor="Periodic_Event_Subscription">
+          <name>Periodic Event Subscription Example</name>
+          <artwork name="" type="" align="left" alt=""><![CDATA[
+<rpc message-id="102"
+     xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <establish-subscription xmlns="urn:ietf:params:xml:ns:yang:
+      ietf-subscribed-notifications">
+    <stream>ietf-push</stream>
+    <encoding>encode-xml</encoding>
+    <periodic>
+      <period>900</period>
+    </periodic>
+    <filter type="subtree">
+      <pm-periodic-measurement 
+        xmlns="urn:ietf:params:xml:ns:yang:
+          ietf-pm-streaming">
+        <maintenance-15min>
+          <pm-parameter>
+            <parameter-name>ses</parameter-name>
+            <snapshot-measurement>
+              <uniform-time>120</uniform-time> 
+                <!-- 2 minutes in seconds -->
+              <high-oor-threshold>8</high-oor-threshold> 
+              <snapshot-event>
+                <oor-threshold-type>
+                  <event-type>High-OOR-event</event-type>
+                </oor-threshold-type>
+              </snapshot-event>
+            </snapshot-measurement>
+          </pm-parameter>
+        </maintenance-15min>
+      </pm-periodic-measurement>
+    </filter>
+  </establish-subscription>
+</rpc>
+]]></artwork>
+        </figure>
+
+        <t>
+          <xref target="Periodic_Event_Notification" /> is an example of the NETCONF notification
+          that would be triggered after the subscription in <xref
+            target="Periodic_Event_Subscription" />.</t>
+        <figure anchor="Periodic_Event_Notification">
+          <name>Periodic Event Notification Example</name>
+          <artwork name="" type="" align="left" alt=""><![CDATA[
+<notification 
+    xmlns="urn:ietf:params:xml:ns:netconf:notification:1.0">
+  <eventTime>2024-10-10T15:15:00Z</eventTime>
+  <pm-periodic-measurement xmlns="urn:ietf:params:xml:ns:yang:
+      ietf-pm-streaming">
+    <maintenance-15min>
+      <pm-parameter>
+        <parameter-name>ses</parameter-name>
+        <snapshot-measurement>
+          <snapshot-event>
+            <oor-threshold-type>
+              <event-type>High-OOR-event</event-type>
+            </oor-threshold-type>
+            <event-occurred>true</event-occurred>
+            <event-time>2024-10-10T15:14:00Z</event-time>
+          </snapshot-event>
+          <snapshot-value>10</snapshot-value> 
+          <high-oor-threshold>8</high-oor-threshold> 
+        </snapshot-measurement>
+      </pm-parameter>
+    </maintenance-15min>
+  </pm-periodic-measurement>
+</notification>
+]]></artwork>
+        </figure>
+      </section>
+
+      <section anchor="sect-9.3" numbered="true" toc="default">
+        <name>Non-periodic Event Subscription</name>
+        <t>
+          <xref target="Non-periodic_Event_Notification" /> is a NETCONF RPC message requesting to
+          establish a subscription for performance monitoring data for BUT events, using the IETF
+          Push mechanism and XML encoding.</t>
+        <figure anchor="Non-periodic_Event_Notification">
+          <name>Non-periodic Event Notification Example</name>
+          <artwork name="" type="" align="left" alt=""><![CDATA[
+<rpc message-id="103"
+    xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <establish-subscription
+    xmlns="urn:ietf:params:xml:ns:yang:
+          ietf-subscribed-notifications">
+    <stream>ietf-push</stream>
+    <encoding>encode-xml</encoding>
+    <filter type="subtree">
+      <pm-periodic-measurement xmlns="urn:ietf:params:xml:ns:yang:
+          ietf-pm-streaming">
+        <BUT-event>
+          <event-occurred/>
+          <event-time/>
+        </BUT-event>
+      </pm-periodic-measurement>
+    </filter>
+  </establish-subscription>
+</rpc>
+]]></artwork>
+        </figure>
+
+      </section>
+    </section>
+
+    <section anchor="sect-10" numbered="true" toc="default">
+      <name>Security Considerations</name>
+      <t>
+        TBD. </t>
+    </section>
+
+    <section anchor="sect-11" numbered="true" toc="default">
+      <name>IANA Considerations</name>
+      <t>
+        TBD. </t>
+    </section>
+
+  </middle>
+  <back>
+    <references>
+      <name>References</name>
+      <references>
+        <name>Normative References</name>
+        <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8639.xml" />
+        <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8640.xml" />
+        <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8641.xml" />
+      </references>
+      <references>
+        <name>Informative References</name>
+        <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.9232.xml" />
+        <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml" />
+        <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml" />
+      </references>
+    </references>
+  </back>
+</rfc>
