@@ -33,7 +33,7 @@
           <city>Milan</city>
           <region></region>
           <code></code>
-          <country>20090</country>
+          <country></country>
         </postal>
         <email>Italo.Busi@huawei.com</email>
       </address>
@@ -64,7 +64,7 @@
         <email>yuchaode@huawei.com</email>
       </address>
     </author>
-    <date year="2024" month="October"/>
+    <date year="2024" month="October" day="20"/>
     <workgroup>CCAMP Working Group</workgroup>
     <abstract>
       <t>
@@ -135,7 +135,7 @@
         digital twins synchronized with the physical network, offering real-time insights 
         for predictive maintenance, planning, and optimization.</t>
       <t>
-        The procedures for Performance Management (PM) streaming between a network node and clients
+        The procedures for Performance Management streaming between a network node and clients
         such as operation systems (OS), AI applications, Network digital twins (NDT) involve 
         continuous measurement of performance metrics on PM parameters using three methods: 
         counts (tracking event occurrences), snapshots (instantaneous
@@ -154,28 +154,34 @@
       <name>Measurement Methods</name>
       <t>
         In network performance monitoring, ITU-T G.7710 defines two measurement methods that
-        measures a metric value with a periodic interval such as 15-minute or 24-hour periods: 
-        counter measurements and gauge measurements. These complementary methods provide a 
+        measures a metric value with periodic intervals such as 15-minute or 24-hour periods: 
+        counter measurements ("counts") and gauge measurements ("Snapshots" and "tidemarks"). 
+        These complementary methods provide a 
         holistic view of network behavior by capturing both long-term trends and real-time 
-        conditions. The counter measurements (referred to as "counts") provide
+        conditions. The counter measurements provide
         data on the frequency of specific events, enabling long-term analysis of recurring issues.
-        Meanwhile, the gauge measurements offer real-time insight and capture extreme conditions, 
-        helping to identify immediate performance problems or deviations from normal behavior. 
-        The gauge measurements include snapshots and tidemarks.</t>
+        Meanwhile, The gauge measurement involves capturing instantaneous values of performance 
+        monitoring metrics at one-second intervals. This high-frequency sampling occurs during 
+        defined periodic intervals rather than continuously.
+        They offer real-time insight and capture extreme conditions, 
+        helping to identify immediate performance problems or deviations from normal behavior.</t>
 
       <section anchor="sect-4.1" numbered="true" toc="default">
         <name>Counts</name>
-        <t>
-          Counts track the cumulative occurrence of specific network events over set intervals.
-          Gauge measurements offer a complementary approach to counters by capturing the
-          instantaneous values of performance parameters or recording their extreme values 
-          over a defined period. Unlike counters, which focus on accumulation, gauge measurements 
-          provide a real-time snapshot of the network's state or track the maximum and minimum 
-          values a parameter reaches within a monitoring period. Gauge measurements are typically 
-          divided into two types: snapshots and tidemarks. Counters provide data on how frequently 
-          specific events occur, allowing for long-term analysis of recurring issues. Meanwhile, 
-          gauge measurements offer real-time insight and capture extreme conditions, helping 
-          to identify immediate performance problems or deviations from normal behavior.</t>
+        <t>Counts measurement in network performance monitoring tracks the cumulative occurrences of 
+        specific events over a defined period, such as 15 minutes or 24 hours. This method captures 
+        how frequently certain network activities, like errors or transmission issues, occur, 
+        providing a historical view of recurring problems. Counts reset at the end of each interval, 
+        ensuring that every period starts with a fresh count for accurate monitoring. The primary 
+        purpose of counts is to identify trends and patterns in network behavior over time, 
+        helping operators detect anomalies or areas where issues frequently arise. This type of 
+        measurement is particularly useful for long-term analysis, enabling preventive maintenance 
+        and optimizing network performance. Unlike instantaneous measurements, counts focus on 
+        aggregation over time, making it easier to understand the persistence or recurrence of faults. 
+        The data gathered through counts helps in fault management and planning by highlighting 
+        repeated errors, congestion, or performance degradation that may affect service delivery. 
+        As a result, counts provide network operators with actionable insights for troubleshooting 
+        and capacity planning, ensuring smooth operation and reliability across the network.</t>
       </section>
 
       <section anchor="sect-4.2" numbered="true" toc="default">
@@ -185,7 +191,7 @@
           capture the instantaneous value of specific performance parameters at a regular,
           predefined point (uniform time) within each time interval. Snapshots provide a "momentary
           view" of network conditions, allowing operators to observe the network's status at
-          specific intervals or upon request. The data from these uniform-time snapshots is
+          specific intervals. The data from these uniform-time snapshots is
           then aggregated and analyzed to understand the immediate state across the entire network.
           By taking snapshots simultaneously across all network elements, operators can correlate
           data between different parts of the transport network. Snapshots are collected at
@@ -200,27 +206,28 @@
           values that a performance parameter reaches during a specified observation window.
           These extreme values offer insight into the range of performance fluctuations,
           highlighting the best and worst conditions that occur within the monitoring period.
-          Tidemarks are particularly valuable for diagnosing issues that may not be visible
-          in average or cumulative data. For instance, while the average error rate over a
-          period may appear acceptable, a high tidemark could reveal intermittent spikes in
-          errors that require attention. Conversely, a low tidemark may expose periods of
-          severely degraded signal quality or throughput.</t>
+          Tidemark measurements provide deeper insights by capturing performance spikes or 
+          drops that may go unnoticed in average or cumulative data, enabling precise 
+          troubleshooting of intermittent or extreme conditions For instance, while the 
+          average error rate over a period may appear acceptable, a high tidemark could 
+          reveal intermittent spikes in errors that require attention. Conversely, a low 
+          tidemark may expose periods of severely degraded signal quality or throughput.</t>
       </section>
     </section>
 
     <section anchor="sect-5" numbered="true" toc="default">
-      <name>Periodic Notifications</name>
+      <name>Periodic Subscriptions</name>
       <t>
         Clients can receive a streaming of value of the PM parameters (PM data) by the
         measurement methods of counts, snapshots, and tidemarks with various time intervals,
         after subscribing to them in equipment. The streaming data measured on the PM
-        parameters are used for maintenance and QoS monitoring in networks.. </t>
+        parameters are used for maintenance and Quality of Service (QoS) monitoring in networks.</t>
 
       <section anchor="sect-5.1" numbered="true" toc="default">
         <name>Maintenance and QoS monitoring</name>
         <t>
           Performance management data contribute to enhancing overall network reliability.
-          It consists of Maintenance and Quality of Service (QoS) data generated by maintenance
+          It consists of Maintenance and QoS data generated by maintenance
           and QoS parameters respectively. These two categories serve different purposes and
           focus on distinct aspects of network management. By continuously tracking different
           aspects of network performance, they ensure that the network infrastructure remains
@@ -250,11 +257,12 @@
           network delivers services at a level that meets or exceeds the expectations outlined in
           service-level agreements (SLAs).</t>
         <t>
-          In network performance management, periodic time intervals of 15 minutes and 24 hours
-          are commonly used for network nodes to measure and notify performance data of clients.
-          These intervals serve distinct purposes, helping network operators monitor both short-term
-          fluctuations and long-term trends in network performance.
-        </t>
+          Maintenance data typically deal with the health and status of individual network 
+          elements or links. They often involve unidirectional measurements to detect faults or 
+          issues in specific components or paths. QoS data often need to be measured in both 
+          directions of a communication path to ensure overall service quality. This is because 
+          many applications and services rely on two-way communication, and the user experience 
+          depends on performance in both directions.</t>
       </section>
 
       <section anchor="sect-5.2" numbered="true" toc="default">
@@ -288,7 +296,7 @@
       <section anchor="sect-5.3" numbered="true" toc="default">
         <name>PM Parameters</name>
         <t>
-          Matric value of PM parameters is measured for maintenance and QoS monitoring over
+          Metric value of PM parameters is measured for maintenance and QoS monitoring over
           networks. Key PM parameters focused on circuit networks are listed as follows.
           Additional parameters will be needed for packet networks.</t>
         <artwork name="" type="" align="left" alt=""><![CDATA[
@@ -304,13 +312,21 @@
         <t>
           According to the types of the measurement methods, purposes, and time intervals,
           different parameters are used.</t>
+        <ul spacing="normal">
+          <li>Maintenance Parameters (Counts, snapshots and tidemarks for maintenance monitoring 
+              with 15minute-time interval): ES, SES, BBE, BBC, UAS</li>
+          <li>Extended Maintenance Parameters (Counts, snapshots and tidemarks for maintenance 
+              monitoring with 24-hour time interval): ES, SES, BBE, BBC, UAS, PJE</li>
+          <li>QoS Parameters (Counts for QoS monitoring with 24-hour time interval): 
+              ES, SES, BBE, BBC, SEP, UAS </li>
+        </ul>
       </section>
     </section>
 
     <section anchor="sect-6" numbered="true" toc="default">
-      <name>Threshold Events</name>
+      <name>Threshold Event Subscriptions</name>
       <t>
-        Threshold Events are triggered when a matric value reaches or crosses a pre-defined
+        Threshold Events are triggered when a metric value reaches or crosses a pre-defined
         threshold. There are two types of threshold event notifications: Periodic
         and non-periodic event notifications.</t>
 
@@ -319,19 +335,16 @@
         <t>
           Periodic events are triggered when the count or gauge value reaches a pre-defined
           threshold during periodic measurements including counts, snapshots, and tidemarks
-          only for maintenance-based performance parameters. They are reliable enough to
-          declare the unacceptable (15-minute) or degraded (24-hour) level of performance.
-          The periodic events for QoS-based performance parameters is outside the scope;
-          the evaluation period is typically 30 days.</t>
+          for performance parameters.</t>
         <t>
           [Counter measurement events]</t>
         <t>
-          Counter measurement, "counts", has two types of threshold reporting methods:
+          Counter measurement ("counts") has two types of threshold reporting methods:
           transient and standing condition methods. The transient condition method
-          (count-transient-event in YANG model) treats each measurement period separately.
+          treats each measurement period separately.
           As soon as a threshold is reached or crossed in a 15-minute/24-hour period,
           for a given performance measurement, a threshold report (TR) is
-          generated. The standing condition method (count-standing-event) is an option
+          generated. The standing condition method is an option
           for 15-minute periods. The standing condition is raised, and a TR (Threshold
           Report) is generated, when the set threshold
           is reached or crossed. The standing condition is cleared, and a reset threshold
@@ -341,11 +354,11 @@
         <t>
           [Gauge measurement events]</t>
         <t>
-          For gauge measurements including snapshots (snapshot-event) and tidemarks
-          (tidemark-event), an overflow condition is determined and an out of range
-          report (High-ORR-event) is generated as soon as the gauge value reaches or
+          For gauge measurements ("snapshots" and "tidemarks"), an overflow condition 
+          is determined and an out of range
+          report is generated as soon as the gauge value reaches or
           crosses the high threshold. an underflow condition is determined and an
-          out of range report (Low-ORR-event) is generated as soon as the gauge value
+          out of range report is generated as soon as the gauge value
           is at or below the low threshold. The out of range methods are applicable
           for 15-minute and 24-hour measurements.</t>
       </section>
@@ -1172,6 +1185,12 @@ module ietf-pm-streaming {
 
     <section anchor="sect-9" numbered="true" toc="default">
       <name>Subscription Examples</name>
+      <t>Below are practical use cases demonstrating different subscription scenarios. These 
+      examples illustrate periodic and non-periodic subscriptions, including notifications 
+      triggered by threshold breaches. Each example aligns with IETF YANG Push protocols, 
+      showcasing how network elements generate and stream performance data based on subscription 
+      parameters.</t>
+
       <section anchor="sect-9.1" numbered="true" toc="default">
         <name>Periodic Subscription</name>
         <t>
@@ -1182,13 +1201,13 @@ module ietf-pm-streaming {
         <figure anchor="Periodic_Subscription_Example">
           <name>Periodic Subscription Example</name>
           <artwork name="" type="" align="left" alt=""><![CDATA[
-<rpc message-id="101"
-     xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <establish-subscription
+<rpc message-id="101" 
+    xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <establish-subscription 
       xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push:1.0">
     <filter type="subtree">
-      <pm-periodic-measurement xmlns="urn:ietf:params:
-          xml:ns:yang:ietf-pm-streaming">
+      <pm-periodic-measurement 
+          xmlns="urn:ietf:params:xml:ns:yang:ietf-pm-streaming">
         <maintenance-15min>
           <pm-parameter>
             <parameter-name>ses</parameter-name>
@@ -1200,8 +1219,11 @@ module ietf-pm-streaming {
         </maintenance-15min>
       </pm-periodic-measurement>
     </filter>
-    <period>900</period>
+    <period>900</period> <!-- Every 15 minutes -->
     <encoding>encode-xml</encoding>
+    <start-time>2024-10-20T10:00:00Z</start-time>
+    <stop-time>2024-10-20T16:00:00Z</stop-time> 
+      <!-- Optional: Limits the subscription duration -->
   </establish-subscription>
 </rpc>
 ]]></artwork>
@@ -1219,26 +1241,29 @@ module ietf-pm-streaming {
         <figure anchor="Periodic_Event_Subscription">
           <name>Periodic Event Subscription Example</name>
           <artwork name="" type="" align="left" alt=""><![CDATA[
-<rpc message-id="102"
-     xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <establish-subscription xmlns="urn:ietf:params:xml:ns:yang:
-      ietf-subscribed-notifications">
+<rpc message-id="102" 
+    xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <establish-subscription 
+      xmlns="urn:ietf:params: 
+          xml:ns:yang:ietf-subscribed-notifications">
     <stream>ietf-push</stream>
     <encoding>encode-xml</encoding>
     <periodic>
-      <period>900</period>
+      <period>900</period> <!-- 15 minutes interval -->
+      <dampening-period>300</dampening-period> 
+        <!-- Avoid redundant notifications within 5 minutes -->
     </periodic>
     <filter type="subtree">
       <pm-periodic-measurement 
-        xmlns="urn:ietf:params:xml:ns:yang:
-          ietf-pm-streaming">
+          xmlns="urn:ietf:params:xml:ns:yang:ietf-pm-streaming">
         <maintenance-15min>
           <pm-parameter>
             <parameter-name>ses</parameter-name>
             <snapshot-measurement>
               <uniform-time>120</uniform-time> 
-                <!-- 2 minutes in seconds -->
+                  <!-- Snapshots every 2 minutes -->
               <high-oor-threshold>8</high-oor-threshold> 
+                  <!-- Alert if value exceeds 8 seconds -->
               <snapshot-event>
                 <oor-threshold-type>
                   <event-type>High-OOR-event</event-type>
