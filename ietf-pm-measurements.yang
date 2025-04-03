@@ -1,0 +1,410 @@
+module ietf-pm-measurements {
+    yang-version 1.1;
+    namespace "urn:ietf:params:xml:ns:yang:ietf-pm-measurements";
+    prefix pm-meas;
+
+    /*
+     * Import YANG Type
+     */
+    import ietf-yang-types {
+        prefix yang;
+        reference
+          "RFC 6991: Common YANG Data Types";
+    }
+
+    import ietf-pm-parameters {
+        prefix pm-param;
+        reference
+          "draft-ietf-ccamp-pm-parameters-yang";
+    }
+
+    organization
+      "IETF Common Control and Measurement Plane (ccamp) 
+       Working Group";
+
+    contact
+      "WG Web:    <https://datatracker.ietf.org/wg/ccamp/>
+       Editor:    Bin Yeong Yoon
+                  <mailto:byyun@etri.re.kr>";
+
+    description
+      "This YANG module defines a data model for performance 
+       management measurements, based on ITU-T G.7710 for 
+       equipment. It specifies measurement types, performance 
+       parameters, their measurement methods, and event 
+       notifications.";
+
+    revision 2025-04-03 {
+        description
+          "Initial revision for pm measurements.";
+    }
+
+    /*
+     * TYPEDEFs
+     */
+    typedef parameter-unit {
+        type string;
+        description
+          "Unit of measurement for performance management 
+           parameters defined by network elements (servers).";
+    }
+
+    typedef parameter-name {
+        type union {
+            type pm-param:maintenance-parameters;
+            type pm-param:maintenance-parameters-extended;
+            type pm-param:qos-parameters;
+            type string {
+                pattern '^([a-zA-Z][a-zA-Z0-9\-_]*:)?[a-zA-Z][a-zA-Z0-9\-_]*$';
+            }
+        }
+        description
+          "Name of the performance parameter to be measured.
+           Can be either a parameter from ietf-pm-parameters module
+           or a custom parameter in the format [module-name:]parameter-name.";
+    }
+
+    /*
+     * GROUPINGS
+     */
+    grouping out-of-range-config {
+        description
+          "An out-of-range (OOR) event is triggered to indicate 
+           an overflow or underflow condition when a measured 
+           metric exceeds a configured high threshold or falls below a 
+           configured low threshold. These events apply to count (transient), 
+           snapshot, and tidemark measurements.";
+        leaf high-oor-threshold {
+            type uint32;
+            description
+              "High out-of-range threshold.";
+        }
+        leaf low-oor-threshold {
+            type uint32;
+            description
+              "Low out-of-range threshold.";
+        }
+    }
+
+    grouping event-state-info {
+        leaf event-occurred {
+            type boolean;
+            description
+              "Indicates whether an event has occurred.";
+        }
+        leaf event-time {
+            type yang:date-and-time;
+            description
+              "Timestamp of when the event occurred.";
+        }
+    }
+
+    grouping oor-event-type {
+        leaf event-type {
+            type enumeration {
+                enum High-OOR-event {
+                    description
+                      "High OOR threshold reached";
+                }
+                enum Low-OOR-event {
+                    description
+                      "Low OOR threshold reached";
+                }
+            }
+            description
+              "Indicates whether the high or low OOR threshold was reached.";
+        }
+    }
+
+    grouping triggered-oor-event-info {
+        uses oor-event-type;
+        uses event-state-info;
+        description
+          "Combines threshold event type and event details for a triggered OOR event.";
+    }
+
+    grouping count-measurement-gr {
+        description
+          "Counts are cumulative measurements tracking the total occurrences of 
+           specific network events or activities over a time interval (e.g., 15 minutes). 
+           Counts are reset at regular intervals to start new measurements.";
+        container count-measurement {
+            leaf count-value {
+                type uint32;
+                config false;
+            }
+            leaf count-unit {
+                type parameter-unit;
+                config false;
+                description
+                  "Unit of measurement for the count-value.";
+            }
+            container transient-condition-config {
+                uses out-of-range-config;
+            }
+            container standing-condition-config {
+                description
+                  "Configuration of the standing condition 
+                   method for count measurements.";
+                leaf standing-threshold {
+                    type uint32;
+                    description
+                      "Standing threshold value.";
+                }
+                leaf standing-reset-threshold {
+                    type uint32;
+                    description
+                      "Reset threshold value.";
+                }
+            }
+        }
+    }
+
+    grouping snapshot-measurement-gr {
+        container snapshot-measurement {
+            description
+              "Snapshots are instantaneous measurements taken at specific points 
+               in time, providing a momentary view of network conditions. Snapshots 
+               are collected at uniform intervals (e.g., 15 minutes or 24 hours).";
+            leaf uniform-time {
+                type uint32;
+                units "seconds";
+                description
+                  "Interval between snapshot measurements.";
+            }
+            leaf snapshot-value {
+                type uint32;
+                config false;
+            }
+            leaf snapshot-unit {
+                type parameter-unit;
+                config false;
+                description
+                  "Unit of measurement for the snapshot-value.";
+            }
+            uses out-of-range-config;
+        }
+    }
+
+    grouping tidemark-measurement-gr {
+        description
+          "Tidemarks record the highest (maximum) and lowest (minimum) values 
+           of a specific performance metric over a defined period (e.g., 15 minutes 
+           or 24 hours). They capture extreme values reflecting significant performance peaks.";
+
+        container tidemark-measurement {
+            leaf high-tide-value {
+                type uint32;
+                config false;
+            }
+            leaf high-tide-unit {
+                type parameter-unit;
+                config false;
+                description
+                  "Unit of measurement for the high-tide-value.";
+            }
+            leaf low-tide-value {
+                type uint32;
+                config false;
+            }
+            leaf low-tide-unit {
+                type parameter-unit;
+                config false;
+                description
+                  "Unit of measurement for the low-tide-value.";
+            }
+            uses out-of-range-config;
+        }
+    }
+
+    grouping count-transient-event-gr {
+        description
+          "A Threshold Report (TR) is generated for a counter when its value 
+           reaches or crosses the configured threshold.";
+        container count-transient-event {
+            uses triggered-oor-event-info;
+        }
+    }
+
+    grouping count-standing-event-gr {
+        description
+          "A Threshold Report (TR) is generated when the set threshold is exceeded. 
+           A Reset Threshold Report (RTR) is issued at the end of the period if the 
+           value falls below or equals the reset threshold.";
+        container count-standing-event {
+            leaf event-type {
+                type enumeration {
+                    enum Threshold-Report {
+                        description
+                          "High OOR threshold reached";
+                    }
+                    enum Reset-Threshold-Report {
+                        description
+                          "Low OOR threshold reached";
+                    }
+                }
+                description
+                  "Indicates whether a TR or RTR was generated.";
+            }
+            uses event-state-info;
+        }
+    }
+
+    grouping snapshot-events-gr {
+        container snapshot-event {
+            description
+              "High (or low) snapshot event triggered when the snapshot-value reaches 
+               or crosses a high (or low) OOR threshold.";
+            uses triggered-oor-event-info;
+        }
+    }
+
+    grouping tidemark-events-gr {
+        container tidemark-event {
+            description
+              "High (or low) tidemark event triggered when the tidemark-value reaches 
+               or crosses a high (or low) OOR threshold.";
+            uses triggered-oor-event-info;
+        }
+    }
+
+    grouping event-parameters-gr {
+        container BUT-event {
+            description
+              "Begin Unavailable Time (BUT) event marking the start of a period when a 
+               network element or connection becomes unavailable.";
+            uses event-state-info;
+        }
+        container EUT-event {
+            description
+              "End Unavailable Time (EUT) event marking the end of a period when a 
+               network element or connection was unavailable.";
+            leaf event-occurred {
+                type boolean;
+                description
+                  "Indicates whether an EUT event was generated.";
+            }
+            leaf event-time {
+                type yang:date-and-time;
+                description
+                  "Timestamp of the EUT event.";
+            }
+            leaf total-unavailable-time {
+                type uint32;
+                units "seconds";
+                description
+                  "Total duration of unavailability.";
+            }
+        }
+        container CSES-event {
+            description
+              "Consecutive Severely Errored Seconds (CSES) event detected within a specified time frame.";
+            leaf event-occurred {
+                type boolean;
+                description
+                  "Indicates whether a CSES event was generated.";
+            }
+            leaf begin-time {
+                type yang:date-and-time;
+                description
+                  "Timestamp indicating when the CSES period began.";
+            }
+            leaf end-time {
+                type yang:date-and-time;
+                description
+                  "Timestamp indicating when the CSES period ended.";
+            }
+            leaf duration {
+                type uint32;
+                units "seconds";
+                description
+                  "Duration of the CSES period.";
+            }
+            leaf error-count {
+                type uint32;
+                description
+                  "Number of errors during the CSES period.";
+            }
+        }
+    }
+
+    grouping pm-parameter-entry {
+        leaf parameter-name {
+            type parameter-name;
+            description
+              "Name of the performance parameter being measured.";
+        }
+    }
+
+    grouping pm-threshold-events-gr {
+        container periodic-threshold-events {
+            description
+              "Threshold crossing events for periodic measurements (counts, snapshots, tidemarks).";
+            list pm-parameter {
+                key "parameter-name";
+                description
+                  "List of performance parameters for which periodic threshold events are reported.";
+                uses pm-parameter-entry;
+                uses count-transient-event-gr;
+                uses count-standing-event-gr;
+                uses snapshot-events-gr {
+                    refine "snapshot-event/event-occurred" {
+                        description
+                          "Indicates whether the snapshot-value reached a high or low OOR threshold.";
+                    }
+                    refine "snapshot-event/event-time" {
+                        description
+                          "Timestamp when the snapshot-value crossed the high or low OOR threshold.";
+                    }
+                }
+                uses tidemark-events-gr {
+                    refine "tidemark-event/event-occurred" {
+                        description
+                          "Indicates whether the tidemark-value reached a high or low OOR threshold.";
+                    }
+                    refine "tidemark-event/event-time" {
+                        description
+                          "Timestamp when the tidemark-value crossed the high or low OOR threshold.";
+                    }
+                }
+            }
+        }
+        container non-periodic-threshold-events {
+            uses event-parameters-gr;
+        }
+    }
+
+
+    grouping pm-periodic-measurement-gr {
+        list pm-parameter {
+            key "parameter-name";
+            description
+              "List of performance parameters being measured periodically.";
+            uses pm-parameter-entry;
+            uses count-measurement-gr;
+            uses snapshot-measurement-gr;
+            uses tidemark-measurement-gr;
+        }
+    }
+
+    /*
+     * MAIN CONTAINER
+     */
+    container pm-periodic-measurement {
+        description
+          "Contains periodic performance measurements (count, snapshot, tidemark) 
+           for maintenance and QoS monitoring. Measurements are typically taken 
+           over 15-minute and 24-hour intervals and categorized by purpose (maintenance or QoS).";
+        uses pm-periodic-measurement-gr;
+    }
+
+
+    /*
+     * NOTIFICATIONS
+     */
+    notification pm-threshold-events {
+        description
+          "Threshold crossing events for performance parameters.";
+        uses pm-threshold-events-gr;
+    }
+}
