@@ -25,45 +25,6 @@
         <email>byyun@etri.re.kr</email>
       </address>
     </author>
-    <author initials="I" surname="Busi" fullname="Italo Busi">
-      <organization>Huawei Technologies</organization>
-      <address>
-        <postal>
-          <street>HUAWEI TECHNOLOGIES ITALIA Srl Centro Direzionale Milano 2</street>
-          <city>Milan</city>
-          <region></region>
-          <code></code>
-          <country></country>
-        </postal>
-        <email>Italo.Busi@huawei.com</email>
-      </address>
-    </author>
-    <author initials="A." surname="Guo" fullname="Aihua Guo">
-      <organization>Futurewei Technologies</organization>
-      <address>
-        <postal>
-          <street></street>
-          <city></city>
-          <region></region>
-          <code></code>
-          <country></country>
-        </postal>
-        <email>aihuaguo.ietf@gmail.com</email>
-      </address>
-    </author>
-    <author initials="C." surname="Yu" fullname="Chaode Yu">
-      <organization>Huawei Technologies</organization>
-      <address>
-        <postal>
-          <street></street>
-          <city></city>
-          <region></region>
-          <code></code>
-          <country></country>
-        </postal>
-        <email>yuchaode@huawei.com</email>
-      </address>
-    </author>
     <date year="2024" month="October" day="20"/>
     <workgroup>CCAMP Working Group</workgroup>
     <abstract>
