@@ -7,8 +7,8 @@ docname: draft-yoon-ccamp-pm-streaming-latest
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
 number:
 date:
-consensus: true
-v: 3
+consensus: false
+v: 4
 # area: AREA
 workgroup: CCAMP Working Group
 keyword:
@@ -22,14 +22,32 @@ venue:
 #  type: Working Group
 #  mail: WG@example.com
 #  arch: https://example.com/WG
-#  github: "TBD"
-#  latest: "TBD"
+  github: "https://github.com/binyeongyoon-ietf/ietf-pm-streaming"
+ # latest: "TBD"
 
 author:
   -
     name: Bin Yeong Yoon
     org: ETRI
-    email: byyun@etri.com
+    email: byyun@etri.re.kr
+  -
+    name: Youngkil You
+    org: woori-net
+    email: young@woori-net.com
+
+contributor:
+  -
+    name: Kwangkoog Lee
+    org: KT
+    email: kwangkoog.lee@kt.com
+  -
+    name: Jongyoon Shin
+    org: SK Telecom
+    email: jongyoon.shin@sk.com
+  -
+    name: Sungyong Nam
+    org: LGU+
+    email: sy.nam@lguplus.co.kr
 
 normative:
 
@@ -38,22 +56,41 @@ informative:
     title: Common Equipment Management Function Requirements
     author:
       org: ITU-T
-    date:  Nov 2022
+    date:  Nov 2025
     target: https://www.itu.int/rec/T-REC-G.7710
 
 
 --- abstract
 
-This document provides a YANG data model of performance management streaming from network equipment to clients. It defines PM measurement methods, event notifications, generic PM parameters and streaming subscriptions.
+This document provides a YANG data model of performance management
+streaming from network equipment to clients. It defines PM measurement
+methods, event notifications, generic PM parameters and streaming
+subscriptions. Additionally, it includes a YANG module for PM interval
+capabilities discovery, enabling clients to understand supported
+sampling and measurement intervals before configuring PM measurements.
 
 --- middle
 
 # Introduction
 
-With the rise of AI-driven applications, network digital twins, and increasingly dynamic network environments, there is growing demand for performance management (PM) streaming capabilities. PM streaming enables proactive issue detection, allowing network operators to identify and address potential problems before they
-affect service. It also helps optimize resource allocation, ensuring efficient use of bandwidth and other network resources.
+With the rise of AI-driven applications, network digital twins, and
+increasingly dynamic network environments, there is growing demand for
+performance management (PM) streaming capabilities. PM streaming
+enables proactive issue detection, allowing network operators to
+identify and address potential problems before they affect service. It
+also helps optimize resource allocation, ensuring efficient use of
+bandwidth and other network resources.
 
-{{ITU-T_G7710}} provides a foundational framework for managing transport network elements, addressing requirements, parameters, and measurement methods for performance management. However, {{ITU-T_G7710}} does not define YANG data models or specific protocols needed for PM streaming, which are essential for modern network management. To support PM streaming, various IETF documents and protocols {{!RFC8639}}, {{!RFC8640}}, {{!RFC8641}} can be utilized. This document provides a YANG data model for PM streaming in network equipment based on {{ITU-T_G7710}}, demonstrating how to subscribe to the YANG model using the IETF push model.
+{{ITU-T_G7710}} provides a foundational framework for managing
+transport network elements, addressing requirements, parameters, and
+measurement methods for performance management. However,
+{{ITU-T_G7710}} does not define YANG data models or specific protocols
+needed for PM streaming, which are essential for modern network
+management. To support PM streaming, various IETF documents and
+protocols {{!RFC8639}}, {{!RFC8640}}, {{!RFC8641}} can be utilized.
+This document provides a YANG data model for PM streaming in network
+equipment based on {{ITU-T_G7710}}, demonstrating how to subscribe to
+the YANG model using the IETF push model.
 
 # PM Streaming
 
@@ -71,35 +108,86 @@ affect service. It also helps optimize resource allocation, ensuring efficient u
 ~~~~
 {:#fig-streaming-architecture title="Streaming Network Architecture"}
 
-PM streaming is a real-time method for measuring and transmitting data to monitor the performance and health of network devices and systems. It provides valuable insights into key metrics like errored seconds (ES), latency, and packet loss, helping to optimize networks, detect anomalies, and manage faults proactively. Unlike traditional periodic data collection, PM streaming delivers continuous updates, enabling faster, more responsive network adjustments.
+PM streaming is a real-time method for measuring and transmitting data
+to monitor the performance and health of network devices and systems.
+It provides valuable insights into key metrics like errored seconds
+(ES), latency, and packet loss, helping to optimize networks, detect
+anomalies, and manage faults proactively. Unlike traditional periodic
+data collection, PM streaming delivers continuous updates, enabling
+faster, more responsive network adjustments.
 
-Using telemetry protocols like YANG Push, PM streaming allows for more frequent and detailed performance monitoring. By integrating this data into AI-driven analytics, it supports preemptive interventions, enhancing overall network reliability. Additionally, it keeps digital twins synchronized with the physical network, offering real-time insights for predictive maintenance, planning, and optimization.
+Using telemetry protocols like YANG Push, PM streaming allows for more
+frequent and detailed performance monitoring. By integrating this data
+into AI-driven analytics, it supports preemptive interventions,
+enhancing overall network reliability. Additionally, it keeps digital
+twins synchronized with the physical network, offering real-time
+insights for predictive maintenance, planning, and optimization.
 
-The procedures for Performance Management streaming between a network node and clients such as operations system (OS), AI applications, network digital twins (NDT) involve continuous measurement of performance metrics on PM parameters using three methods: counts (tracking event occurrences), snapshot (instantaneous metric values), and tidemarks (extreme values over a period). Clients can initiate the process by sending a subscription request specifying the metrics, measurement methods, intervals, and filtering criteria. Once the node confirms the subscription, it collects and aggregates PM data based on the requested metrics and intervals. Notifications with PM data, including timestamps, metrics, and measurement methods, are sent to clients at each interval via protocols like NETCONF or RESTCONF. Clients then process the data, using it for real-time monitoring, historical analysis, or triggering alerts based on thresholds. They can also manage subscriptions by modifying parameters or suspending them as needed.
+The procedures for Performance Management streaming between a network
+node and clients such as operations system (OS), AI applications,
+network digital twins (NDT) involve continuous measurement of
+performance metrics on PM parameters using three methods: counts
+(tracking event occurrences), snapshot (instantaneous metric values),
+and tidemarks (extreme values over a period). Clients can initiate the
+process by sending a subscription request specifying the metrics,
+measurement methods, intervals, and filtering criteria. Once the node
+confirms the subscription, it collects and aggregates PM data based on
+the requested metrics and intervals. Notifications with PM data,
+including timestamps, metrics, and measurement methods, are sent to
+clients at each interval via protocols like NETCONF or RESTCONF.
+Clients then process the data, using it for real-time monitoring,
+historical analysis, or triggering alerts based on thresholds. They can
+also manage subscriptions by modifying parameters or suspending them
+as needed.
 
 # PM parameters
 
 ## Types
 
-Performance monitoring (PM) in networks encompasses a wide variety of parameters that reflect operational health, service quality, reliability, and environmental conditions. These parameters are used across many technologies, network layers, and functional domains to enable fault management, SLA compliance, trend analysis, predictive maintenance, and operational optimization.
+Performance monitoring (PM) in networks encompasses a wide variety of
+parameters that reflect operational health, service quality,
+reliability, and environmental conditions. These parameters are used
+across many technologies, network layers, and functional domains to
+enable fault management, SLA compliance, trend analysis, predictive
+maintenance, and operational optimization.
 
 PM parameter types include but are not limited to:
 
-- Classical transport and packet layer metrics: such as errored seconds (ES), severely errored seconds (SES), unavailable seconds (UAS), background block errors (BBE), background block counts (BBC), delay, jitter, and packet loss, as defined in standards like {{ITU-T_G7710}}, and others.
+- Classical transport and packet layer metrics: such as errored
+  seconds (ES), severely errored seconds (SES), unavailable seconds
+  (UAS), background block errors (BBE), background block counts (BBC),
+  delay, jitter, and packet loss, as defined in standards like
+  {{ITU-T_G7710}}, and others.
 - Layer-specific metrics:
 
-  - Physical layer: optical power levels, laser bias current, loss of signal
+  - Physical layer: optical power levels, laser bias current, loss of
+    signal
   - Data link layer: Ethernet frame errors, FCS errors
   - Network layer: dropped packets, route flaps
   - Transport/Service layers: MPLS LSP statistics, OTN TCM/BIP counters
 
-- Network environment parameters: including temperature, humidity, fan speed, voltage, and airflow. These are essential for equipment safety, energy management, and predictive failure analysis.
-- Energy and sustainability metrics: such as power consumption, energy efficiency indicators, and cooling utilization, aligned with emerging sustainability standards and operational efficiency goals.
-- Security and integrity parameters: such as pointer justification events (PJE), synchronization loss, or intrusion anomaly flags.
-- Application-aware or SLA metrics: such as service availability, throughput consistency, and application-layer latency.
-- Mobile network-specific metrics: including radio link failures, handover success/failure rates, RRC connection setup time, PDCP discard rate, and throughput per bearer. These metrics are critical for monitoring the performance of RAN, core, and edge network components in 4G/5G mobile environments.
+- Network environment parameters: including temperature, humidity,
+  fan speed, voltage, and airflow. These are essential for equipment
+  safety, energy management, and predictive failure analysis.
+- Energy and sustainability metrics: such as power consumption,
+  energy efficiency indicators, and cooling utilization, aligned with
+  emerging sustainability standards and operational efficiency goals.
+- Security and integrity parameters: such as pointer justification
+  events (PJE), synchronization loss, or intrusion anomaly flags.
+- Application-aware or SLA metrics: such as service availability,
+  throughput consistency, and application-layer latency.
+- Mobile network-specific metrics: including radio link failures,
+  handover success/failure rates, RRC connection setup time, PDCP
+  discard rate, and throughput per bearer. These metrics are critical
+  for monitoring the performance of RAN, core, and edge network
+  components in 4G/5G mobile environments.
 
-These parameters may be grouped flexibly within the YANG model using parameter profiles that reflect shared characteristics, purpose, or applicable network domains. The architecture supports extension through identity-based typing to accommodate future parameter definitions introduced by standard bodies like ITU-T, IEEE, IETF, MEF, and TM Forum.
+These parameters may be grouped flexibly within the YANG model using
+parameter profiles that reflect shared characteristics, purpose, or
+applicable network domains. The architecture supports extension
+through identity-based typing to accommodate future parameter
+definitions introduced by standard bodies like ITU-T, IEEE, IETF, MEF,
+and TM Forum.
 
 ## Profiles
 
@@ -111,16 +199,48 @@ These parameters may be grouped flexibly within the YANG model using parameter p
 ~~~~
 {:#fig-profile-tree title="Parameter Profile Subtree"} 
 
-The YANG model defines the concept of a parameter profile to logically group performance parameters that are commonly measured together for a specific operational purpose. Each parameter profile is represented as an identity derived from the parameter-profile-name base identity. These profiles serve as named collections of performance parameters and are intended to facilitate streamlined configuration, management, and reporting of measurement data across network elements and management systems.
+The YANG model defines the concept of a parameter profile to
+logically group performance parameters that are commonly measured
+together for a specific operational purpose. Each parameter profile is
+represented as a list entry keyed by a name of type profile-names (a
+string conforming to the format defined in the model). These profiles
+serve as named collections of performance parameters and are intended
+to facilitate streamlined configuration,
+management, and reporting of measurement data across network
+elements and management systems.
 
-The use of parameter profiles improves operational efficiency by allowing operators, applications, and controllers to activate or reference a coherent set of parameters using a single profile identifier. For example, the `itu-transport-maintenance-15min` profile may include parameters such as errored seconds (ES), severely errored seconds (SES), and unavailable seconds (UAS), which are typically monitored together for network maintenance and fault detection purposes. Similarly, the `ietf-qos-ip-24hr` profile may include delay, jitter, and loss parameters used in service quality reporting.
-Parameter profiles support role-based access control, operational alignment, and measurement policy abstraction, enabling network operators and analytics systems to tailor data collection and reporting according to the needs of different users and services. The profile abstraction also aligns with {{ITU-T_G7710}}, which identifies multiple classes of performance monitoring (e.g., maintenance, service-level, and compliance monitoring), each requiring specific sets of performance parameters.
+The use of parameter profiles improves operational efficiency by
+allowing operators, applications, and controllers to activate or
+reference a coherent set of parameters using a single profile
+identifier. For example, the `itu-transport-maintenance-15min` profile
+may include parameters such as errored seconds (ES), severely errored
+seconds (SES), and unavailable seconds (UAS), which are typically
+monitored together for network maintenance and fault detection
+purposes. Similarly, the `ietf-qos-ip-24hr` profile may include delay,
+jitter, and loss parameters used in service quality reporting.
+Parameter profiles support role-based access control, operational
+alignment, and measurement policy abstraction, enabling network
+operators and analytics systems to tailor data collection and
+reporting according to the needs of different users and services. The
+profile abstraction also aligns with {{ITU-T_G7710}}, which identifies
+multiple classes of performance monitoring (e.g., maintenance,
+service-level, and compliance monitoring), each requiring specific
+sets of performance parameters.
 
-By modeling profiles as identities, the YANG design ensures extensibility and vendor interoperability, allowing future profiles to be defined without changes to the core data structures. This approach promotes consistent configuration and integration across multi-vendor environments and supports dynamic service assurance use cases where parameter sets may vary by service type, SLA, or operational context.
+By modeling profiles as list entries keyed by a structured name
+(profile-names type), the YANG design ensures extensibility and vendor
+interoperability, allowing future profiles to be defined without
+changes to the core data structures. This approach
+promotes consistent configuration and integration across multi-vendor
+environments and supports dynamic service assurance use cases where
+parameter sets may vary by service type, SLA, or operational context.
 
 ### Naming
 
-Parameter profiles are named to reflect their operational purpose, origin, applicable network domain, and, optionally, the primary measurement interval. This naming structure supports clarity, modularity, and automation across diverse network and service layers.
+Parameter profiles are named to reflect their operational purpose,
+origin, applicable network domain, and, optionally, the primary
+measurement interval. This naming structure supports clarity,
+modularity, and automation across diverse network and service layers.
 
 The naming follows this format:
 
@@ -131,7 +251,8 @@ Where:
 - \<source\>: Standards body or organization 
   - Examples: itu, ieee, ietf, vendorX
 - \<network\>: Network domain or layer 
-  - Examples: transport, access, core, ip, mpls, ethernet, otn, wdm, flexo
+  - Examples: transport, access, core, ip, mpls, ethernet, otn, wdm,
+    flexo
 - \<purpose\>: Intended use or function 
   - Examples: maintenance, qos, availability, sla, compliance, analytics
 - \<characteristic\> (optional): Optional qualifying information 
@@ -175,7 +296,6 @@ follows. Additional parameters will be needed for packet networks.
 - UAS     Unavailable Seconds
 - SEP     Severely Errored Period
 - PJE     Pointer Justification Events
-- UAS     Unavailable Seconds 
 
 According to the types of the measurement methods, purposes, and time intervals, different parameters are used. The following three transport profiles provide comprehensive coverage for maintenance and QoS monitoring across different temporal resolutions:
 
@@ -231,7 +351,7 @@ Uniform time is a fixed, predefined point within each measurement interval at wh
 
 The hierarchical design of the `ietf-pm-measurements` YANG module, wherein a performance parameter supports multiple sampling intervals and each sampling interval may be associated with multiple measurement intervals and methods, is motivated by a set of operationally validated use cases as shown in the following table. In these use cases, a single logical client-whether a human operator, network application, or analytics engine-requires simultaneous access to multiple views of the same performance parameter, differentiated by temporal resolution and analysis objective.
 
-In network operations centers (NOCs), a operator may require performance monitoring based on high-frequency samples (e.g., 1-second sampling with 15-minute measurement intervals), while concurrently assessing longer-term service-level agreement (SLA) compliance through longer measurement windows (e.g., 24-hour aggregation). It aligns with the performance monitoring functions and applications on performance monitoring parameters such as errored seconds (ES), etc. described in {{ITU-T_G7710}}.
+In network operations centers (NOCs), an operator may require performance monitoring based on high-frequency samples (e.g., 1-second sampling with 15-minute measurement intervals), while concurrently assessing longer-term service-level agreement (SLA) compliance through longer measurement windows (e.g., 24-hour aggregation). It aligns with the performance monitoring functions and applications on performance monitoring parameters such as errored seconds (ES), etc. described in {{ITU-T_G7710}}.
 
 A single dashboard or planning tool may correlate short-term utilization spikes with long-term trends using different sampling and measurement combinations on the same parameter.
 Network Performance Monitor for Critical Link Stability monitor tracks latency using the counts method at multiple time resolutions to address immediate service degradation and long-term path reliability. A single monitoring platform benefits from consistent sampling while leveraging different measurement intervals to inform short-term action and long-term optimization.
@@ -276,8 +396,7 @@ In all these cases, the hierarchical list structure-where parameters contain mul
 +--rw measurement-methods
    +--rw counts
    |  +--rw transient-condition-config
-   |  |  +--rw high-threshold?   uint32
-   |  |  +--rw low-threshold?    uint32
+   |  |  +--rw transient-threshold?   uint32
    |  +--rw standing-condition-config
    |  |  +--rw standing-threshold?   uint32
    |  |  +--rw reset-threshold?      uint32
@@ -299,11 +418,36 @@ In all these cases, the hierarchical list structure-where parameters contain mul
 ~~~~
 {:#fig-measurement-tree title="Measurement Methods Subtree"}
 
-The measurement methods defined based on {{ITU-T_G7710}} establish a focused and efficient framework for network performance monitoring by specifying three core methods: counts, snapshot, and tidemarks. 
+The measurement methods defined based on {{ITU-T_G7710}} establish a
+focused and efficient framework for network performance monitoring by
+specifying three core methods: counts, snapshot, and tidemarks.
 
-This intentional limitation supports key objectives such as implementation simplicity, operational efficiency, and cross-vendor interoperability. It emphasizes real-time network monitoring, favoring instantaneous or interval-based metrics over complex statistical calculations. Counts and snapshot methods provide immediate operational data without incurring the processing overhead associated with metrics like averages and variances etc. These statistical measures require significant aggregation logic, which can vary across implementations and devices. By keeping computation within network elements minimal, the approach reduces both processing and memory overhead, maintaining lightweight implementations. It establishes a clear separation between raw data collection (handled by network elements) and deeper analysis (delegated to external management systems). This separation not only simplifies device requirements but also enables more consistent and flexible analytics in centralized systems, which are better equipped to apply standardized analytical frameworks. 
+This intentional limitation supports key objectives such as
+implementation simplicity, operational efficiency, and cross-vendor
+interoperability. It emphasizes real-time network monitoring, favoring
+instantaneous or interval-based metrics over complex statistical
+calculations. Counts and snapshot methods provide immediate
+operational data without incurring the processing overhead associated
+with metrics like averages and variances etc. These statistical measures
+require significant aggregation logic, which can vary across
+implementations and devices. By keeping computation within network
+elements minimal, the approach reduces both processing and memory
+overhead, maintaining lightweight implementations. It establishes a
+clear separation between raw data collection (handled by network
+elements) and deeper analysis (delegated to external management
+systems). This separation not only simplifies device requirements but
+also enables more consistent and flexible analytics in centralized
+systems, which are better equipped to apply standardized analytical
+frameworks.
 
-Limiting measurement methods also contributes to energy efficiency by reducing the operational burden on Network Elements (NEs), while offloading data analysis to external management applications. Despite the simplicity, the selected measurement methods offer sufficient expressiveness to support comprehensive performance monitoring without excessive resource use. So, they are specifically optimized for Southbound Interface (SBI) between Physical Network Controllers (PNCs) and NEs to ensures as follows:
+Limiting measurement methods also contributes to energy efficiency by
+reducing the operational burden on Network Elements (NEs), while
+offloading data analysis to external management applications. Despite
+the simplicity, the selected measurement methods offer sufficient
+expressiveness to support comprehensive performance monitoring without
+excessive resource use. So, they are specifically optimized for
+Southbound Interface (SBI) between Physical Network Controllers (PNCs)
+and NEs to ensure as follows:
 
 - Lightweight to implement
 - Consistently supported across vendors
@@ -320,7 +464,18 @@ across the network.
 
 ### Snapshot
 
-Snapshot is an instantaneous measurement taken at a specific point in time. It captures the instantaneous value of specific performance parameters at a regular, predefined point (uniform time) within each time interval. Snapshot provides a "momentary view" of network conditions, allowing operators to observe the network's status at specific intervals. The data from these uniform-time snapshots is then aggregated and analyzed to understand the immediate state across the entire network. By taking snapshots simultaneously across all network elements, operators can correlate data between different parts of the transport network. Snapshots are collected at pre-determined uniform times within fixed measurement intervals. The uniform time and fixed intervals can be configured based on the needs of the network.
+Snapshot is an instantaneous measurement taken at a specific point in
+time. It captures the instantaneous value of specific performance
+parameters at a regular, predefined point (uniform time) within each
+time interval. Snapshot provides a "momentary view" of network
+conditions, allowing operators to observe the network's status at
+specific intervals. The data from these uniform-time snapshots is then
+aggregated and analyzed to understand the immediate state across the
+entire network. By taking snapshots simultaneously across all network
+elements, operators can correlate data between different parts of the
+transport network. Snapshots are collected at pre-determined uniform
+times within fixed measurement intervals. The uniform time and fixed
+intervals can be configured based on the needs of the network.
 
 ### Tidemarks
 
@@ -336,7 +491,7 @@ Periodic threshold events are triggered when the counts or gauge value reaches a
 
 The counts measurement has two types of threshold reporting methods:
 transient and standing condition methods. The transient condition method
-treats each measurement period separately. As soon as a threshold is reached or crossed in a measurement interval for a given performance measurement, a threshold report (TR) is generated. The standing condition method is an optional. The standing condition is raised, and a TR (Threshold Report) is generated, when the set threshold is reached or crossed. The standing condition is cleared, and a reset threshold report (RTR) is generated at the end of the period when the current value is below or equal to the reset threshold, provided that there was no unavailable time during that period.
+treats each measurement period separately. As soon as a threshold is reached or crossed in a measurement interval for a given performance measurement, a threshold report (TR) is generated. The standing condition method is optional. The standing condition is raised, and a TR (Threshold Report) is generated, when the set threshold is reached or crossed. The standing condition is cleared, and a reset threshold report (RTR) is generated at the end of the period when the current value is below or equal to the reset threshold, provided that there was no unavailable time during that period.
 
 For gauge measurements ("snapshot" and "tidemarks"), an overflow condition
 is determined and an out-of-range report is generated as soon as the gauge value reaches or crosses the high threshold. An underflow condition is determined and an out-of-range report is generated as soon as the gauge value is at or below the low threshold.
@@ -450,7 +605,7 @@ Threshold event subscriptions enable clients to receive immediate notifications 
 ~~~~
 {:#fig-Periodic-Threshold-Event-Tree title="Periodic Threshold Events Subtree"}
 
-When a performance parameter exceeds or falls below configured thresholds for the periodic measurement methods of counts, snapshot, and tidemarks, the network element generates event-driven notifications containing detailed information about the threshold crossing event, including event type, occurrence time, and current parameter values. This mechanism supports four types of threshold events: count-transient-event for immediate threshold crossings, count-standing-event for persistent threshold violations, snapshot-event for instantaneous value threshold crossings, and tidemark-event for extreme value threshold crossings. These events enable rapid response to network performance degradation and automated fault management. The threshold event subscription complements periodic subscriptions by providing real-time alerts for critical performance issues that require immediate attention.
+When a performance parameter exceeds or falls below configured thresholds for the periodic measurement methods of counts, snapshot, and tidemarks, the network element generates event-driven notifications containing the threshold crossing event type and occurrence time (parameter values at the time of the event can be read from the operational datastore if needed). This mechanism supports four types of threshold events: count-transient-event for immediate threshold crossings, count-standing-event for persistent threshold violations, snapshot-event for instantaneous value threshold crossings, and tidemark-event for extreme value threshold crossings. These events enable rapid response to network performance degradation and automated fault management. The threshold event subscription complements periodic subscriptions by providing real-time alerts for critical performance issues that require immediate attention.
 
 {{fig-Threshold-Event-Subscription-Example}} shows an example of the NETCONF request to subscribe to all pm-threshold-events notifications in the `ietf-pm-measurements` model.
 
@@ -536,6 +691,8 @@ Non-periodic threshold event subscriptions provide immediate notifications for c
 
 # YANG Data Model
 
+The YANG module for PM measurements is defined below:
+
 ~~~~ yang
 module ietf-pm-measurements {
   yang-version 1.1;
@@ -583,11 +740,14 @@ module ietf-pm-measurements {
      for real-time monitoring, historical analysis, and automated 
      network management.";
 
-  revision 2025-06-28 {
+  revision 2026-02-06 {
     description 
-      "Optimized module with reduced redundancy and improved 
-       structure.";
-    reference "draft-yoon-ccamp-pm-streaming-02";
+      "Updated transient-condition-config to only support 
+       transient-threshold, removing low-threshold support. Transient 
+       thresholds do not report low OOR (underflow) conditions, 
+       unlike snapshot and tidemarks measurements which support 
+       both high and low thresholds.";
+    reference "RFC XXXX: A YANG Data Model of Performance Management Streaming";
   }
 
   /*
@@ -595,9 +755,7 @@ module ietf-pm-measurements {
    */
   typedef profile-names {
     type string {
-      pattern 
-        '[a-zA-Z][a-zA-Z0-9_-]*-[a-zA-Z][a-zA-Z0-9_-]*-
-         [a-zA-Z][a-zA-Z0-9_-]*(-[a-zA-Z][a-zA-Z0-9_-]*)?';
+      pattern '[a-zA-Z][a-zA-Z0-9_-]*-[a-zA-Z][a-zA-Z0-9_-]*-[a-zA-Z][a-zA-Z0-9_-]*(-[a-zA-Z][a-zA-Z0-9_-]*)?';
     }
     description
       "Parameter profile name following the format:
@@ -701,7 +859,8 @@ module ietf-pm-measurements {
    */
   grouping threshold-config {
     description 
-      "Common threshold configuration for all measurement types.";
+      "Common threshold configuration for snapshot and tidemarks 
+       measurement types (high and low thresholds).";
     leaf high-threshold {
       type uint32;
       description 
@@ -712,6 +871,24 @@ module ietf-pm-measurements {
       description 
         "Low threshold that triggers alerts when performance falls 
          below acceptable levels.";
+    }
+  }
+
+  grouping transient-threshold-config {
+    description 
+      "Threshold configuration for transient conditions. Transient 
+       thresholds only support high threshold crossings and report 
+       immediately when the count value reaches or crosses the 
+       configured transient threshold value. Transient thresholds do 
+       not support low threshold (underflow) conditions, unlike 
+       snapshot and tidemarks measurements which support both high 
+       and low thresholds.";
+    leaf transient-threshold {
+      type uint32;
+      description 
+        "Transient threshold that triggers alerts when exceeded. 
+         Transient thresholds report immediately when the count value 
+         reaches or crosses this threshold value.";
     }
   }
 
@@ -756,6 +933,35 @@ module ietf-pm-measurements {
     uses event-state-info;
   }
 
+  grouping count-transient-event-type {
+    description 
+      "Transient threshold event type definition for counts 
+       measurements. Transient thresholds report immediately when 
+       the count value reaches or crosses a configured threshold 
+       value.";
+    leaf event-type {
+      type enumeration {
+        enum Threshold-Crossed-Event {
+          description 
+            "Threshold crossing event generated when count value 
+             reaches or crosses the configured threshold value.";
+        }
+      }
+      description 
+        "Specifies that a threshold crossing event occurred.";
+    }
+  }
+
+  grouping triggered-count-transient-event-info {
+    description 
+      "Combined transient threshold event type and event information 
+       for counts measurements. Transient thresholds are independent 
+       threshold mechanisms that report immediately when count values 
+       cross configured threshold values.";
+    uses count-transient-event-type;
+    uses event-state-info;
+  }
+
   grouping time-interval-config {
     description "Common time interval configuration.";
     leaf interval-value {
@@ -773,18 +979,32 @@ module ietf-pm-measurements {
    */
   grouping count-measurement-gr {
     description 
-      "Counts measurement for cumulative event tracking.";
+      "Counts measurement for cumulative event tracking over a 
+       measurement interval. Supports transient and standing 
+       threshold reporting, as defined in G.7710.";
     container counts {
       description 
         "Contains counts measurement values and configuration.";
       container transient-condition-config {
         description 
-          "Configuration for transient out-of-range conditions.";
-        uses threshold-config;
+          "Configuration for transient threshold conditions. Transient 
+           thresholds report immediately when the count value reaches 
+           or crosses the configured transient threshold value. 
+           Transient thresholds do not support low threshold 
+           (underflow) conditions, unlike snapshot and tidemarks 
+           measurements which support both high and low thresholds.";
+        uses transient-threshold-config;
       }
       container standing-condition-config {
         description 
-          "Configuration for standing condition monitoring.";
+          "Configuration for standing condition monitoring. When 
+           both thresholds are set, standing-threshold must be 
+           greater than or equal to reset-threshold (hysteresis).";
+        must "not(standing-threshold and reset-threshold) or "
+           + "standing-threshold >= reset-threshold" {
+          error-message
+            "Standing threshold must be >= reset threshold.";
+        }
         leaf standing-threshold {
           type uint32;
           description 
@@ -809,7 +1029,9 @@ module ietf-pm-measurements {
 
   grouping snapshot-measurement-gr {
     description 
-      "Snapshot measurements for instantaneous values.";
+      "Snapshot measurements for instantaneous values at uniform 
+       time within each measurement interval. Supports high/low 
+       OOR threshold reporting, as defined in G.7710.";
     container snapshot {
       description 
         "Contains snapshot measurement configuration and values.";
@@ -846,7 +1068,9 @@ module ietf-pm-measurements {
 
   grouping tidemarks-measurement-gr {
     description 
-      "Tidemarks measurements for extreme values.";
+      "Tidemarks measurements for maximum and minimum values over 
+       the measurement interval. Supports high/low OOR threshold 
+       reporting, as defined in G.7710.";
     container tidemarks {
       description 
         "Contains tidemarks measurement values and threshold 
@@ -875,7 +1099,8 @@ module ietf-pm-measurements {
 
   grouping measurement-methods-gr {
     description 
-      "Container for the three core measurement methods.";
+      "Grouping for the three core measurement methods (counts, 
+       snapshot, tidemarks).";
     container measurement-methods {
       description 
         "Container for different measurement methods.";
@@ -890,12 +1115,15 @@ module ietf-pm-measurements {
    */
   grouping counts-transient-event-gr {
     description 
-      "Threshold events for counts measurements.";
+      "Transient threshold events for counts measurements. Transient 
+       thresholds are independent threshold mechanisms that report 
+       immediately when count values cross configured threshold 
+       values.";
     container counts-transient {
       description 
         "Contains information about transient threshold events for 
          counts.";
-      uses triggered-oor-event-info;
+      uses triggered-count-transient-event-info;
     }
   }
 
@@ -909,14 +1137,25 @@ module ietf-pm-measurements {
       leaf event-type {
         type enumeration {
           enum Threshold-Report {
-            description "Threshold Report (TR) generated.";
+            description 
+              "Threshold Report (TR) generated when the count value 
+               reaches or exceeds the standing-threshold configured 
+               in standing-condition-config.";
           }
           enum Reset-Threshold-Report {
-            description "Reset Threshold Report (RTR) generated.";
+            description 
+              "Reset Threshold Report (RTR) generated at the end of 
+               the period when the count value is at or below the 
+               reset-threshold (G.7710 standing condition clear).";
           }
         }
         description 
-          "Specifies whether a TR or RTR was generated.";
+          "Specifies the type of standing threshold event that 
+           occurred, as defined in G.7710. A Threshold-Report (TR) 
+           is generated when the measurement-value reaches or 
+           exceeds the standing-threshold. A Reset-Threshold-Report 
+           (RTR) is generated at the end of the period when the 
+           measurement-value is at or below the reset-threshold.";
       }
       uses event-state-info;
     }
@@ -999,22 +1238,15 @@ module ietf-pm-measurements {
 
   grouping non-periodic-events-gr {
     description 
-      "Container for non-periodic event parameters.";
+      "Grouping for non-periodic performance event parameters 
+       (BUT, EUT, CSES).";
     container BUT-event {
       description "Begin Unavailable Time (BUT) event.";
       uses event-state-info;
     }
     container EUT-event {
       description "End Unavailable Time (EUT) event.";
-      leaf event-occurred {
-        type boolean;
-        description 
-          "Indicates whether an EUT event was generated.";
-      }
-      leaf event-time {
-        type yang:date-and-time;
-        description "Precise timestamp of the EUT event.";
-      }
+      uses event-state-info;
       leaf duration {
         type uint32;
         units "seconds";
@@ -1092,7 +1324,8 @@ module ietf-pm-measurements {
    */
   notification pm-threshold-events {
     description 
-      "Notification for threshold crossing events.";
+      "Notification for periodic threshold crossing events and 
+       non-periodic performance events (BUT, EUT, CSES).";
     container periodic-events {
       description "Container for periodic threshold events.";
       list parameter-profile {
@@ -1152,11 +1385,11 @@ module ietf-pm-measurements {
 
     container non-periodic-events {
       description 
-        "Container for non-periodic threshold events.";
+        "Container for non-periodic performance events (BUT, EUT, CSES).";
       uses non-periodic-events-gr;
     }
   }
-} 
+}
 ~~~~
 
 # YANG Data Trees
@@ -1179,8 +1412,7 @@ module: ietf-pm-measurements
                  +--rw measurement-methods
                     +--rw counts
                     |  +--rw transient-condition-config
-                    |  |  +--rw high-threshold?   uint32
-                    |  |  +--rw low-threshold?    uint32
+                    |  |  +--rw transient-threshold?    uint32
                     |  +--rw standing-condition-config
                     |  |  +--rw standing-threshold?   uint32
                     |  |  +--rw reset-threshold?      uint32
@@ -1254,17 +1486,60 @@ artwork-name="ietf-pm-measurements.tree"}
 
 The `ietf-pm-interval-capabilities` YANG module provides comprehensive capability discovery for interval configurations, enabling clients to understand the supported temporal resolutions before configuring PM measurements. This module is designed to work seamlessly with the `ietf-pm-measurements` module, supporting both real-time monitoring scenarios requiring high-frequency sampling and long-term trend analysis requiring extended measurement intervals.
 
-The advertisement of interval capabilities follows standard IETF procedures for capability discovery in network management systems, based on the principles outlined in {{!RFC9195}} for YANG module capability advertisement, {{!RFC8525}} for YANG library, and {{!RFC9196}} for YANG module advertisement.
+The advertisement of interval capabilities follows standard IETF
+procedures for capability discovery in network management systems,
+based on the principles outlined in {{!RFC9195}} for YANG module
+capability advertisement, {{!RFC8525}} for YANG library, and
+{{!RFC9196}} for YANG module advertisement.
 
 ## Motivation
 
-The need for interval capabilities discovery arises from several critical factors that affect the configuration and operation of performance monitoring systems. Different types of performance parameters inherently require different sampling and measurement intervals based on their characteristics and measurement objectives. For example, error-based parameters such as errored seconds (ES) may require frequent sampling to capture transient events, while availability metrics might be adequately monitored with longer intervals. Similarly, latency measurements often need high-frequency sampling to detect microsecond-level variations, whereas throughput statistics can be effectively captured with less frequent sampling.
+The need for interval capabilities discovery arises from several
+critical factors that affect the configuration and operation of
+performance monitoring systems. Different types of performance
+parameters inherently require different sampling and measurement
+intervals based on their characteristics and measurement objectives.
+For example, error-based parameters such as errored seconds (ES) may
+require frequent sampling to capture transient events, while
+availability metrics might be adequately monitored with longer
+intervals. Similarly, latency measurements often need high-frequency
+sampling to detect microsecond-level variations, whereas throughput
+statistics can be effectively captured with less frequent sampling.
 
-Vendor dependencies represent another significant factor necessitating interval capabilities discovery. Network equipment manufacturers implement different hardware architectures, processing capabilities, and measurement engines, resulting in varying support for sampling and measurement intervals. Some vendors may support very fine-grained intervals (e.g., millisecond-level sampling) for high-precision applications, while others may be optimized for longer intervals suitable for operational monitoring. Additionally, different vendors may have different constraints on the relationship between sampling and measurement intervals, with some supporting only specific multiples or ranges.
+Vendor dependencies represent another significant factor necessitating
+interval capabilities discovery. Network equipment manufacturers
+implement different hardware architectures, processing capabilities,
+and measurement engines, resulting in varying support for sampling and
+measurement intervals. Some vendors may support very fine-grained
+intervals (e.g., millisecond-level sampling) for high-precision
+applications, while others may be optimized for longer intervals
+suitable for operational monitoring. Additionally, different vendors
+may have different constraints on the relationship between sampling
+and measurement intervals, with some supporting only specific
+multiples or ranges.
 
-The complexity of modern network environments further underscores the importance of interval capabilities discovery. Multi-vendor networks require clients to adapt their monitoring strategies based on the specific capabilities of each network element. Without proper capability discovery, clients risk configuring unsupported intervals, leading to configuration failures, suboptimal monitoring, or even system instability. The interval capabilities framework addresses these challenges by providing a standardized mechanism for discovering and understanding the temporal resolution capabilities of network elements, enabling clients to make informed decisions about interval configuration and ensuring interoperability across diverse network environments.
+The complexity of modern network environments further underscores the
+importance of interval capabilities discovery. Multi-vendor networks
+require clients to adapt their monitoring strategies based on the
+specific capabilities of each network element. Without proper
+capability discovery, clients risk configuring unsupported intervals,
+leading to configuration failures, suboptimal monitoring, or even
+system instability. The interval capabilities framework addresses
+these challenges by providing a standardized mechanism for discovering
+and understanding the temporal resolution capabilities of network
+elements, enabling clients to make informed decisions about interval
+configuration and ensuring interoperability across diverse network
+environments.
 
-The interval capabilities module follows a hierarchical structure that mirrors the measurement configuration model, ensuring consistency between capability discovery and actual measurement configuration. The architecture consists of three levels: Parameter Profiles (collections of related performance parameters such as `itu-transport-maintenance-15min`), PM Parameters (individual performance parameters within profiles such as `es`, `ses`, `bbe`), and Interval Capabilities (sampling and measurement interval capabilities for each parameter).
+The interval capabilities module follows a hierarchical structure that
+mirrors the measurement configuration model, ensuring consistency
+between capability discovery and actual measurement configuration.
+The architecture consists of three levels: Parameter Profiles
+(collections of related performance parameters such as
+`itu-transport-maintenance-15min`), PM Parameters (individual
+performance parameters within profiles such as `es`, `ses`, `bbe`),
+and Interval Capabilities (sampling and measurement interval
+capabilities for each parameter).
 
 The module defines a critical relationship between sampling and measurement intervals: measurement intervals must be multiples of their corresponding sampling intervals. This constraint ensures that measurement aggregation periods align with data collection frequency, preventing configuration errors and ensuring accurate performance monitoring. For example, if a device supports a 5-second sampling interval, valid measurement intervals would be 5s, 10s, 15s, 30s, 60s, etc. This relationship is enforced through the hierarchical structure where measurement intervals are defined within their corresponding sampling intervals.
 
@@ -1272,11 +1547,28 @@ The module defines a critical relationship between sampling and measurement inte
 
 A NETCONF client can discover the sampling and measurement interval capabilities of a server by following the standard IETF procedures for capability and module discovery. This process involves multiple steps, beginning with the session establishment and extending to operational data retrieval.
 
-Upon initiating a session, the client receives the server's `<hello>` message as defined in {{!RFC6241}}. This message includes a list of capability URIs, indicating the supported YANG modules and protocol extensions. If the server includes entries for both `ietf-pm-measurements` and `ietf-pm-interval-capabilities`, the client infers that the server supports performance measurement with parameter-specific intervals, and also advertises its supported interval values.
+Upon initiating a session, the client receives the server's `<hello>`
+message as defined in {{!RFC6241}}. This message includes a list of
+capability URIs, indicating the supported YANG modules and protocol
+extensions. If the server includes entries for both
+`ietf-pm-measurements` and `ietf-pm-interval-capabilities`, the client
+infers that the server supports performance measurement with
+parameter-specific intervals, and also advertises its supported
+interval values.
 
 To confirm module support and retrieve metadata such as revision dates and feature availability, the client queries the YANG Library as defined in {{RFC8525}}. This step allows the client to verify that both the measurement model and the interval capability model are implemented and discoverable.
 
-The client then queries the `pm-interval-capabilities` container, which is defined with `config false` and thus resides in the operational datastore per the Network Management Datastore Architecture (NMDA) described in {{!RFC8342}}. By querying this container, the client can retrieve a list of supported sampling and measurement intervals for each performance parameter and profile. The structure includes constraints such as minimum and maximum values, allowed time units, and granularity. This live runtime exposure of capability information follows the model described in {{RFC9196}} for advertising telemetry and notification capabilities in operational state.
+The client then queries the `pm-interval-capabilities` container,
+which is defined with `config false` and thus resides in the
+operational datastore per the Network Management Datastore
+Architecture (NMDA) described in {{!RFC8342}}. By querying this
+container, the client can retrieve a list of supported sampling and
+measurement intervals for each performance parameter and profile.
+The structure includes constraints such as minimum and maximum values,
+allowed time units, and granularity. This live runtime exposure of
+capability information follows the model described in {{RFC9196}} for
+advertising telemetry and notification capabilities in operational
+state.
 
 Alternatively, the same interval capabilities may be published as static data files using the format defined in {{RFC9195}}. This allows vendors or standards bodies to document the supported measurement intervals of a device or profile without requiring a live connection to the system.
 
@@ -1367,11 +1659,10 @@ module ietf-pm-interval-capabilities {
      for complete PM streaming solutions and supports both 
      real-time monitoring and long-term trend analysis.";
 
-  revision 2025-09-27 {
+  revision 2025-10-17 {
     description 
-      "Initial version: Mapping-based interval capabilities with 
-       enhanced sampling-measurement-mapping structure.";
-    reference "draft-ietf-ccamp-pm-interval-capabilities-00";
+      "Initial version.";
+    reference "RFC XXXX: A YANG Data Model of Performance Management Streaming";
   }
 
   /*
@@ -1542,8 +1833,8 @@ module ietf-pm-interval-capabilities {
     description
       "Main container for hierarchical PM interval capabilities. 
        This container provides comprehensive information about 
-       the sampling and measurement intervals that a server 
-       can support for different parameters within different 
+       the sampling and measurement intervals that a server can 
+       support for different parameters within different 
        parameter profiles.";
     config false;
 
