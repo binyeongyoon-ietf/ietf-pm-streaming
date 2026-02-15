@@ -44,11 +44,14 @@ module ietf-pm-measurements {
      for real-time monitoring, historical analysis, and automated 
      network management.";
 
-  revision 2025-06-28 {
+  revision 2026-02-06 {
     description 
-      "Optimized module with reduced redundancy and improved 
-       structure.";
-    reference "draft-yoon-ccamp-pm-streaming-02";
+      "Updated transient-condition-config to only support 
+       transient-threshold, removing low-threshold support. Transient 
+       thresholds do not report low OOR (underflow) conditions, 
+       unlike snapshot and tidemarks measurements which support 
+       both high and low thresholds.";
+    reference "RFC XXXX: A YANG Data Model of Performance Management Streaming";
   }
 
   /*
@@ -56,9 +59,7 @@ module ietf-pm-measurements {
    */
   typedef profile-names {
     type string {
-      pattern 
-        '[a-zA-Z][a-zA-Z0-9_-]*-[a-zA-Z][a-zA-Z0-9_-]*-
-         [a-zA-Z][a-zA-Z0-9_-]*(-[a-zA-Z][a-zA-Z0-9_-]*)?';
+      pattern '[a-zA-Z][a-zA-Z0-9_-]*-[a-zA-Z][a-zA-Z0-9_-]*-[a-zA-Z][a-zA-Z0-9_-]*(-[a-zA-Z][a-zA-Z0-9_-]*)?';
     }
     description
       "Parameter profile name following the format:
@@ -162,7 +163,8 @@ module ietf-pm-measurements {
    */
   grouping threshold-config {
     description 
-      "Common threshold configuration for all measurement types.";
+      "Common threshold configuration for snapshot and tidemarks 
+       measurement types (high and low thresholds).";
     leaf high-threshold {
       type uint32;
       description 
@@ -173,6 +175,24 @@ module ietf-pm-measurements {
       description 
         "Low threshold that triggers alerts when performance falls 
          below acceptable levels.";
+    }
+  }
+
+  grouping transient-threshold-config {
+    description 
+      "Threshold configuration for transient conditions. Transient 
+       thresholds only support high threshold crossings and report 
+       immediately when the count value reaches or crosses the 
+       configured transient threshold value. Transient thresholds do 
+       not support low threshold (underflow) conditions, unlike 
+       snapshot and tidemarks measurements which support both high 
+       and low thresholds.";
+    leaf transient-threshold {
+      type uint32;
+      description 
+        "Transient threshold that triggers alerts when exceeded. 
+         Transient thresholds report immediately when the count value 
+         reaches or crosses this threshold value.";
     }
   }
 
@@ -217,6 +237,35 @@ module ietf-pm-measurements {
     uses event-state-info;
   }
 
+  grouping count-transient-event-type {
+    description 
+      "Transient threshold event type definition for counts 
+       measurements. Transient thresholds report immediately when 
+       the count value reaches or crosses a configured threshold 
+       value.";
+    leaf event-type {
+      type enumeration {
+        enum Threshold-Crossed-Event {
+          description 
+            "Threshold crossing event generated when count value 
+             reaches or crosses the configured threshold value.";
+        }
+      }
+      description 
+        "Specifies that a threshold crossing event occurred.";
+    }
+  }
+
+  grouping triggered-count-transient-event-info {
+    description 
+      "Combined transient threshold event type and event information 
+       for counts measurements. Transient thresholds are independent 
+       threshold mechanisms that report immediately when count values 
+       cross configured threshold values.";
+    uses count-transient-event-type;
+    uses event-state-info;
+  }
+
   grouping time-interval-config {
     description "Common time interval configuration.";
     leaf interval-value {
@@ -234,18 +283,32 @@ module ietf-pm-measurements {
    */
   grouping count-measurement-gr {
     description 
-      "Counts measurement for cumulative event tracking.";
+      "Counts measurement for cumulative event tracking over a 
+       measurement interval. Supports transient and standing 
+       threshold reporting, as defined in G.7710.";
     container counts {
       description 
         "Contains counts measurement values and configuration.";
       container transient-condition-config {
         description 
-          "Configuration for transient out-of-range conditions.";
-        uses threshold-config;
+          "Configuration for transient threshold conditions. Transient 
+           thresholds report immediately when the count value reaches 
+           or crosses the configured transient threshold value. 
+           Transient thresholds do not support low threshold 
+           (underflow) conditions, unlike snapshot and tidemarks 
+           measurements which support both high and low thresholds.";
+        uses transient-threshold-config;
       }
       container standing-condition-config {
         description 
-          "Configuration for standing condition monitoring.";
+          "Configuration for standing condition monitoring. When 
+           both thresholds are set, standing-threshold must be 
+           greater than or equal to reset-threshold (hysteresis).";
+        must "not(standing-threshold and reset-threshold) or "
+           + "standing-threshold >= reset-threshold" {
+          error-message
+            "Standing threshold must be >= reset threshold.";
+        }
         leaf standing-threshold {
           type uint32;
           description 
@@ -270,7 +333,9 @@ module ietf-pm-measurements {
 
   grouping snapshot-measurement-gr {
     description 
-      "Snapshot measurements for instantaneous values.";
+      "Snapshot measurements for instantaneous values at uniform 
+       time within each measurement interval. Supports high/low 
+       OOR threshold reporting, as defined in G.7710.";
     container snapshot {
       description 
         "Contains snapshot measurement configuration and values.";
@@ -307,7 +372,9 @@ module ietf-pm-measurements {
 
   grouping tidemarks-measurement-gr {
     description 
-      "Tidemarks measurements for extreme values.";
+      "Tidemarks measurements for maximum and minimum values over 
+       the measurement interval. Supports high/low OOR threshold 
+       reporting, as defined in G.7710.";
     container tidemarks {
       description 
         "Contains tidemarks measurement values and threshold 
@@ -336,7 +403,8 @@ module ietf-pm-measurements {
 
   grouping measurement-methods-gr {
     description 
-      "Container for the three core measurement methods.";
+      "Grouping for the three core measurement methods (counts, 
+       snapshot, tidemarks).";
     container measurement-methods {
       description 
         "Container for different measurement methods.";
@@ -351,12 +419,15 @@ module ietf-pm-measurements {
    */
   grouping counts-transient-event-gr {
     description 
-      "Threshold events for counts measurements.";
+      "Transient threshold events for counts measurements. Transient 
+       thresholds are independent threshold mechanisms that report 
+       immediately when count values cross configured threshold 
+       values.";
     container counts-transient {
       description 
         "Contains information about transient threshold events for 
          counts.";
-      uses triggered-oor-event-info;
+      uses triggered-count-transient-event-info;
     }
   }
 
@@ -370,14 +441,25 @@ module ietf-pm-measurements {
       leaf event-type {
         type enumeration {
           enum Threshold-Report {
-            description "Threshold Report (TR) generated.";
+            description 
+              "Threshold Report (TR) generated when the count value 
+               reaches or exceeds the standing-threshold configured 
+               in standing-condition-config.";
           }
           enum Reset-Threshold-Report {
-            description "Reset Threshold Report (RTR) generated.";
+            description 
+              "Reset Threshold Report (RTR) generated at the end of 
+               the period when the count value is at or below the 
+               reset-threshold (G.7710 standing condition clear).";
           }
         }
         description 
-          "Specifies whether a TR or RTR was generated.";
+          "Specifies the type of standing threshold event that 
+           occurred, as defined in G.7710. A Threshold-Report (TR) 
+           is generated when the measurement-value reaches or 
+           exceeds the standing-threshold. A Reset-Threshold-Report 
+           (RTR) is generated at the end of the period when the 
+           measurement-value is at or below the reset-threshold.";
       }
       uses event-state-info;
     }
@@ -460,22 +542,15 @@ module ietf-pm-measurements {
 
   grouping non-periodic-events-gr {
     description 
-      "Container for non-periodic event parameters.";
+      "Grouping for non-periodic performance event parameters 
+       (BUT, EUT, CSES).";
     container BUT-event {
       description "Begin Unavailable Time (BUT) event.";
       uses event-state-info;
     }
     container EUT-event {
       description "End Unavailable Time (EUT) event.";
-      leaf event-occurred {
-        type boolean;
-        description 
-          "Indicates whether an EUT event was generated.";
-      }
-      leaf event-time {
-        type yang:date-and-time;
-        description "Precise timestamp of the EUT event.";
-      }
+      uses event-state-info;
       leaf duration {
         type uint32;
         units "seconds";
@@ -553,7 +628,8 @@ module ietf-pm-measurements {
    */
   notification pm-threshold-events {
     description 
-      "Notification for threshold crossing events.";
+      "Notification for periodic threshold crossing events and 
+       non-periodic performance events (BUT, EUT, CSES).";
     container periodic-events {
       description "Container for periodic threshold events.";
       list parameter-profile {
@@ -613,8 +689,8 @@ module ietf-pm-measurements {
 
     container non-periodic-events {
       description 
-        "Container for non-periodic threshold events.";
+        "Container for non-periodic performance events (BUT, EUT, CSES).";
       uses non-periodic-events-gr;
     }
   }
-} 
+}
