@@ -1,0 +1,9 @@
+# kramdown-rfc / xml2rfc build artifacts
+*.xml
+*.txt
+*.html
+*.pdf
+.refcache/
+
+# editor artifacts
+*.err.txt

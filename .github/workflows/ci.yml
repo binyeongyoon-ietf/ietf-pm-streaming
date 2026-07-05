@@ -1,0 +1,27 @@
+name: "Editor's Draft"
+
+on:
+  push:
+    branches-ignore:
+      - gh-pages
+    paths-ignore:
+      - '.github/**'
+      - 'README.md'
+      - 'LICENSE.md'
+  pull_request:
+    paths-ignore:
+      - '.github/**'
+      - 'README.md'
+      - 'LICENSE.md'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "Build Internet-Drafts"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Build all drafts and publish to gh-pages"
+        uses: martinthomson/i-d-template@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
