@@ -4,6 +4,7 @@
 *.html
 *.pdf
 .refcache/
+tracker.log
 
 # editor artifacts
 *.err.txt
