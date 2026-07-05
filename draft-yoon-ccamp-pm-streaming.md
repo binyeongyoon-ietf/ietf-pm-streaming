@@ -3,7 +3,7 @@ title: "A YANG Data Model for Performance Monitoring Streaming on Common Transpo
 abbrev: "PM Streaming Transport YANG"
 category: info
 
-docname: draft-yoon-ccamp-pm-streaming-06
+docname: draft-yoon-ccamp-pm-streaming-latest
 submissiontype: IETF
 number:
 date:

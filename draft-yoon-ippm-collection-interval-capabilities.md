@@ -3,7 +3,7 @@ title: "A YANG Data Model for Collection Interval Capabilities"
 abbrev: "PM Interval Capabilities YANG"
 category: std
 
-docname: draft-yoon-ippm-collection-interval-capabilities-00
+docname: draft-yoon-ippm-collection-interval-capabilities-latest
 submissiontype: IETF
 number:
 date:

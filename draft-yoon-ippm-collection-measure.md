@@ -3,7 +3,7 @@ title: "A YANG Data Model for Collection Measurement"
 abbrev: "Collection Measurement YANG"
 category: std
 
-docname: draft-yoon-ippm-collection-measure-00
+docname: draft-yoon-ippm-collection-measure-latest
 submissiontype: IETF
 number:
 date:
