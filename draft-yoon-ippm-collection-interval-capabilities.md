@@ -71,6 +71,7 @@ normative:
       ITU-T: Recommendation G.7710
 
 informative:
+  RFC7799:
   RFC6390:
   RFC9195:
 
@@ -114,6 +115,19 @@ measurements.  The model mirrors the profile-and-parameter structure
 of the companion collection measurement model and reuses its
 "profile-names" type, so that capability discovery aligns directly with
 measurement configuration.
+
+In addition to interval ranges, the same discovery step advertises
+which measurement methods {{?RFC7799}} the server can apply to each
+parameter (active, passive, or hybrid). A parameter may be
+measurable by more than one method on a given network element -- for
+example, delay measured either by an active probe or by a hybrid
+in-band technique -- and a client needs to know the available
+methods before it configures a measurement or establishes a
+subscription, so that it obtains data with the intended operational
+meaning. Advertising the supported methods alongside the supported
+intervals lets the client make both choices in a single discovery
+step, using the companion configuration model
+{{I-D.yoon-ippm-collection-measure}}.
 
 Rather than defining a separate top-level container, this module
 augments the "system-capabilities" container of the
@@ -471,6 +485,12 @@ the client can configure the ES parameter in "ietf-pm-collection" with
 any collection interval that is a multiple of 5 within the range
 5 to 1440 minutes, knowing the server will accept the configuration.
 
+When the server also advertises supported measurement methods for
+the parameter, the response additionally lists one or more
+"supported-measurement-method" values (and optionally a
+"default-measurement-method"), from which the client selects the
+method to configure in "ietf-pm-collection".
+
 # Tree Diagram
 
 The following tree diagram, using the notation defined in {{RFC8340}},
@@ -485,6 +505,8 @@ module: ietf-pm-interval-capabilities
           +--ro name            pm-coll:profile-names
           +--ro pm-parameter* [name]
              +--ro name                      string
+             +--ro supported-measurement-method*  identityref
+             +--ro default-measurement-method?    identityref
              +--ro interval-relationships
                 +--ro sampling-interval* [id]
                    +--ro id                      string
@@ -508,10 +530,10 @@ module: ietf-pm-interval-capabilities
 # YANG Module {#yang-module}
 
 ~~~~ yang
-{::include yang/ietf-pm-interval-capabilities@2026-06-11.yang}
+{::include yang/ietf-pm-interval-capabilities.yang}
 ~~~~
 {: sourcecode-markers="true"
-   sourcecode-name="ietf-pm-interval-capabilities@2026-06-11.yang"}
+   sourcecode-name="ietf-pm-interval-capabilities.yang"}
 
 # Manageability Considerations
 

@@ -64,6 +64,7 @@ normative:
       ITU-T: Recommendation G.7710
 
 informative:
+  RFC7799:
   RFC9196:
 
 --- abstract
@@ -262,6 +263,15 @@ packet networks.
 * SEP  -- Severely Errored Period
 * PJE  -- Pointer Justification Events
 
+All of the transport PM parameters listed above are obtained by
+passive measurement in the sense of {{?RFC7799}}: they are derived
+from protocol counters and physical-layer signals already present on
+the monitored connection, without generating synthetic test traffic.
+When these parameters are configured through the collection
+measurement model {{I-D.yoon-ippm-collection-measure}}, the optional
+"measurement-method" leaf of each "pm-parameter" is therefore set to
+"passive".
+
 According to collection types, purposes, and time intervals,
 different parameters are used.  The following three transport
 profiles, named using the profile-naming format of the collection
@@ -382,9 +392,9 @@ module: ietf-pm-parameters
 ~~~~
 
 ~~~~ yang
-{::include yang/ietf-pm-parameters@2026-06-03.yang}
+{::include yang/ietf-pm-parameters.yang}
 ~~~~
-{: sourcecode-markers="true" sourcecode-name="ietf-pm-parameters@2026-06-03.yang"}
+{: sourcecode-markers="true" sourcecode-name="ietf-pm-parameters.yang"}
 
 # Use Cases: Streaming a Transport Profile
 
