@@ -1,4 +1,4 @@
-﻿---
+---
 title: "A YANG Data Model for Collection Measurement"
 abbrev: "Collection Measurement YANG"
 category: std
@@ -54,6 +54,16 @@ normative:
       ITU-T: Recommendation G.7710
 
 informative:
+  RFC7799:
+  I-D.yoon-ippm-collection-interval-capabilities:
+    title: >-
+      A YANG Data Model for Collection Interval Capabilities
+    author:
+      name: Bin Yeong Yoon
+      org: ETRI
+    date: 2026
+    seriesinfo:
+      Internet-Draft: draft-yoon-ippm-collection-interval-capabilities-00
 
 --- abstract
 
@@ -125,6 +135,30 @@ used in this stage, OWAMP {{?RFC4656}}, TWAMP {{?RFC5357}}, and STAMP
 round-trip delay, packet loss, and delay variation, while In-situ OAM
 (IOAM) {{?RFC9197}} records performance data directly within user
 packets as they traverse the network.
+
+The Stage 1 sampling techniques above fall into the measurement
+method categories defined by the IPPM framework {{?RFC7799}}. Active
+methods such as OWAMP {{?RFC4656}}, TWAMP {{?RFC5357}}, and STAMP
+{{?RFC8762}} generate and inject synthetic test traffic. Hybrid
+methods such as IOAM {{?RFC9197}} augment or observe existing user
+traffic in transit. Passive methods, such as direct observation of
+physical-layer signals and the reading of protocol counters (for
+example ES, SES, BBE), draw solely from traffic and signals already
+present, without generating test packets. Environmental sensor
+readings (for example temperature or voltage) are not classified by
+this axis, because no packet or signal observation is involved.
+
+The Collection stage defined in this document is method-agnostic:
+the counts, snapshot, and tidemarks collection types apply
+identically to samples produced by any of these methods, and the
+model neither performs nor prescribes the Stage 1 measurement.
+However, because the operational meaning of a value depends on how
+it was measured -- for example, an active delay measurement reflects
+the experience of synthetic probes, whereas a hybrid measurement
+reflects that of real user traffic -- the measurement method is
+retained as metadata so that a client can interpret, filter, and
+aggregate collected values correctly. How this metadata is modelled
+is described in {{measurement-method-metadata}}.
 
 Stage 2 -- Collection. This stage processes raw samples into
 summarised statistics over defined intervals and manages their
@@ -483,6 +517,54 @@ broader view of the network's performance over a full day, making
 it ideal for strategic planning and infrastructure maintenance.
 Together, these intervals enable both immediate responses to
 network conditions and long-term network optimization.
+
+## Measurement Method Metadata {#measurement-method-metadata}
+
+Each `pm-parameter` entry MAY carry an optional `measurement-method`
+leaf that records the IPPM measurement method {{?RFC7799}} by which
+the parameter's Stage 1 samples are produced. The leaf is an
+`identityref` whose base identity is `measurement-method`, with the
+derived identities `active`, `passive`, and `hybrid` corresponding to
+the categories of {{?RFC7799}}.
+
+~~~~ ascii-art
++--rw pm-parameter* [name]
+   +--rw name                 string
+   +--rw measurement-method?  identityref
+   +--rw sampling-interval* [id]
+      ...
+~~~~
+{:#fig-method-tree title="measurement-method leaf within pm-parameter"}
+
+The leaf is optional for three reasons. First, it preserves backward
+compatibility with servers and configurations that do not populate
+it. Second, some parameters (for example environmental sensor values
+such as temperature or voltage) are not meaningfully classified by
+the active/passive/hybrid axis. Third, the Collection stage operates
+independently of the measurement method, so the leaf conveys
+interpretation metadata rather than affecting collection behaviour.
+
+The measurement method corresponds to the "method of measurement or
+calculation" element of the Performance Metric Specification template
+in Section 5.4.4 of {{?RFC6390}}. Carrying it alongside the collected
+value lets a client (a) interpret the value in the correct
+operational context, (b) keep homogeneous data sets when comparing or
+aggregating values across network elements, and (c) reason about the
+intrusiveness of the measurement, since active methods inject
+synthetic traffic while passive methods do not.
+
+Because the leaf resides within `pm-parameter`, the method
+information is inherited by every sampling interval, collection
+interval, and collection type beneath that parameter, and is
+therefore associated with the corresponding value both in pull-based
+retrieval and in push-based notifications, without requiring any
+per-notification tag.
+
+A server advertises which measurement methods it can support for a
+given parameter through the companion interval-capabilities model
+{{I-D.yoon-ippm-collection-interval-capabilities}}, so that a client
+can select an appropriate method before configuring a measurement or
+establishing a subscription.
 
 # Periodic Collection
 
@@ -1180,9 +1262,9 @@ interval-based measurements.
 The YANG module for PM measurements is defined below:
 
 ~~~~ yang
-{::include yang/ietf-pm-collection@2026-05-02.yang}
+{::include yang/ietf-pm-collection.yang}
 ~~~~
-{: sourcecode-markers="true" sourcecode-name="ietf-pm-collection@2026-05-02.yang"}
+{: sourcecode-markers="true" sourcecode-name="ietf-pm-collection.yang"}
 
 # YANG Data Trees
 
@@ -1193,6 +1275,7 @@ module: ietf-pm-collection
         +--rw name              profile-names
         +--rw pm-parameter* [name]
            +--rw name                 string
+           +--rw measurement-method?  identityref
            +--rw sampling-interval* [id]
               +--rw id                 string
               +--rw interval-value?    uint32
