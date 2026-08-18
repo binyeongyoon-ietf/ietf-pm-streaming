@@ -41,6 +41,24 @@ module ietf-pm-collection {
      granularities while maintaining operational efficiency and
      cross-vendor interoperability.";
 
+  revision 2026-08-17 {
+    description
+      "WORK IN PROGRESS.  Development revision; the date will be
+       set to the actual submission or publication date at
+       release.  (Informational marker only; YANG tools do not
+       interpret it.)
+
+       Added measurement method metadata aligned with the IPPM
+       framework (RFC 7799): a new 'measurement-method' identity
+       hierarchy (base identity with derived identities 'active',
+       'passive', and 'hybrid'), and a new optional
+       'measurement-method' leaf under 'pm-parameter'.  These are
+       non-backward-incompatible changes (only new identities and
+       an optional leaf were added).";
+    reference
+      "RFC XXXX: A YANG Data Model for Collection Measurement";
+  }
+
   revision 2026-05-02 {
     description
       "Renamed the module from ietf-pm-measurements to
@@ -158,6 +176,51 @@ module ietf-pm-collection {
     description
       "Notification for Consecutive Severely Errored Seconds
        (CSES) events.";
+  }
+
+  /*
+   * MEASUREMENT METHOD IDENTITIES (RFC 7799)
+   */
+  identity measurement-method {
+    description
+      "Base identity for the IPPM measurement method (RFC 7799)
+       by which the Stage 1 samples of a performance parameter
+       are produced.";
+    reference
+      "RFC 7799: Active and Passive Metrics and Methods (with
+       Hybrid Types In-Between)";
+  }
+
+  identity active {
+    base measurement-method;
+    description
+      "Active measurement method: dedicated synthetic test
+       traffic is generated and injected to observe network
+       behaviour, e.g., OWAMP (RFC 4656), TWAMP (RFC 5357),
+       STAMP (RFC 8762).";
+    reference
+      "RFC 7799, Section 3.4";
+  }
+
+  identity passive {
+    base measurement-method;
+    description
+      "Passive measurement method: observation relies solely on
+       traffic and signals already present, e.g., reading
+       protocol counters or observing physical-layer signals,
+       without generating test packets.";
+    reference
+      "RFC 7799, Section 3.6";
+  }
+
+  identity hybrid {
+    base measurement-method;
+    description
+      "Hybrid measurement method: existing user traffic is
+       augmented or observed in transit to obtain measurements,
+       e.g., IOAM (RFC 9197).";
+    reference
+      "RFC 7799, Section 3.8";
   }
 
   /*
@@ -618,6 +681,24 @@ module ietf-pm-collection {
           type string;
           description
             "Name of the performance parameter being measured.";
+        }
+        leaf measurement-method {
+          type identityref {
+            base measurement-method;
+          }
+          description
+            "IPPM measurement method (RFC 7799) by which this
+             parameter's Stage 1 samples are produced.  This leaf
+             is optional; when absent, the measurement method is
+             unspecified.  It carries interpretation metadata
+             only and does not affect Collection-stage behaviour.
+             Some parameters (e.g., environmental sensor
+             readings) are not classified by this axis.";
+          reference
+            "RFC 7799: Active and Passive Metrics and Methods
+             (with Hybrid Types In-Between);
+             RFC 6390, Section 5.4.4: method of measurement
+             metadata";
         }
         uses periodic-collection-intervals;
       }
