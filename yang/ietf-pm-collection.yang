@@ -41,6 +41,28 @@ module ietf-pm-collection {
      granularities while maintaining operational efficiency and
      cross-vendor interoperability.";
 
+  revision 2026-08-20 {
+    description
+      "WORK IN PROGRESS.  Development revision; the date will be
+       set to the actual submission or publication date at
+       release.  (Informational marker only; YANG tools do not
+       interpret it.)
+
+       Added interval data validity metadata to address review
+       comments on incomplete collection intervals and the
+       G.7710 suspect-interval semantics: a new 'interval-status'
+       typedef; a new 'coverage-counters' feature; a new
+       'suspect-reason' identity hierarchy; a new
+       'interval-data-status' grouping; and a new config-false
+       'interval-data-status' container under each
+       'collection-interval'.  These are non-backward-
+       incompatible changes (only a new typedef, a new feature,
+       new identities, and new optional config-false state were
+       added).";
+    reference
+      "RFC XXXX: A YANG Data Model for Collection Measurement";
+  }
+
   revision 2026-08-17 {
     description
       "WORK IN PROGRESS.  Development revision; the date will be
@@ -118,6 +140,49 @@ module ietf-pm-collection {
       }
     }
     description "Units for expressing time intervals.";
+  }
+
+  typedef interval-status {
+    type enumeration {
+      enum complete {
+        description
+          "The collection interval is complete: all expected
+           samples for the interval were available, so the
+           collected value represents a fully measured
+           interval.";
+      }
+      enum partial {
+        description
+          "The collection interval is partial: some expected
+           samples were missing (e.g., telemetry loss or partial
+           node support), but at least one valid sample was
+           collected.  A partial 'counts' value is a lower bound
+           on the true count for the interval.";
+      }
+      enum unavailable {
+        description
+          "The collection interval is unavailable: no valid
+           sample was collected for the interval.  In this case
+           the corresponding collection-value leaf is not
+           instantiated, so a reported value is never mistaken
+           for a measured zero.";
+      }
+    }
+    description
+      "Validity status of a collection interval.  It
+       distinguishes a fully measured interval from one computed
+       over an incomplete set of samples, so that a client can
+       interpret the collected value correctly.";
+  }
+
+  /*
+   * FEATURES
+   */
+  feature coverage-counters {
+    description
+      "Indicates that the server reports per-interval sample
+       coverage counters (expected-sample-count and
+       received-sample-count) within interval-data-status.";
   }
 
   /*
@@ -221,6 +286,74 @@ module ietf-pm-collection {
        e.g., IOAM (RFC 9197).";
     reference
       "RFC 7799, Section 3.8";
+  }
+
+  /*
+   * SUSPECT-REASON IDENTITIES (G.7710 suspect interval)
+   */
+  identity suspect-reason {
+    description
+      "Base identity for the reason a collection interval is
+       marked suspect (see suspect-interval-flag).";
+    reference
+      "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
+  }
+
+  identity telemetry-loss {
+    base suspect-reason;
+    description
+      "One or more expected samples were lost in transit from
+       the Stage 1 sampling source.";
+  }
+
+  identity partial-node-support {
+    base suspect-reason;
+    description
+      "Some nodes or resources contributing to the parameter did
+       not report samples for the interval.";
+  }
+
+  identity state-reset {
+    base suspect-reason;
+    description
+      "Collection state was reset during the interval, so the
+       accumulated result does not cover the whole interval.";
+  }
+
+  identity restart {
+    base suspect-reason;
+    description
+      "The equipment or measurement function restarted during
+       the interval.";
+  }
+
+  identity time-adjustment {
+    base suspect-reason;
+    description
+      "Interval timing changed during the interval, for example
+       due to reconfiguration or a clock adjustment.";
+  }
+
+  identity measurement-suspended {
+    base suspect-reason;
+    description
+      "Data collection was intentionally suspended for part or
+       all of the interval, so the interval does not cover
+       continuous measurement.  This corresponds to the G.7710
+       case in which the interval belongs to a period during
+       which the measurement is suspended or resumed, for
+       example administrative disabling of the PM function, a
+       planned maintenance window, or reconfiguration of the
+       measurement.  It denotes an intentional pause of
+       collection, as distinct from unintended sample loss
+       (telemetry-loss), a counter reset (state-reset), or an
+       equipment or function restart (restart).  It is not the
+       same as G.7710 history storage suppression, which merely
+       omits writing a recent register when the interval count
+       is zero and does not by itself make the data suspect.";
+    reference
+      "ITU-T G.7710: suspect interval flag set when the
+       measurement is suspended or resumed";
   }
 
   /*
@@ -341,6 +474,77 @@ module ietf-pm-collection {
     leaf unit {
       type time-interval-unit;
       description "Time unit for the interval value.";
+    }
+  }
+
+  grouping interval-data-status {
+    description
+      "Validity and coverage metadata for a collection interval,
+       aligned with the G.7710 suspect interval flag and with the
+       ValidData/TimeElapsed conventions of the SNMP
+       performance-history textual conventions (RFC 3593).  It
+       lets a client tell a fully measured interval from an
+       incomplete one, and a measured zero from an absent
+       value.";
+    reference
+      "ITU-T G.7710, clauses 10.2.11 and 10.2.15;
+       RFC 3593: Textual Conventions for Managed Objects for the
+       SNMP Framework (xyzValidData, xyzTimeElapsed)";
+    leaf suspect-interval-flag {
+      type boolean;
+      default false;
+      description
+        "Set to 'false' at the start of a collection interval and
+         set to 'true' when the data stored for the interval may
+         be unreliable, for example when periodic samples are
+         missing, when collection state is reset, when the
+         equipment restarts, when interval timing changes, or
+         when collection is suppressed.  This is the YANG
+         equivalent of the G.7710 suspect interval flag.";
+      reference
+        "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
+    }
+    leaf interval-status {
+      type interval-status;
+      description
+        "Validity status of the interval (complete, partial, or
+         unavailable).  When this leaf is not 'complete', the
+         suspect-interval-flag is 'true'.";
+    }
+    leaf-list suspect-reason {
+      type identityref {
+        base suspect-reason;
+      }
+      description
+        "Zero or more reasons the interval is suspect.  Present
+         only when known.";
+    }
+    leaf expected-sample-count {
+      if-feature coverage-counters;
+      type uint64;
+      description
+        "Number of samples expected during the interval.";
+    }
+    leaf received-sample-count {
+      if-feature coverage-counters;
+      type uint64;
+      description
+        "Number of valid samples actually received during the
+         interval.  Together with expected-sample-count it gives
+         the coverage of a partial interval.";
+    }
+    leaf elapsed-time {
+      type uint32;
+      units "seconds";
+      description
+        "Elapsed time since the start of the current collection
+         interval.";
+    }
+    leaf interval-start-time {
+      type yang:date-and-time;
+      description
+        "Timestamp marking the start of the collection interval
+         to which this status applies.";
     }
   }
 
@@ -521,7 +725,9 @@ module ietf-pm-collection {
               "Reset Threshold Report (RTR) generated at the end
                of the period when the count value is at or below
                the reset-threshold (G.7710 standing condition
-               clear).";
+               clear).  An RTR is not generated for an interval
+               whose suspect-interval-flag is set (equivalent to
+               the G.7710 'no unavailable time' condition).";
           }
         }
         description
@@ -607,6 +813,17 @@ module ietf-pm-collection {
           default minute;
           description
             "Time unit for the collection interval value.";
+        }
+        container interval-data-status {
+          config false;
+          description
+            "Operational validity and coverage status of this
+             collection interval (see the interval-data-status
+             grouping).  In push-based delivery this status
+             accompanies each streamed record; in pull-based
+             retrieval it is read alongside the collection
+             value.";
+          uses interval-data-status;
         }
         uses collection-types-gr;
       }

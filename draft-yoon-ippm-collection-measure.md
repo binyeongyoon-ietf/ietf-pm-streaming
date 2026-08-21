@@ -851,6 +851,108 @@ tidemark could reveal intermittent spikes in errors that require
 attention. Conversely, a low tidemark may expose periods of
 severely degraded signal quality or throughput.
 
+# Interval Data Validity {#interval-data-validity}
+
+The collection types above summarise the samples that were
+available during a collection interval. When some of the expected
+Stage 1 samples are missing -- because of telemetry loss, partial
+node support, a state reset, an equipment restart, a change of
+interval timing, or suppression of collection -- the summarised
+value is still a valid number, but it does not carry the same
+meaning as a value computed over a complete interval. In
+particular, a numeric zero computed from no valid samples must not
+be mistaken for a measured zero. This section defines the metadata
+that lets a client tell these cases apart. The metadata is part of
+the Collection stage rather than of any delivery mechanism, so it
+applies identically to pull-based retrieval and to push-based
+delivery.
+
+~~~~ ascii-art
++--rw collection-interval* [id]
+   +--rw id                 string
+   ...
+   +--ro interval-data-status
+   |  +--ro suspect-interval-flag?    boolean
+   |  +--ro interval-status?          interval-status
+   |  +--ro suspect-reason*           identityref
+   |  +--ro expected-sample-count?    uint64 {coverage-counters}?
+   |  +--ro received-sample-count?    uint64 {coverage-counters}?
+   |  +--ro elapsed-time?             uint32
+   |  +--ro interval-start-time?      yang:date-and-time
+   +--rw collection-types
+      ...
+~~~~
+{:#fig-interval-status-tree title="Interval Data Status Subtree"}
+
+## Suspect Interval Flag
+
+The `suspect-interval-flag` follows the suspect interval flag of
+ITU-T G.7710, clauses 10.2.11 and 10.2.15. It is initialised to
+"false" at the start of each collection interval and is set to
+"true" whenever the data stored for the interval may be
+unreliable: when one or more periodic samples are missing, when
+collection state is reset, when the equipment restarts during the
+interval, when interval timing is changed, or when collection is
+suppressed. A client that reads or receives a value together with
+a suspect flag of "true" knows that the value should be treated
+with caution.
+
+## Interval Status and the Meaning of Zero
+
+The optional `interval-status` leaf refines the boolean flag into
+three cases: "complete" (all expected samples were available),
+"partial" (some samples were missing but at least one valid
+sample was collected), and "unavailable" (no valid sample was
+collected). Whenever `interval-status` is not "complete", the
+`suspect-interval-flag` is "true". The optional `suspect-reason`
+leaf-list carries zero or more reasons, when known, drawn from an
+extensible set of identities (telemetry loss, partial node
+support, state reset, restart, time adjustment, and measurement
+suspension).
+
+To remove the ambiguity between a measured zero and an absent
+value, a server MUST NOT instantiate the collection-value leaf
+(the `collection-value` of counts and snapshot, or the high and
+low collection values of tidemarks) for an interval whose
+`interval-status` is "unavailable". Because these leaves are
+optional, their absence is the natural encoding of "no data", and
+a `collection-value` that is present and zero is therefore always
+a measured zero. For a "partial" interval the value is reported
+together with the coverage counters described below, and a partial
+`counts` value is interpreted as a lower bound on the true count
+for the interval.
+
+## Coverage, Elapsed Time, and Start Time
+
+When the server implements the `coverage-counters` feature, the
+`expected-sample-count` and `received-sample-count` leaves report
+how many samples were expected and how many valid samples were
+actually collected during the interval, so that a client can
+gauge the coverage of a partial interval. The `elapsed-time` leaf
+gives the time elapsed since the start of the current interval,
+and `interval-start-time` records when the interval began. These
+correspond to the "TimeElapsed" and validity conventions of the
+SNMP performance-history textual conventions {{?RFC3593}}: the
+`suspect-interval-flag` plays the role of the classical
+"xyzValidData" object, and `elapsed-time` that of
+"xyzTimeElapsed".
+
+## Relationship to History Storage
+
+ITU-T G.7710 stores the suspect interval flag, the elapsed time,
+and an end-of-interval timestamp in recent registers (clauses
+10.2.11 and 10.2.15), which retain a number of completed intervals
+for later retrieval. Those clauses apply "when history data
+storage is not suppressed". The model in this document corresponds
+to the history-storage-suppressed mode of operation: it exposes
+the status of the interval in progress and carries that status
+with each collected value, rather than retaining a bank of
+completed-interval registers in the Network Element. The three
+pieces of information that G.7710 keeps in a register -- the
+suspect flag, the elapsed time, and the interval timestamp -- are
+retained in the model as `interval-data-status` and accompany the
+data, whether it is polled or streamed.
+
 # Thresholding {#thresholding}
 
 ## Periodic Thresholding
@@ -871,7 +973,10 @@ generated, when the set threshold is reached or crossed. The
 standing condition is cleared, and a reset threshold report (RTR)
 is generated at the end of the period when the current value is
 below or equal to the reset threshold, provided that there was no
-unavailable time during that period.
+unavailable time during that period. In the terms of
+{{interval-data-validity}}, this "no unavailable time" condition
+is expressed by the suspect-interval-flag: an RTR is not generated
+for an interval whose suspect-interval-flag is set.
 
 For gauge measurements ("snapshot" and "tidemarks"), an overflow
 condition is determined and an out-of-range report is generated as
@@ -1070,7 +1175,10 @@ collection interval.
 parameter in the `itu-transport-maintenance-15min` profile. It
 reports the counts measurement value sampled every second and
 aggregated over a 15-minute interval. The measured value (10)
-represents the total errored seconds in that period.
+represents the total errored seconds in that period. The
+accompanying interval-data-status shows that the interval is
+complete and not suspect, so the value is a fully measured
+result.
 
 ~~~~ xml
 <notification
@@ -1096,6 +1204,10 @@ represents the total errored seconds in that period.
                 <collection-value>10</collection-value>
               </counts>
             </collection-types>
+            <interval-data-status>
+              <suspect-interval-flag>false</suspect-interval-flag>
+              <interval-status>complete</interval-status>
+            </interval-data-status>
           </collection-interval>
         </sampling-interval>
       </pm-parameter>
@@ -1284,6 +1396,14 @@ module: ietf-pm-collection
                  +--rw id              string
                  +--rw interval-value? uint32
                  +--rw unit?           time-interval-unit
+                 +--ro interval-data-status
+                 |  +--ro suspect-interval-flag?    boolean
+                 |  +--ro interval-status?          interval-status
+                 |  +--ro suspect-reason*           identityref
+                 |  +--ro expected-sample-count?    uint64
+                 |  +--ro received-sample-count?    uint64
+                 |  +--ro elapsed-time?             uint32
+                 |  +--ro interval-start-time?      yang:date-and-time
                  +--rw collection-types
                     +--rw counts
                     |  +--rw transient-condition-config
