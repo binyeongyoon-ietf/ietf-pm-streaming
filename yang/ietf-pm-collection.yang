@@ -52,13 +52,18 @@ module ietf-pm-collection {
        comments on incomplete collection intervals and the
        G.7710 suspect-interval semantics: a new 'interval-status'
        typedef; a new 'coverage-counters' feature; a new
-       'suspect-reason' identity hierarchy; a new
-       'interval-data-status' grouping; and a new config-false
-       'interval-data-status' container under each
-       'collection-interval'.  These are non-backward-
-       incompatible changes (only a new typedef, a new feature,
-       new identities, and new optional config-false state were
-       added).";
+       'suspect-reason' identity hierarchy (including
+       'measurement-boundary' and 'outage'); a new
+       'interval-data-status' grouping carrying the suspect
+       interval flag, status, coverage counters, elapsed time,
+       and interval start and end timestamps; and a new
+       config-false 'interval-data-status' container under each
+       'collection-interval'.  Corrected the snapshot
+       'uniform-time-config' to model the uniform time as an
+       offset within the collection interval rather than a
+       period between snapshots; this leaf rename is a
+       backward-incompatible refinement, acceptable for this
+       work-in-progress revision.";
     reference
       "RFC XXXX: A YANG Data Model for Collection Measurement";
   }
@@ -356,6 +361,35 @@ module ietf-pm-collection {
        measurement is suspended or resumed";
   }
 
+  identity measurement-boundary {
+    base suspect-reason;
+    description
+      "The interval is the first or last interval of the
+       measurement and does not cover the full nominal period,
+       because the measurement did not start or stop on an
+       interval boundary.  The value is otherwise valid, but the
+       interval is partial.";
+    reference
+      "ITU-T G.7710: suspect interval flag set for the first or
+       last interval of the measurement";
+  }
+
+  identity outage {
+    base suspect-reason;
+    description
+      "A fault or outage condition (e.g., equipment or power
+       failure, or resource unavailability) prevented the
+       measurement from being performed for part or all of the
+       interval, so a gauge register may contain no data or the
+       periodical gauge measurements were not possible.  This is
+       distinct from telemetry-loss, in which the measurement was
+       performed but samples were lost in transit.";
+    reference
+      "ITU-T G.7710: suspect interval flag set when a snapshot or
+       tidemark register contains no data due to outage
+       conditions";
+  }
+
   /*
    * COMMON GROUPINGS
    */
@@ -500,9 +534,16 @@ module ietf-pm-collection {
          missing, when collection state is reset, when the
          equipment restarts, when interval timing changes, or
          when collection is suppressed.  This is the YANG
-         equivalent of the G.7710 suspect interval flag.";
+         equivalent of the G.7710 suspect interval flag.
+
+         For the snapshot collection type the initialization is
+         inverted: G.7710 initializes the flag to 'true' at the
+         start of the interval to indicate that no snapshot has
+         yet been taken, and clears it to 'false' once the single
+         snapshot has been taken at the uniform time.";
       reference
-        "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
+        "ITU-T G.7710, clauses 10.2.9, 10.2.11, 10.2.13, and
+         10.2.15";
     }
     leaf interval-status {
       type interval-status;
@@ -523,18 +564,18 @@ module ietf-pm-collection {
       if-feature coverage-counters;
       type uint64;
       description
-        "Number of Stage 1 samples expected during the
-         collection interval, i.e., the number a complete
-         interval would collect for the configured sampling
-         interval (for periodically sampled parameters,
-         approximately the collection interval divided by the
-         sampling interval).  This is a sample-based coverage
-         indicator that applies to any sampled parameter and is
-         most meaningful for periodically sampled (gauge)
-         parameters such as tidemarks. It indicates counter coverage through
-         'elapsed-time' and marks incompleteness with the
-         suspect-interval-flag; the sample counts generalize that
-         notion for this model.";
+        "Number of Stage 1 samples expected during the collection
+         interval, i.e., the number a complete interval would
+         collect for the configured sampling interval (for
+         periodically sampled parameters, approximately the
+         collection interval divided by the sampling interval).
+         This is a sample-based coverage indicator that applies
+         to any sampled parameter and is most meaningful for
+         periodically sampled (gauge) parameters such as
+         tidemarks.  It is not defined by ITU-T G.7710, which
+         indicates counter coverage through 'elapsed-time' and
+         marks incompleteness with the suspect-interval-flag; the
+         sample counts generalize that notion for this model.";
     }
     leaf received-sample-count {
       if-feature coverage-counters;
@@ -552,13 +593,34 @@ module ietf-pm-collection {
       units "seconds";
       description
         "Elapsed time since the start of the current collection
-         interval.";
+         interval.  This is the number of seconds of the interval
+         that have been processed by the measurement, not the sum
+         of available time; it advances during unavailable time
+         as well and falls short of the nominal interval only
+         when the measurement itself could not run (e.g., a
+         boundary interval, a clock adjustment, or an outage).";
     }
     leaf interval-start-time {
       type yang:date-and-time;
       description
         "Timestamp marking the start of the collection interval
          to which this status applies.";
+    }
+    leaf interval-end-time {
+      type yang:date-and-time;
+      description
+        "Timestamp marking the end of the collection interval to
+         which the reported values apply.  This is the YANG
+         equivalent of the G.7710 recent-register end-of-interval
+         time-stamp (clauses 10.2.11 and 10.2.15).  It is the
+         authoritative measurement time for the interval and
+         should be used for correlation in preference to the
+         notification envelope eventTime, which reflects when the
+         notification was generated rather than the measurement
+         interval boundary.  It is present once the interval has
+         completed.";
+      reference
+        "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
     }
   }
 
@@ -628,19 +690,22 @@ module ietf-pm-collection {
         "Contains snapshot measurement configuration and values.";
       container uniform-time-config {
         description
-          "Configuration for uniform time intervals between
-           snapshots.";
-        leaf interval-value {
+          "Configuration of the uniform time: the fixed offset
+           from the start of the collection interval at which the
+           single snapshot is taken.  Taking snapshots at the
+           same uniform time across network elements lets their
+           values be correlated, as defined in ITU-T G.7710.";
+        leaf offset-value {
           type uint32;
-          default 1;
           description
-            "Numeric value for the sampling interval between
-             snapshots.";
+            "Numeric value of the offset, measured from the start
+             of the collection interval, at which the snapshot is
+             taken.";
         }
         leaf unit {
           type time-interval-unit;
           description
-            "Time unit for the snapshot sampling interval.";
+            "Time unit for the uniform-time offset.";
         }
       }
       container threshold-config {
