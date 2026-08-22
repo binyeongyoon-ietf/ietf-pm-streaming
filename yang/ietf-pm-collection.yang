@@ -523,15 +523,29 @@ module ietf-pm-collection {
       if-feature coverage-counters;
       type uint64;
       description
-        "Number of samples expected during the interval.";
+        "Number of Stage 1 samples expected during the
+         collection interval, i.e., the number a complete
+         interval would collect for the configured sampling
+         interval (for periodically sampled parameters,
+         approximately the collection interval divided by the
+         sampling interval).  This is a sample-based coverage
+         indicator that applies to any sampled parameter and is
+         most meaningful for periodically sampled (gauge)
+         parameters such as tidemarks. It indicates counter coverage through
+         'elapsed-time' and marks incompleteness with the
+         suspect-interval-flag; the sample counts generalize that
+         notion for this model.";
     }
     leaf received-sample-count {
       if-feature coverage-counters;
       type uint64;
       description
-        "Number of valid samples actually received during the
-         interval.  Together with expected-sample-count it gives
-         the coverage of a partial interval.";
+        "Number of valid Stage 1 samples actually collected
+         during the collection interval.  Together with
+         expected-sample-count it gives the interval coverage: a
+         value equal to expected-sample-count indicates full
+         coverage, a smaller value a partial interval, and zero
+         an unavailable interval (no valid sample).";
     }
     leaf elapsed-time {
       type uint32;
