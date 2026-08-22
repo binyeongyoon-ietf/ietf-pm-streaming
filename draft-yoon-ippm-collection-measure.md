@@ -719,7 +719,7 @@ tidemarks represent interval extremes.
    |  +--ro collection-value?        uint32
    +--rw snapshot
    |  +--rw uniform-time-config
-   |  |  +--rw interval-value?        uint32
+   |  |  +--rw offset-value?          uint32
    |  |  +--rw unit?                  time-interval-unit
    |  +--rw threshold-config
    |  |  +--rw high-threshold?        uint32
@@ -879,6 +879,7 @@ delivery.
    |  +--ro received-sample-count?    uint64 {coverage-counters}?
    |  +--ro elapsed-time?             uint32
    |  +--ro interval-start-time?      yang:date-and-time
+   |  +--ro interval-end-time?        yang:date-and-time
    +--rw collection-types
       ...
 ~~~~
@@ -897,6 +898,12 @@ suppressed. A client that reads or receives a value together with
 a suspect flag of "true" knows that the value should be treated
 with caution.
 
+For the snapshot collection type the initialisation is inverted:
+following ITU-T G.7710, the flag is set to "true" at the start of
+the interval to indicate that no snapshot has yet been taken, and
+is cleared to "false" once the single snapshot has been taken at
+the uniform time.
+
 ## Interval Status and the Meaning of Zero
 
 The optional `interval-status` leaf refines the boolean flag into
@@ -907,8 +914,8 @@ collected). Whenever `interval-status` is not "complete", the
 `suspect-interval-flag` is "true". The optional `suspect-reason`
 leaf-list carries zero or more reasons, when known, drawn from an
 extensible set of identities (telemetry loss, partial node
-support, state reset, restart, time adjustment, and measurement
-suspension).
+support, state reset, restart, time adjustment, measurement
+suspension, measurement boundary, and outage).
 
 To remove the ambiguity between a measured zero and an absent
 value, a server MUST NOT instantiate the collection-value leaf
@@ -922,30 +929,30 @@ together with the coverage counters described below, and a partial
 `counts` value is interpreted as a lower bound on the true count
 for the interval.
 
-## Coverage, Elapsed Time, and Start Time
+## Coverage, Elapsed Time, and Interval Timestamps
 
 When the server implements the `coverage-counters` feature, the
-`expected-sample-count` leaf reports the number of Stage 1 samples
-expected during the collection interval, i.e., the number a
-complete interval would collect for the configured sampling
-interval (for periodically sampled parameters, approximately the
-collection interval divided by the sampling interval), and the
-`received-sample-count` leaf reports the number of valid Stage 1
-samples actually collected. Together they give the interval
-coverage: a `received-sample-count` equal to
-`expected-sample-count` indicates full coverage, a smaller value a
-partial interval, and zero an unavailable interval (no valid
-sample). This is a sample-based coverage indicator that applies to
-any sampled parameter and is most meaningful for periodically
-sampled (gauge) parameters such as tidemarks; it generalizes, at
-the sample level, the counter coverage that `elapsed-time`
-indicates and that the `suspect-interval-flag` marks as incomplete.
-The `elapsed-time` leaf gives the time elapsed since the start of
-the current interval, and `interval-start-time` records when the
-interval began. These correspond to the "TimeElapsed" and validity
-conventions of the SNMP performance-history textual conventions
-{{?RFC3593}}: the `suspect-interval-flag` plays the role of the
-classical "xyzValidData" object, and `elapsed-time` that of
+`expected-sample-count` and `received-sample-count` leaves report
+how many Stage 1 samples were expected (for a complete interval,
+approximately the collection interval divided by the sampling
+interval) and how many valid samples were actually collected, so
+that a client can gauge the coverage of a partial interval. These
+sample counts apply to any sampled parameter and are most
+meaningful for periodically sampled (gauge) parameters such as
+tidemarks; they are not defined by ITU-T G.7710 and generalize
+its coverage notion for this model. The `elapsed-time` leaf gives
+the number of seconds of the interval that have been processed by
+the measurement -- not the sum of available time, since it
+advances during unavailable time as well. The
+`interval-start-time` and `interval-end-time` leaves record when
+the interval began and ended; `interval-end-time` is the G.7710
+recent-register end-of-interval time-stamp and is the
+authoritative measurement time, to be used for correlation in
+preference to the notification envelope eventTime. Together these
+correspond to the "TimeElapsed" and validity conventions of the
+SNMP performance-history textual conventions {{?RFC3593}}: the
+`suspect-interval-flag` plays the role of the classical
+"xyzValidData" object, and `elapsed-time` that of
 "xyzTimeElapsed".
 
 ## Relationship to History Storage
@@ -1218,6 +1225,9 @@ result.
             <interval-data-status>
               <suspect-interval-flag>false</suspect-interval-flag>
               <interval-status>complete</interval-status>
+              <interval-end-time>
+                2024-07-01T00:15:00Z
+              </interval-end-time>
             </interval-data-status>
           </collection-interval>
         </sampling-interval>
@@ -1415,6 +1425,7 @@ module: ietf-pm-collection
                  |  +--ro received-sample-count?    uint64
                  |  +--ro elapsed-time?             uint32
                  |  +--ro interval-start-time?      yang:date-and-time
+                 |  +--ro interval-end-time?        yang:date-and-time
                  +--rw collection-types
                     +--rw counts
                     |  +--rw transient-condition-config
@@ -1425,7 +1436,7 @@ module: ietf-pm-collection
                     |  +--ro collection-value?        uint32
                     +--rw snapshot
                     |  +--rw uniform-time-config
-                    |  |  +--rw interval-value?   uint32
+                    |  |  +--rw offset-value?     uint32
                     |  |  +--rw unit?             time-interval-unit
                     |  +--rw threshold-config
                     |  |  +--rw high-threshold?   uint32
