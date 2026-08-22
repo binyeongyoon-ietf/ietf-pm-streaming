@@ -925,16 +925,27 @@ for the interval.
 ## Coverage, Elapsed Time, and Start Time
 
 When the server implements the `coverage-counters` feature, the
-`expected-sample-count` and `received-sample-count` leaves report
-how many samples were expected and how many valid samples were
-actually collected during the interval, so that a client can
-gauge the coverage of a partial interval. The `elapsed-time` leaf
-gives the time elapsed since the start of the current interval,
-and `interval-start-time` records when the interval began. These
-correspond to the "TimeElapsed" and validity conventions of the
-SNMP performance-history textual conventions {{?RFC3593}}: the
-`suspect-interval-flag` plays the role of the classical
-"xyzValidData" object, and `elapsed-time` that of
+`expected-sample-count` leaf reports the number of Stage 1 samples
+expected during the collection interval, i.e., the number a
+complete interval would collect for the configured sampling
+interval (for periodically sampled parameters, approximately the
+collection interval divided by the sampling interval), and the
+`received-sample-count` leaf reports the number of valid Stage 1
+samples actually collected. Together they give the interval
+coverage: a `received-sample-count` equal to
+`expected-sample-count` indicates full coverage, a smaller value a
+partial interval, and zero an unavailable interval (no valid
+sample). This is a sample-based coverage indicator that applies to
+any sampled parameter and is most meaningful for periodically
+sampled (gauge) parameters such as tidemarks; it generalizes, at
+the sample level, the counter coverage that `elapsed-time`
+indicates and that the `suspect-interval-flag` marks as incomplete.
+The `elapsed-time` leaf gives the time elapsed since the start of
+the current interval, and `interval-start-time` records when the
+interval began. These correspond to the "TimeElapsed" and validity
+conventions of the SNMP performance-history textual conventions
+{{?RFC3593}}: the `suspect-interval-flag` plays the role of the
+classical "xyzValidData" object, and `elapsed-time` that of
 "xyzTimeElapsed".
 
 ## Relationship to History Storage
