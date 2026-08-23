@@ -340,6 +340,14 @@ For each interval, the model advertises:
 - default-unit: recommended default time unit
 - granularity: step size; valid values must be multiples of this
 
+For a collection interval, the model additionally advertises
+`retained-interval-count`: the number of completed intervals the
+server retains after they end.  This value bounds both how many
+completed intervals a client may read back and, for push delivery,
+how long a reporting period may be, since a reporting period may
+span at most `retained-interval-count` collection intervals.  A
+client uses it to choose a reporting period the server can honour.
+
 Once a client knows the supported intervals, it can pair a single
 supported sampling interval with several supported collection intervals
 to serve different operational purposes for the same parameter.  The
@@ -524,6 +532,7 @@ module: ietf-pm-interval-capabilities
                       +--ro default-value?   uint32
                       +--ro default-unit?    interval-unit
                       +--ro granularity?     uint32
+                      +--ro retained-interval-count?   uint32
 ~~~~
 {:#fig-tree title="Tree Diagram of ietf-pm-interval-capabilities"}
 

@@ -352,10 +352,7 @@ module ietf-pm-collection {
        measurement.  It denotes an intentional pause of
        collection, as distinct from unintended sample loss
        (telemetry-loss), a counter reset (state-reset), or an
-       equipment or function restart (restart).  It is not the
-       same as G.7710 history storage suppression, which merely
-       omits writing a recent register when the interval count
-       is zero and does not by itself make the data suspect.";
+       equipment or function restart (restart).";
     reference
       "ITU-T G.7710: suspect interval flag set when the
        measurement is suspended or resumed";
@@ -380,14 +377,13 @@ module ietf-pm-collection {
       "A fault or outage condition (e.g., equipment or power
        failure, or resource unavailability) prevented the
        measurement from being performed for part or all of the
-       interval, so a gauge register may contain no data or the
-       periodical gauge measurements were not possible.  This is
-       distinct from telemetry-loss, in which the measurement was
-       performed but samples were lost in transit.";
+       interval, so a snapshot or tidemark may contain no data or
+       the periodical gauge measurements were not possible.  This
+       is distinct from telemetry-loss, in which the measurement
+       was performed but samples were lost in transit.";
     reference
       "ITU-T G.7710: suspect interval flag set when a snapshot or
-       tidemark register contains no data due to outage
-       conditions";
+       tidemark contains no data due to outage conditions";
   }
 
   /*
@@ -514,16 +510,11 @@ module ietf-pm-collection {
   grouping interval-data-status {
     description
       "Validity and coverage metadata for a collection interval,
-       aligned with the G.7710 suspect interval flag and with the
-       ValidData/TimeElapsed conventions of the SNMP
-       performance-history textual conventions (RFC 3593).  It
-       lets a client tell a fully measured interval from an
-       incomplete one, and a measured zero from an absent
-       value.";
+       aligned with the G.7710 suspect interval flag.  It lets a
+       client tell a fully measured interval from an incomplete
+       one, and a measured zero from an absent value.";
     reference
-      "ITU-T G.7710, clauses 10.2.11 and 10.2.15;
-       RFC 3593: Textual Conventions for Managed Objects for the
-       SNMP Framework (xyzValidData, xyzTimeElapsed)";
+      "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
     leaf suspect-interval-flag {
       type boolean;
       default false;
@@ -533,7 +524,7 @@ module ietf-pm-collection {
          be unreliable, for example when periodic samples are
          missing, when collection state is reset, when the
          equipment restarts, when interval timing changes, or
-         when collection is suppressed.  This is the YANG
+         when collection is suspended.  This is the YANG
          equivalent of the G.7710 suspect interval flag.
 
          For the snapshot collection type the initialization is
@@ -610,15 +601,14 @@ module ietf-pm-collection {
       type yang:date-and-time;
       description
         "Timestamp marking the end of the collection interval to
-         which the reported values apply.  This is the YANG
-         equivalent of the G.7710 recent-register end-of-interval
-         time-stamp (clauses 10.2.11 and 10.2.15).  It is the
-         authoritative measurement time for the interval and
-         should be used for correlation in preference to the
-         notification envelope eventTime, which reflects when the
-         notification was generated rather than the measurement
-         interval boundary.  It is present once the interval has
-         completed.";
+         which the reported values apply.  This is the
+         end-of-interval timestamp defined in ITU-T G.7710
+         (clauses 10.2.11 and 10.2.15).  It is the authoritative
+         measurement time for the interval and should be used for
+         correlation in preference to the notification envelope
+         eventTime, which reflects when the notification was
+         generated rather than the measurement interval boundary.
+         It is present once the interval has completed.";
       reference
         "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
     }

@@ -857,7 +857,7 @@ The collection types above summarise the samples that were
 available during a collection interval. When some of the expected
 Stage 1 samples are missing -- because of telemetry loss, partial
 node support, a state reset, an equipment restart, a change of
-interval timing, or suppression of collection -- the summarised
+interval timing, or suspension of collection -- the summarised
 value is still a valid number, but it does not carry the same
 meaning as a value computed over a complete interval. In
 particular, a numeric zero computed from no valid samples must not
@@ -894,7 +894,7 @@ ITU-T G.7710, clauses 10.2.11 and 10.2.15. It is initialised to
 unreliable: when one or more periodic samples are missing, when
 collection state is reset, when the equipment restarts during the
 interval, when interval timing is changed, or when collection is
-suppressed. A client that reads or receives a value together with
+suspended. A client that reads or receives a value together with
 a suspect flag of "true" knows that the value should be treated
 with caution.
 
@@ -945,31 +945,37 @@ the number of seconds of the interval that have been processed by
 the measurement -- not the sum of available time, since it
 advances during unavailable time as well. The
 `interval-start-time` and `interval-end-time` leaves record when
-the interval began and ended; `interval-end-time` is the G.7710
-recent-register end-of-interval time-stamp and is the
+the interval began and ended; `interval-end-time` is the
+end-of-interval timestamp defined in ITU-T G.7710 and is the
 authoritative measurement time, to be used for correlation in
-preference to the notification envelope eventTime. Together these
-correspond to the "TimeElapsed" and validity conventions of the
-SNMP performance-history textual conventions {{?RFC3593}}: the
-`suspect-interval-flag` plays the role of the classical
-"xyzValidData" object, and `elapsed-time` that of
-"xyzTimeElapsed".
+preference to the notification envelope eventTime.
 
-## Relationship to History Storage
+## Retained Interval Data
 
-ITU-T G.7710 stores the suspect interval flag, the elapsed time,
-and an end-of-interval timestamp in recent registers (clauses
-10.2.11 and 10.2.15), which retain a number of completed intervals
-for later retrieval. Those clauses apply "when history data
-storage is not suppressed". The model in this document corresponds
-to the history-storage-suppressed mode of operation: it exposes
-the status of the interval in progress and carries that status
-with each collected value, rather than retaining a bank of
-completed-interval registers in the Network Element. The three
-pieces of information that G.7710 keeps in a register -- the
-suspect flag, the elapsed time, and the interval timestamp -- are
-retained in the model as `interval-data-status` and accompany the
-data, whether it is polled or streamed.
+This model distinguishes the current interval from retained
+intervals. The current interval is the interval in progress; its
+value (the `collection-value` of counts and snapshot, or the high
+and low values of tidemarks) and its `interval-data-status` are
+always available and are read or delivered as the interval
+advances. A retained interval is a completed interval whose result
+the server keeps for a bounded time after the interval ends.
+
+This model does not require a server to retain completed intervals.
+When results are delivered as each interval ends, retention of past
+results is a client-side concern. When a server does retain
+completed intervals, the number it keeps for each collection
+interval is advertised as `retained-interval-count` in the
+companion capabilities model
+{{I-D.yoon-ippm-collection-interval-capabilities}}. That count
+bounds both how many completed intervals a client may read back and
+how long a reporting period may be, since a reporting period may
+span at most `retained-interval-count` collection intervals.
+
+The validity metadata that describes an interval -- the suspect
+flag, the sample coverage, the elapsed time, and the start and end
+timestamps -- is carried in `interval-data-status` and accompanies
+the value whether the interval is the current interval or a
+retained one, so it is independent of how the data is delivered.
 
 # Thresholding {#thresholding}
 
