@@ -63,7 +63,10 @@ module ietf-pm-collection {
        offset within the collection interval rather than a
        period between snapshots; this leaf rename is a
        backward-incompatible refinement, acceptable for this
-       work-in-progress revision.";
+       work-in-progress revision.  Added a 'day' enum to
+       'time-interval-unit' so that it matches the 'interval-unit'
+       typedef of the companion ietf-pm-interval-capabilities
+       module; this is a non-backward-incompatible addition.";
     reference
       "RFC XXXX: A YANG Data Model for Collection Measurement";
   }
@@ -142,6 +145,9 @@ module ietf-pm-collection {
       }
       enum hour {
         description "Time interval in hours.";
+      }
+      enum day {
+        description "Time interval in days.";
       }
     }
     description "Units for expressing time intervals.";
