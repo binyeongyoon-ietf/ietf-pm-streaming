@@ -56,14 +56,6 @@ normative:
 informative:
   RFC7799:
   I-D.yoon-ippm-collection-interval-capabilities:
-    title: >-
-      A YANG Data Model for Collection Interval Capabilities
-    author:
-      name: Bin Yeong Yoon
-      org: ETRI
-    date: 2026
-    seriesinfo:
-      Internet-Draft: draft-yoon-ippm-collection-interval-capabilities-00
 
 --- abstract
 
@@ -341,7 +333,8 @@ compatible with the existing YANG-Push framework
 ({{!RFC8639}}, {{!RFC8640}}, {{!RFC8641}}) for push-based delivery
 as well as with traditional pull-based retrieval via NETCONF or
 RESTCONF; this document does not define any new subscription or
-notification.
+notification mechanism, only the pm-threshold-events notification
+content, carried over those existing mechanisms.
 
 # PM parameters
 
@@ -690,8 +683,8 @@ in {{collection-types}}, where counts represent cumulative event
 occurrences, snapshot represents point-in-time values, and
 tidemarks represent interval extremes.
 
-| Client (param) | Samp. | Meas. | Coll.     | Purpose            |
-|----------------|-------|-------|-----------|--------------------|
+| Client (param) | Samp. | Coll. interval | Type      | Purpose            |
+|----------------|-------|----------------|-----------|--------------------|
 | NOC (ES)       | 1s    | 1min  | counts    | Rapid fault alert  |
 |                | 1s    | 15min | counts    | Maintenance        |
 |                | 1s    | 24hr  | counts    | Daily QoS report   |

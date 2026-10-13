@@ -1,7 +1,7 @@
 ---
 title: "A YANG Data Model for Performance Monitoring Streaming on Common Transport Equipment"
 abbrev: "PM Streaming Transport YANG"
-category: info
+category: std
 
 docname: draft-yoon-ccamp-pm-streaming-latest
 submissiontype: IETF
@@ -38,22 +38,7 @@ normative:
   RFC8640:
   RFC8641:
   I-D.yoon-ippm-collection-measure:
-    title: A YANG Data Model of Collection Measurement
-    author:
-      name: Bin Yeong Yoon
-      org: ETRI
-    date: 2026
-    seriesinfo:
-      Internet-Draft: draft-yoon-ippm-collection-measure-00
   I-D.yoon-ippm-collection-interval-capabilities:
-    title: >-
-      A YANG Data Model for PM Collection Interval Capabilities
-    author:
-      name: Bin Yeong Yoon
-      org: ETRI
-    date: 2026
-    seriesinfo:
-      Internet-Draft: draft-yoon-ippm-collection-interval-capabilities-00
   G7710:
     title: Common Equipment Management Function Requirements
     author:
@@ -125,13 +110,12 @@ all capitals, as shown here.
 # Relationship to the Collection Measurement Documents {#doc-relationship}
 
 This document is the transport-equipment member of a three-document
-set.  It continues the work formerly published as
-draft-yoon-ccamp-pm-streaming-05: the generic, transport-neutral YANG
-modules that earlier versions defined have been extracted into two
-companion documents so that they can be reused independently, and
-this document (continued as draft-yoon-ccamp-pm-streaming-06) now
-imports them instead of defining them.  The resulting structure is
-shown in {{fig-doc-relationship}}.
+set.  Earlier versions of this work defined the generic,
+transport-neutral YANG modules directly; those modules have since
+been extracted into two companion documents so that they can be
+reused independently, and this document no longer defines them
+itself, instead relying on them as companion documents.  The
+resulting structure is shown in {{fig-doc-relationship}}.
 
 ~~~~
    +-------------------------------------------------+
@@ -149,13 +133,12 @@ shown in {{fig-doc-relationship}}.
    |  interval-capabilities          |              +-----------------------------+
    +---------------------------------+                          ^
                   ^                                             |
-                  |               imports (1) and (2)           |
+                  |            aligned with (1), (2)            |
                   +----------------------+----------------------+
                                          |
             +---------------------------------------------+
             | (3) ietf-pm-parameters     (THIS DOCUMENT)  |
-            |     draft-yoon-ccamp-pm-streaming-06        |
-            |     (CCAMP, Informational; formerly -05)    |
+            |     (CCAMP Working Group, Informational)    |
             +---------------------------------------------+
 ~~~~
 {:#fig-doc-relationship title="Relationship between this document and the collection measurement model documents"}
@@ -177,14 +160,23 @@ The three documents play distinct, layered roles:
   collection intervals it supports at the standard capability
   discovery anchor.
 
-* (3) This document (module ietf-pm-parameters) imports both (1) and
-  (2), defines the transport-specific PM parameters and profiles
-  (see {{params-profiles}}), and shows how the imported models are
-  streamed on common transport equipment.
+* (3) This document (module ietf-pm-parameters) defines the
+  transport-specific PM parameter identities and profiles (see
+  {{params-profiles}}), using the profile-naming format and
+  parameter structure of (1) and (2) by convention, and shows how
+  the three modules are used together when streamed on common
+  transport equipment.
 
-This document imports the YANG modules of (1) and (2) and does not
-modify them; module (2) imports the profile-names type from module
-(1) and augments the "ietf-system-capabilities" module of
+This document's YANG module does not import the modules of (1) or
+(2); it stands alone, defining only the transport parameter
+identities and example parameter containers.  It is nonetheless
+designed to be deployed and read together with (1) and (2) on the
+same network element: its parameter identities and profile names
+follow the same naming conventions as the "pm-parameter" and
+"parameter-profile" structures of (1), so that the parameter values
+collected under (1) can be interpreted using the identities defined
+here.  Separately, module (2) imports the profile-names type from
+module (1) and augments the "ietf-system-capabilities" module of
 {{RFC9196}}.  The normative
 measurement and capability semantics remain in
 {{I-D.yoon-ippm-collection-measure}} and

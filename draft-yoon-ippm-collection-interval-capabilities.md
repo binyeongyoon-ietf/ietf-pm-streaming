@@ -54,13 +54,6 @@ normative:
   RFC8525:
   RFC9196:
   I-D.yoon-ippm-collection-measure:
-    title: A YANG Data Model for Collection Measurement
-    author:
-      name: Bin Yeong Yoon
-      org: ETRI
-    date: 2026
-    seriesinfo:
-      Internet-Draft: draft-yoon-ippm-collection-measure-00
   G7710:
     title: Common Equipment Management Function Requirements
     author:
@@ -109,7 +102,7 @@ suboptimal monitoring.
 
 This document defines a YANG data model {{RFC7950}},
 "ietf-pm-interval-capabilities", for advertising the collection
-collection interval capabilities a server supports.  A client reads
+interval capabilities a server supports.  A client reads
 this information from the operational datastore before it configures
 measurements.  The model mirrors the profile-and-parameter structure
 of the companion collection measurement model and reuses its
@@ -285,8 +278,8 @@ analytics.
 {{tab-equipment-classes}} shows an example comparison for the ES
 parameter.
 
-| Equipment class | Min. sampling | Min. measurement | Granularity |
-|-----------------|---------------|------------------|-------------|
+| Equipment class | Min. sampling | Min. collection interval | Granularity |
+|-----------------|---------------|---------------------------|-------------|
 | High-performance | 100 ms | 1 min | 5 s |
 | Standard | 1 s | 1 min | 1 min |
 | Low-specification | 1 s | 15 min | 15 min |
