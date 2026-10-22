@@ -1,5 +1,5 @@
 ---
-title: "A YANG Data Model for Collection Interval Capabilities"
+title: "A YANG Data Model for Performance Monitoring (PM) Interval Capabilities"
 abbrev: "PM Interval Capabilities YANG"
 category: std
 
@@ -11,7 +11,7 @@ consensus: false
 v: 3
 workgroup: IPPM Working Group
 keyword:
- - performance management
+ - performance monitoring
  - interval capabilities
  - capability advertisement
  - YANG
@@ -67,30 +67,41 @@ informative:
   RFC7799:
   RFC6390:
   RFC9195:
+  I-D.yoon-ccamp-pm-streaming:
 
 --- abstract
 
 This document defines a YANG data model, "ietf-pm-interval-capabilities",
-that enables a server to advertise which collection intervals
-it can support.  A client reads this capability information before
-configuring performance measurements, so that it selects only sampling
-and collection intervals that the server can honour.  The capabilities
+that enables a server to advertise which sampling and collection
+intervals, measurement methods, and collection types it supports for
+each performance monitoring (PM) parameter.  A client reads this
+capability information before configuring PM collection, so that it
+selects only values that the server can honour.  The capabilities
 are advertised by augmenting the "ietf-system-capabilities" module
 defined in {{RFC9196}}, so that a client discovers them at the same
 well-known location used for subscription and notification
-capabilities.  The model imports the "profile-names" type from the
-companion collection measurement model
-defined in {{I-D.yoon-ippm-collection-measure}} and mirrors its
+capabilities.  The model imports the "profile-names" and
+"collection-type" types and the "performance-parameter" and
+"measurement-method" identities from the companion PM collection
+model defined in
+{{I-D.yoon-ippm-collection-measure}} and mirrors its
 profile-and-parameter structure, ensuring direct alignment between
-capability discovery and measurement configuration.  The model does not
-define measurement data structures or any delivery mechanism; those are
-defined in the companion document.
+capability discovery and collection configuration.  The model does
+not define collection data structures or any delivery mechanism;
+those are defined in the companion document.
+
+--- note_Note_to_the_RFC_Editor
+
+Please replace "RFC XXXX" with the RFC number assigned to this
+document, and "RFC YYYY" with the RFC number assigned to
+{{I-D.yoon-ippm-collection-measure}}, throughout this document and
+in the YANG module, and remove this note.
 
 --- middle
 
 # Introduction
 
-The collection measurement data model defined in
+The PM collection data model defined in
 {{I-D.yoon-ippm-collection-measure}} allows a client to configure sampling
 and collection intervals for performance parameters within named
 parameter profiles.  The same parameter may require different intervals
@@ -101,13 +112,13 @@ values that the server cannot honour, leading to configuration errors or
 suboptimal monitoring.
 
 This document defines a YANG data model {{RFC7950}},
-"ietf-pm-interval-capabilities", for advertising the collection
-interval capabilities a server supports.  A client reads
+"ietf-pm-interval-capabilities", for advertising the interval
+capabilities a server supports.  A client reads
 this information from the operational datastore before it configures
-measurements.  The model mirrors the profile-and-parameter structure
-of the companion collection measurement model and reuses its
-"profile-names" type, so that capability discovery aligns directly with
-measurement configuration.
+PM collection.  The model mirrors the profile-and-parameter structure
+of the companion PM collection model and reuses its
+"profile-names" type and "performance-parameter" identity, so that
+capability discovery aligns directly with collection configuration.
 
 In addition to interval ranges, the same discovery step advertises
 which measurement methods {{?RFC7799}} the server can apply to each
@@ -122,6 +133,14 @@ intervals lets the client make both choices in a single discovery
 step, using the companion configuration model
 {{I-D.yoon-ippm-collection-measure}}.
 
+The same discovery step also advertises which collection types
+(counts, snapshot, and tidemarks) the server supports for each
+parameter.  In the companion model each collection type is a
+presence container that a client creates to enable it, so a client
+needs to know which types the server supports before it configures a
+parameter; a profile may also restrict a parameter to a subset of
+the types, for example counts only.
+
 Rather than defining a separate top-level container, this module
 augments the "system-capabilities" container of the
 "ietf-system-capabilities" module defined in {{RFC9196}}.  RFC 9196
@@ -130,11 +149,11 @@ YANG-related system capabilities; the companion module
 "ietf-notification-capabilities" (Section 3 of {{RFC9196}}) uses the
 same anchor to advertise subscription and notification capabilities.
 By augmenting the same anchor, this module lets a NETCONF or RESTCONF
-client discover the measurement interval capabilities and the
+client discover the PM interval capabilities and the
 subscription capabilities through a single, standardised query, without
 prior knowledge of this module's own layout.
 
-This document does not define measurement data structures, collection
+This document does not define collection data structures, collection
 types, threshold events, or any delivery mechanism.  All of those are
 defined in the companion document {{I-D.yoon-ippm-collection-measure}}.
 
@@ -151,20 +170,15 @@ all capitals, as shown here.
 
 ## Relationship to Companion Documents {#relationship}
 
-This document and {{I-D.yoon-ippm-collection-measure}} together provide
-the functional coverage that was originally combined in a single
-document, draft-yoon-ccamp-pm-streaming.  The original document defined
-both the PM collection data model and the interval capability model in
-one place and focused on push-based streaming as the delivery mechanism.
-The two documents have been separated to achieve cleaner separation of
-concerns and to make the models delivery-mechanism neutral.
-
-The functional division is as follows.
+The functional division between this document and
+{{I-D.yoon-ippm-collection-measure}} is as follows.
 
 {{I-D.yoon-ippm-collection-measure}} defines "ietf-pm-collection", which
 covers:
 
-- Parameter profiles and PM parameter groupings
+- Parameter profiles and PM parameter groupings, and the
+  "performance-parameter" base identity from which specific
+  parameters are derived
 - Three collection types: Counts, Snapshot, and Tidemarks (per
   ITU-T G.7710 {{G7710}})
 - Configurable sampling and collection intervals
@@ -176,16 +190,23 @@ This document defines "ietf-pm-interval-capabilities", which covers:
 
 - Read-only advertisement of the sampling and collection interval
   ranges, units, defaults, and granularity that a server supports
+- Read-only advertisement of the measurement methods and collection
+  types that a server supports for each parameter
 - Hierarchical alignment with the companion model's profile-and-
   parameter structure
-- Capability discovery prior to measurement configuration
+- Capability discovery prior to collection configuration
 
 The separation of concerns is:
 
 - "What data is collected and how it is structured" is in
   {{I-D.yoon-ippm-collection-measure}}.
-- "Which interval configurations the server can support" is in this
+- "Which configurations the server can support" is in this
   document.
+
+Specific performance parameters, such as the transport parameters of
+ITU-T G.7710, are defined as identities derived from
+"performance-parameter" in other documents, for example
+{{I-D.yoon-ccamp-pm-streaming}}.
 
 {{fig-document-relationship}} illustrates the relationship between
 the two YANG modules.
@@ -197,22 +218,26 @@ the two YANG modules.
   |                                          |
   |  pm-interval-capabilities                |
   |    parameter-profile [profile-names] -+  |
-  |      pm-parameter                     |  |
+  |      pm-parameter [identityref]       |  |
+  |        supported-collection-types     |  |
   |        interval-relationships         |  |
   |          sampling-interval            |  |
-  |            collection-interval       |  |
-  +------------------------------|----------+
-                                 | imports profile-names
+  |            collection-interval        |  |
+  +------------------------------|-----------+
+                                 | imports profile-names,
+                                 | performance-parameter,
+                                 | measurement-method,
+                                 | collection-type
                                  v
   +------------------------------------------+
   |     ietf-pm-collection                   |
-  |  (draft-yoon-ippm-collection-measure-00)    |
+  |     (companion document)                 |
   |                                          |
-  |  pm-periodic-collection                 |
+  |  pm-periodic-collection                  |
   |    parameter-profile [profile-names]     |
-  |      pm-parameter                        |
+  |      pm-parameter [identityref]          |
   |        sampling-interval                 |
-  |          collection-interval            |
+  |          collection-interval             |
   |            collection-types              |
   |              counts / snapshot /         |
   |              tidemarks                   |
@@ -305,16 +330,18 @@ instability.  A standardised capability model addresses these
 challenges and enables interoperability across diverse network
 environments.
 
-# Structure and the Sampling/Measurement Relationship
+# Structure and the Sampling/Collection Relationship
 
-The module follows a hierarchical structure that mirrors the measurement
-configuration model defined in {{I-D.yoon-ippm-collection-measure}},
+The module follows a hierarchical structure that mirrors the
+configuration structure of the PM collection model defined in
+{{I-D.yoon-ippm-collection-measure}},
 ensuring consistency between capability discovery and actual
 configuration.  It has three levels: parameter profiles (collections of
 related parameters such as "itu-transport-maintenance-15min"), PM
-parameters (individual parameters such as ES, SES, BBE), and interval
-capabilities (supported sampling and collection intervals for each
-parameter).
+parameters (individual parameters such as ES, SES, BBE, identified by
+identities derived from "performance-parameter"), and capabilities
+(supported sampling and collection intervals, measurement methods,
+and collection types for each parameter).
 
 The model defines a key relationship: a collection interval MUST be a
 multiple of its corresponding sampling interval.  This ensures that
@@ -322,7 +349,22 @@ aggregation periods align with the data collection frequency.  For
 example, if a server supports a 5-second sampling interval, valid
 collection intervals are 5s, 10s, 15s, 30s, 60s, and so on.  The
 relationship is expressed structurally by nesting collection intervals
-within their corresponding sampling interval entry.
+within their corresponding sampling interval entry, and it is
+enforced at configuration time by the companion model
+{{I-D.yoon-ippm-collection-measure}}.
+
+The sampling interval is variable: its default is 1 second, and a
+server may advertise a range of sampling values (for example, 100
+milliseconds to 10 seconds).  When ranges are advertised, not every
+combination of an advertised sampling value and an advertised
+collection value is valid.  A client MUST select a combination in
+which the collection interval is a multiple of the sampling
+interval; for example, a 15-minute collection interval can be
+paired with a 100-millisecond, 1-second, or 5-second sampling
+interval, but not with a 700-millisecond or 7-second one.  The
+companion model rejects any other combination.  The default values
+a server advertises for a sampling interval and its collection
+intervals MUST form a valid combination.
 
 For each interval, the model advertises:
 
@@ -341,6 +383,14 @@ how long a reporting period may be, since a reporting period may
 span at most `retained-interval-count` collection intervals.  A
 client uses it to choose a reporting period the server can honour.
 
+For each parameter, the model additionally advertises
+`supported-collection-types`: the collection types (counts,
+snapshot, tidemarks) that the server can collect for the parameter.
+In the companion model each collection type is a presence container,
+so a client creates only the containers of the advertised types.  An
+absent list means the server does not advertise collection-type
+information for the parameter.
+
 Once a client knows the supported intervals, it can pair a single
 supported sampling interval with several supported collection intervals
 to serve different operational purposes for the same parameter.  The
@@ -350,8 +400,8 @@ granularities a server advertises here.
 
 # Capability Discovery and Configuration Workflow
 
-A client performs the following three steps to configure and access
-collection measurements correctly.  Steps 2 and 3 use the companion
+A client performs the following three steps to configure PM
+collection and access the collected data correctly.  Steps 2 and 3 use the companion
 model defined in {{I-D.yoon-ippm-collection-measure}}; Step 1 uses the
 model defined in this document.
 
@@ -366,7 +416,7 @@ model defined in this document.
         |---NETCONF get-data--------------> |
         |<--pm-interval-capabilities-------- |
         |                                    |
-        |  Step 2: Configure measurement     |
+        |  Step 2: Configure collection      |
         |  [ietf-pm-collection]              |
         |---NETCONF edit-config-----------> |
         |<--OK------------------------------ |
@@ -399,7 +449,8 @@ any subscription and notification capabilities advertised there by
 "ietf-notification-capabilities" (Section 3 of {{RFC9196}}).
 From it, the client retrieves the supported sampling and collection
 intervals for each parameter and profile, including the minimum and
-maximum values, allowed units, and granularity.  This runtime exposure
+maximum values, allowed units, and granularity, together with the
+supported measurement methods and collection types.  This runtime exposure
 follows the model described in {{RFC9196}} for advertising capabilities
 in operational state.  The same information MAY also be published as
 static instance data using the format defined in {{RFC9195}}.  The
@@ -407,87 +458,123 @@ interval ranges advertised here correspond to the Measurement Timing
 aspect of the Performance Metric Specification described in
 Section 5.4.2 of {{?RFC6390}}; this document provides the runtime
 discovery of those timing constraints, which the companion model
-{{I-D.yoon-ippm-collection-measure}} then applies when measurements are
+{{I-D.yoon-ippm-collection-measure}} then applies when collection is
 configured.
 
-**Step 2 -- Configure measurements (companion document).**
+**Step 2 -- Configure collection (companion document).**
 The client configures the "pm-periodic-collection" container defined
 in "ietf-pm-collection" {{I-D.yoon-ippm-collection-measure}}, selecting
-only sampling and collection interval values that Step 1 confirmed the
-server supports.  This avoids configuration errors such as an
-unsupported interval being rejected during collection setup or
+only sampling and collection interval values, measurement methods,
+and collection types that Step 1 confirmed the server supports.  This
+avoids configuration errors such as an unsupported interval or
+collection type being rejected during collection setup or
 subscription establishment.
 
 **Step 3 -- Access data (companion document).**
 The client accesses the collected PM data using either pull-based
 retrieval or push-based subscription, both supported by "ietf-pm-
 collection".  For pull-based access, the client issues NETCONF
-"get-data" or RESTCONF GET operations against the operational
-datastore to read current measurement values.  For push-based access,
+"get-data" {{?RFC8526}} or RESTCONF GET operations against the operational
+datastore to read current collection values.  For push-based access,
 the client establishes a YANG-Push subscription per {{!RFC8639}},
 {{!RFC8641}}, {{!RFC8640}} to receive periodic or threshold-triggered
 notifications.
 
 # Interval Capabilities Example
 
-{{fig-cap-example}} shows a NETCONF `<get>` request that retrieves
-the interval capabilities for the ES parameter in the
-"itu-transport-maintenance-15min" profile.
+{{fig-cap-example}} shows a NETCONF `<get-data>` request {{?RFC8526}}
+that retrieves, from the operational datastore, the capabilities
+advertised for the ES parameter in the
+"itu-transport-maintenance-15min" profile.  The subtree filter
+selects the parameter by its list keys only, so the whole entry is
+returned.  The parameter is identified by the identity "pm-pa:es"
+defined in {{I-D.yoon-ccamp-pm-streaming}}.
 
 ~~~~ xml
 <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
-     xmlns:sysc=
-       "urn:ietf:params:xml:ns:yang:ietf-system-capabilities"
-     xmlns:ipc=
-       "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
      message-id="301">
-  <get>
-    <filter>
-      <sysc:system-capabilities>
-        <ipc:pm-interval-capabilities>
+  <get-data
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-nmda"
+      xmlns:ds="urn:ietf:params:xml:ns:yang:ietf-datastores">
+    <datastore>ds:operational</datastore>
+    <subtree-filter>
+      <system-capabilities
+          xmlns="urn:ietf:params:xml:ns:yang:ietf-system-capabilities">
+        <pm-interval-capabilities
+            xmlns=
+          "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
+            xmlns:pm-pa=
+              "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
           <parameter-profile>
             <name>itu-transport-maintenance-15min</name>
             <pm-parameter>
-              <name>es</name>
-              <interval-relationships>
-                <sampling-interval>
-                  <id>1s</id>
-                  <min-value>1</min-value>
-                  <max-value>1</max-value>
-                  <units>second</units>
-                  <default-value>1</default-value>
-                  <default-unit>second</default-unit>
-                  <granularity>1</granularity>
-                  <collection-interval>
-                    <id>collection-range</id>
-                    <min-value>5</min-value>
-                    <max-value>1440</max-value>
-                    <units>minute</units>
-                    <default-value>15</default-value>
-                    <default-unit>minute</default-unit>
-                    <granularity>5</granularity>
-                  </collection-interval>
-                </sampling-interval>
-              </interval-relationships>
+              <name>pm-pa:es</name>
             </pm-parameter>
           </parameter-profile>
-        </ipc:pm-interval-capabilities>
-      </sysc:system-capabilities>
-    </filter>
-  </get>
+        </pm-interval-capabilities>
+      </system-capabilities>
+    </subtree-filter>
+  </get-data>
 </rpc>
 ~~~~
 {:#fig-cap-example title="Interval Capabilities Discovery Request Example"}
 
-The response indicates that the server supports 1-second sampling and
+{{fig-cap-reply}} shows the "pm-interval-capabilities" data returned
+within "system-capabilities" in the reply.
+
+~~~~ xml
+<pm-interval-capabilities
+    xmlns=
+  "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
+    xmlns:pm-pa=
+      "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
+  <parameter-profile>
+    <name>itu-transport-maintenance-15min</name>
+    <pm-parameter>
+      <name>pm-pa:es</name>
+      <supported-collection-types>counts</supported-collection-types>
+      <supported-collection-types>snapshot</supported-collection-types>
+      <supported-collection-types>tidemarks</supported-collection-types>
+      <interval-relationships>
+        <sampling-interval>
+          <id>1s</id>
+          <min-value>1</min-value>
+          <max-value>1</max-value>
+          <units>second</units>
+          <default-value>1</default-value>
+          <default-unit>second</default-unit>
+          <granularity>1</granularity>
+          <collection-interval>
+            <id>collection-range</id>
+            <min-value>5</min-value>
+            <max-value>1440</max-value>
+            <units>minute</units>
+            <default-value>15</default-value>
+            <default-unit>minute</default-unit>
+            <granularity>5</granularity>
+            <retained-interval-count>1</retained-interval-count>
+          </collection-interval>
+        </sampling-interval>
+      </interval-relationships>
+    </pm-parameter>
+  </parameter-profile>
+</pm-interval-capabilities>
+~~~~
+{:#fig-cap-reply title="Interval Capabilities Discovery Reply Data Example"}
+
+The reply indicates that the server supports 1-second sampling and
 a collection interval range of 5 to 1440 minutes with 5-minute
-granularity, with a default of 15 minutes.  Using this information,
-the client can configure the ES parameter in "ietf-pm-collection" with
-any collection interval that is a multiple of 5 within the range
-5 to 1440 minutes, knowing the server will accept the configuration.
+granularity, with a default of 15 minutes; that it supports the
+counts, snapshot, and tidemarks collection types for the parameter;
+and that it retains the most recently completed collection
+interval.  Using this information, the client can configure the ES
+parameter in "ietf-pm-collection" with any collection interval
+that is a multiple of 5 within the range 5 to 1440 minutes, and
+with any of the three collection types, knowing the server will
+accept the configuration.
 
 When the server also advertises supported measurement methods for
-the parameter, the response additionally lists one or more
+the parameter, the reply additionally lists one or more
 "supported-measurement-method" values (and optionally a
 "default-measurement-method"), from which the client selects the
 method to configure in "ietf-pm-collection".
@@ -503,11 +590,13 @@ module: ietf-pm-interval-capabilities
   augment /sysc:system-capabilities:
     +--ro pm-interval-capabilities
        +--ro parameter-profile* [name]
-          +--ro name            pm-coll:profile-names
+          +--ro name            pm-co:profile-names
           +--ro pm-parameter* [name]
-             +--ro name                      string
-             +--ro supported-measurement-method*  identityref
-             +--ro default-measurement-method?    identityref
+             +--ro name                            identityref
+             +--ro supported-measurement-method*   identityref
+             +--ro default-measurement-method?     identityref
+             +--ro supported-collection-types*
+             |       pm-co:collection-type
              +--ro interval-relationships
                 +--ro sampling-interval* [id]
                    +--ro id                      string
@@ -591,16 +680,7 @@ in the "YANG Module Names" registry {{RFC6020}}:
    Name:      ietf-pm-interval-capabilities
    Namespace:
      urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities
-   Prefix:    ipc
+   Prefix:    pm-ic
    Reference: RFC XXXX
 
 --- back
-
-# Acknowledgments
-{:numbered="false"}
-
-The interval capability model in this document is derived from the
-PM interval capabilities work originally defined in
-draft-yoon-ccamp-pm-streaming, and has been separated into this
-standalone document to complement the collection measurement model
-in draft-yoon-ippm-collection-measure.

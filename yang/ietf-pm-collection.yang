@@ -2,7 +2,7 @@ module ietf-pm-collection {
   yang-version 1.1;
   namespace
     "urn:ietf:params:xml:ns:yang:ietf-pm-collection";
-  prefix pm-coll;
+  prefix pm-co;
 
   import ietf-yang-types {
     prefix yang;
@@ -15,19 +15,24 @@ module ietf-pm-collection {
     "WG Web: <https://datatracker.ietf.org/wg/ippm/>
      Editor: Bin Yeong Yoon <mailto:byyun@etri.re.kr>";
   description
-    "This YANG module defines a data model for Collection
-     Measurement of performance management (PM) data in network
-     equipment, based on ITU-T G.7710. It specifies three core
-     collection types: counts (cumulative events), snapshot
-     (instantaneous values), and tidemarks (extreme values), as
-     defined in ITU-T G.7710.
+    "This YANG module defines a data model for the collection of
+     performance monitoring (PM) data in network equipment, based
+     on ITU-T G.7710.  It specifies three core collection types:
+     counts (cumulative events), snapshot (instantaneous values),
+     and tidemarks (extreme values), as defined in ITU-T G.7710.
 
      The module enables proactive network monitoring through
      configurable sampling and collection intervals, supporting
      both high-frequency real-time monitoring and long-term trend
-     analysis. It provides threshold event notifications for both
-     periodic measurements and non-periodic events (BUT, EUT,
+     analysis.  It provides threshold event notifications for both
+     periodic collection and non-periodic events (BUT, EUT,
      CSES).
+
+     The module defines the base identity 'performance-parameter'
+     from which the identities of specific performance parameters
+     are derived in other modules, and the 'collection-type'
+     typedef used by companion modules to refer to the three
+     collection types.
 
      The collected data can be retrieved by clients via
      pull-based mechanisms (e.g., NETCONF get-data) or delivered
@@ -35,72 +40,28 @@ module ietf-pm-collection {
      The design supports AI-driven applications, network digital
      twins, and dynamic network environments by enabling multiple
      simultaneous views of the same performance parameter with
-     different temporal resolutions. This hierarchical structure
-     allows operators, analytics systems, and digital twin
-     platforms to access performance data at appropriate
-     granularities while maintaining operational efficiency and
-     cross-vendor interoperability.";
+     different temporal resolutions.
 
-  revision 2026-08-20 {
+     Copyright (c) 2026 IETF Trust and the persons identified as
+     authors of the code.  All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Revised BSD License
+     set forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (https://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC XXXX
+     (https://www.rfc-editor.org/info/rfcXXXX); see the RFC
+     itself for full legal notices.";
+
+  revision 2026-10-21 {
     description
-      "WORK IN PROGRESS.  Development revision; the date will be
-       set to the actual submission or publication date at
-       release.  (Informational marker only; YANG tools do not
-       interpret it.)
-
-       Added interval data validity metadata to address review
-       comments on incomplete collection intervals and the
-       G.7710 suspect-interval semantics: a new 'interval-status'
-       typedef; a new 'coverage-counters' feature; a new
-       'suspect-reason' identity hierarchy (including
-       'measurement-boundary' and 'outage'); a new
-       'interval-data-status' grouping carrying the suspect
-       interval flag, status, coverage counters, elapsed time,
-       and interval start and end timestamps; and a new
-       config-false 'interval-data-status' container under each
-       'collection-interval'.  Corrected the snapshot
-       'uniform-time-config' to model the uniform time as an
-       offset within the collection interval rather than a
-       period between snapshots; this leaf rename is a
-       backward-incompatible refinement, acceptable for this
-       work-in-progress revision.  Added a 'day' enum to
-       'time-interval-unit' so that it matches the 'interval-unit'
-       typedef of the companion ietf-pm-interval-capabilities
-       module; this is a non-backward-incompatible addition.";
+      "Initial revision.";
     reference
-      "RFC XXXX: A YANG Data Model for Collection Measurement";
-  }
-
-  revision 2026-08-17 {
-    description
-      "WORK IN PROGRESS.  Development revision; the date will be
-       set to the actual submission or publication date at
-       release.  (Informational marker only; YANG tools do not
-       interpret it.)
-
-       Added measurement method metadata aligned with the IPPM
-       framework (RFC 7799): a new 'measurement-method' identity
-       hierarchy (base identity with derived identities 'active',
-       'passive', and 'hybrid'), and a new optional
-       'measurement-method' leaf under 'pm-parameter'.  These are
-       non-backward-incompatible changes (only new identities and
-       an optional leaf were added).";
-    reference
-      "RFC XXXX: A YANG Data Model for Collection Measurement";
-  }
-
-  revision 2026-05-02 {
-    description
-      "Renamed the module from ietf-pm-measurements to
-       ietf-pm-collection (including namespace and prefix).
-
-       Terminology and model alignment: prior wording and the
-       measurement-methods container for counts, snapshot, and
-       tidemarks were replaced by collection types and the
-       collection-types container, per ITU-T G.7710 collection-
-       type concepts.";
-    reference
-      "RFC XXXX: A YANG Data Model for Collection Measurement";
+      "RFC XXXX: A YANG Data Model for Performance Monitoring (PM)
+       Collection";
   }
 
   /*
@@ -153,6 +114,32 @@ module ietf-pm-collection {
     description "Units for expressing time intervals.";
   }
 
+  typedef collection-type {
+    type enumeration {
+      enum counts {
+        description
+          "Counts collection type: cumulative number of events
+           over the collection interval.";
+      }
+      enum snapshot {
+        description
+          "Snapshot collection type: instantaneous value taken at
+           the uniform time within the collection interval.";
+      }
+      enum tidemarks {
+        description
+          "Tidemarks collection type: maximum and minimum values
+           reached during the collection interval.";
+      }
+    }
+    description
+      "The three collection types defined in ITU-T G.7710.  Used
+       by companion modules, for example to advertise which
+       collection types a server supports for a parameter.";
+    reference
+      "ITU-T G.7710";
+  }
+
   typedef interval-status {
     type enumeration {
       enum complete {
@@ -197,7 +184,19 @@ module ietf-pm-collection {
   }
 
   /*
-   * IDENTITIES
+   * PERFORMANCE PARAMETER IDENTITY
+   */
+  identity performance-parameter {
+    description
+      "Base identity for performance monitoring parameters.  The
+       key of each pm-parameter entry is an identity derived from
+       this base.  Specific parameters are defined as derived
+       identities in other modules, for example the transport
+       parameters of ITU-T G.7710 in ietf-pm-parameters.";
+  }
+
+  /*
+   * EVENT IDENTITIES
    */
   identity periodic-events {
     description
@@ -207,27 +206,29 @@ module ietf-pm-collection {
   identity counts-transient {
     base periodic-events;
     description
-      "Notification for transient threshold events in counts
-       measurements.";
+      "Notification for transient threshold events of the counts
+       collection type.";
   }
 
   identity counts-standing {
     base periodic-events;
     description
-      "Notification for standing threshold events in counts
-       measurements.";
+      "Notification for standing threshold events of the counts
+       collection type.";
   }
 
   identity snapshot {
     base periodic-events;
     description
-      "Notification for snapshot measurement threshold events.";
+      "Notification for threshold events of the snapshot
+       collection type.";
   }
 
   identity tidemarks {
     base periodic-events;
     description
-      "Notification for tidemarks measurement threshold events.";
+      "Notification for threshold events of the tidemarks
+       collection type.";
   }
 
   identity non-periodic-events {
@@ -334,7 +335,7 @@ module ietf-pm-collection {
   identity restart {
     base suspect-reason;
     description
-      "The equipment or measurement function restarted during
+      "The equipment or collection function restarted during
        the interval.";
   }
 
@@ -342,7 +343,9 @@ module ietf-pm-collection {
     base suspect-reason;
     description
       "Interval timing changed during the interval, for example
-       due to reconfiguration or a clock adjustment.";
+       due to a change of the sampling interval, reconfiguration,
+       or a clock adjustment, so the interval does not contain the
+       expected number of samples.";
   }
 
   identity measurement-suspended {
@@ -397,8 +400,8 @@ module ietf-pm-collection {
    */
   grouping threshold-config {
     description
-      "Common threshold configuration for snapshot and tidemarks
-       measurement types (high and low thresholds).";
+      "Common threshold configuration for the snapshot and
+       tidemarks collection types (high and low thresholds).";
     leaf high-threshold {
       type uint32;
       description
@@ -419,8 +422,9 @@ module ietf-pm-collection {
        and report immediately when the count value reaches or
        crosses the configured transient threshold value.
        Transient thresholds do not support low threshold
-       (underflow) conditions, unlike snapshot and tidemarks
-       measurements which support both high and low thresholds.";
+       (underflow) conditions, unlike the snapshot and tidemarks
+       collection types, which support both high and low
+       thresholds.";
     leaf transient-threshold {
       type uint32;
       description
@@ -473,10 +477,10 @@ module ietf-pm-collection {
 
   grouping count-transient-event-type {
     description
-      "Transient threshold event type definition for counts
-       measurements. Transient thresholds report immediately when
-       the count value reaches or crosses a configured threshold
-       value.";
+      "Transient threshold event type definition for the counts
+       collection type.  Transient thresholds report immediately
+       when the count value reaches or crosses a configured
+       threshold value.";
     leaf event-type {
       type enumeration {
         enum Threshold-Crossed-Event {
@@ -493,10 +497,10 @@ module ietf-pm-collection {
   grouping triggered-count-transient-event-info {
     description
       "Combined transient threshold event type and event
-       information for counts measurements. Transient thresholds
-       are independent threshold mechanisms that report
-       immediately when count values cross configured threshold
-       values.";
+       information for the counts collection type.  Transient
+       thresholds are independent threshold mechanisms that
+       report immediately when count values cross configured
+       threshold values.";
     uses count-transient-event-type;
     uses event-state-info;
   }
@@ -622,37 +626,47 @@ module ietf-pm-collection {
 
   /*
    * COLLECTION TYPE GROUPINGS
+   *
+   * Each collection type is a presence container.  The presence
+   * of the container in a collection-interval entry indicates
+   * that the server collects that collection type for the
+   * parameter over that interval; its absence indicates that it
+   * does not.  This lets a profile select, for example, the
+   * counts collection type only.
    */
   grouping count-collection-gr {
     description
-      "Counts measurement for cumulative event tracking over a
-       collection interval. Supports transient and standing
+      "Counts collection type for cumulative event tracking over
+       a collection interval.  Supports transient and standing
        threshold reporting, as defined in G.7710.";
     container counts {
+      presence
+        "Enables the counts collection type for this collection
+         interval.";
       description
-        "Contains counts measurement values and configuration.";
+        "Contains counts collection values and configuration.";
       container transient-condition-config {
         description
           "Configuration for transient threshold conditions.
            Transient thresholds report immediately when the
            count value reaches or crosses the configured
-           transient threshold value. Transient thresholds do
+           transient threshold value.  Transient thresholds do
            not support low threshold (underflow) conditions,
-           unlike snapshot and tidemarks measurements which
-           support both high and low thresholds.";
+           unlike the snapshot and tidemarks collection types,
+           which support both high and low thresholds.";
         uses transient-threshold-config;
       }
       container standing-condition-config {
-        description
-          "Configuration for standing condition monitoring.
-           When both thresholds are set, standing-threshold
-           must be greater than or equal to reset-threshold
-           (hysteresis).";
         must "not(standing-threshold and reset-threshold) or "
            + "standing-threshold >= reset-threshold" {
           error-message
             "Standing threshold must be >= reset threshold.";
         }
+        description
+          "Configuration for standing condition monitoring.
+           When both thresholds are set, standing-threshold
+           must be greater than or equal to reset-threshold
+           (hysteresis).";
         leaf standing-threshold {
           type uint32;
           description
@@ -678,19 +692,57 @@ module ietf-pm-collection {
 
   grouping snapshot-collection-gr {
     description
-      "Snapshot measurements for instantaneous values at uniform
-       time within each collection interval. Supports high/low
-       OOR threshold reporting, as defined in G.7710.";
+      "Snapshot collection type for instantaneous values at the
+       uniform time within each collection interval.  Supports
+       high/low OOR threshold reporting, as defined in G.7710.";
     container snapshot {
+      presence
+        "Enables the snapshot collection type for this collection
+         interval.";
       description
-        "Contains snapshot measurement configuration and values.";
+        "Contains snapshot configuration and values.";
       container uniform-time-config {
+        must "not(offset-value) or (unit
+              and (offset-value * ((unit = 'millisecond') * 1
+                 + (unit = 'second') * 1000
+                 + (unit = 'minute') * 60000
+                 + (unit = 'hour') * 3600000
+                 + (unit = 'day') * 86400000))
+              < (../../../interval-value
+                 * ((../../../unit = 'millisecond') * 1
+                 + (../../../unit = 'second') * 1000
+                 + (../../../unit = 'minute') * 60000
+                 + (../../../unit = 'hour') * 3600000
+                 + (../../../unit = 'day') * 86400000))
+              and (offset-value * ((unit = 'millisecond') * 1
+                 + (unit = 'second') * 1000
+                 + (unit = 'minute') * 60000
+                 + (unit = 'hour') * 3600000
+                 + (unit = 'day') * 86400000))
+              mod (../../../../interval-value
+                 * ((../../../../unit = 'millisecond') * 1
+                 + (../../../../unit = 'second') * 1000
+                 + (../../../../unit = 'minute') * 60000
+                 + (../../../../unit = 'hour') * 3600000
+                 + (../../../../unit = 'day') * 86400000))
+              = 0)" {
+          error-message
+            "The uniform-time offset must be given with a unit, be
+             shorter than the collection interval, and be a
+             multiple of the sampling interval.";
+          description
+            "The snapshot is taken at a sampling instant within the
+             collection interval.";
+        }
         description
           "Configuration of the uniform time: the fixed offset
            from the start of the collection interval at which the
-           single snapshot is taken.  Taking snapshots at the
-           same uniform time across network elements lets their
-           values be correlated, as defined in ITU-T G.7710.";
+           single snapshot is taken.  The offset is shorter than
+           the collection interval and is a multiple of the
+           sampling interval, so that the snapshot coincides with
+           a sampling instant.  Taking snapshots at the same
+           uniform time across network elements lets their values
+           be correlated, as defined in ITU-T G.7710.";
         leaf offset-value {
           type uint32;
           description
@@ -720,12 +772,15 @@ module ietf-pm-collection {
 
   grouping tidemarks-collection-gr {
     description
-      "Tidemarks measurements for maximum and minimum values
-       over the collection interval. Supports high/low OOR
+      "Tidemarks collection type for maximum and minimum values
+       over the collection interval.  Supports high/low OOR
        threshold reporting, as defined in G.7710.";
     container tidemarks {
+      presence
+        "Enables the tidemarks collection type for this
+         collection interval.";
       description
-        "Contains tidemarks measurement values and threshold
+        "Contains tidemarks values and threshold
          configuration.";
       container threshold-config {
         description
@@ -756,7 +811,10 @@ module ietf-pm-collection {
     container collection-types {
       description
         "Container for the counts, snapshot, and tidemarks
-         collection types.";
+         collection types.  Each collection type is a presence
+         container; a collection type is collected for this
+         collection interval only when its container is
+         present.";
       uses count-collection-gr;
       uses snapshot-collection-gr;
       uses tidemarks-collection-gr;
@@ -768,10 +826,10 @@ module ietf-pm-collection {
    */
   grouping counts-transient-event-gr {
     description
-      "Transient threshold events for counts measurements.
-       Transient thresholds are independent threshold mechanisms
-       that report immediately when count values cross configured
-       threshold values.";
+      "Transient threshold events for the counts collection
+       type.  Transient thresholds are independent threshold
+       mechanisms that report immediately when count values
+       cross configured threshold values.";
     container counts-transient {
       description
         "Contains information about transient threshold events
@@ -782,7 +840,8 @@ module ietf-pm-collection {
 
   grouping counts-standing-event-gr {
     description
-      "Standing condition events for counts measurements.";
+      "Standing condition events for the counts collection
+       type.";
     container counts-standing {
       description
         "Contains information about standing threshold events
@@ -807,9 +866,9 @@ module ietf-pm-collection {
         }
         description
           "Specifies the type of standing threshold event that
-           occurred, as defined in G.7710. A Threshold-Report
+           occurred, as defined in G.7710.  A Threshold-Report
            (TR) is generated when the collection-value reaches
-           or exceeds the standing-threshold. A
+           or exceeds the standing-threshold.  A
            Reset-Threshold-Report (RTR) is generated at the end
            of the period when the collection-value is at or
            below the reset-threshold.";
@@ -820,7 +879,7 @@ module ietf-pm-collection {
 
   grouping snapshot-events-gr {
     description
-      "Threshold events for snapshot measurements.";
+      "Threshold events for the snapshot collection type.";
     container snapshot {
       description
         "Contains snapshot threshold event information.";
@@ -830,7 +889,7 @@ module ietf-pm-collection {
 
   grouping tidemarks-events-gr {
     description
-      "Threshold events for tidemarks measurements.";
+      "Threshold events for the tidemarks collection type.";
     container tidemarks {
       description
         "Contains tidemarks threshold event information.";
@@ -843,13 +902,15 @@ module ietf-pm-collection {
    */
   grouping periodic-collection-intervals {
     description
-      "Hierarchical structure for periodic measurement timing
+      "Hierarchical structure for periodic collection timing
        and collection types.";
     list sampling-interval {
       key "id";
       description
         "List of sampling intervals defining data collection
-         frequency.";
+         frequency.  For non-periodic sampling (e.g., Poisson
+         sampling by an active measurement method), the sampling
+         interval is the nominal (mean) interval.";
       leaf id {
         type string;
         description
@@ -857,9 +918,14 @@ module ietf-pm-collection {
            configuration.";
       }
       leaf interval-value {
-        type uint32;
+        type uint32 {
+          range "1..max";
+        }
         default 1;
-        description "Numeric value for the sampling interval.";
+        description
+          "Numeric value for the sampling interval.  The default
+           sampling interval is 1 second; other values may be
+           configured within the range the server advertises.";
       }
       leaf unit {
         type time-interval-unit;
@@ -867,10 +933,38 @@ module ietf-pm-collection {
         description "Time unit for the sampling interval value.";
       }
       list collection-interval {
+        must "(interval-value * ((unit = 'millisecond') * 1
+             + (unit = 'second') * 1000
+             + (unit = 'minute') * 60000
+             + (unit = 'hour') * 3600000
+             + (unit = 'day') * 86400000))
+              mod (../interval-value * ((../unit = 'millisecond') * 1
+                   + (../unit = 'second') * 1000
+                   + (../unit = 'minute') * 60000
+                   + (../unit = 'hour') * 3600000
+                   + (../unit = 'day') * 86400000))
+              = 0" {
+          error-message
+            "The collection interval must be a positive integer
+             multiple of its sampling interval.";
+          description
+            "A collection interval aggregates whole sampling
+             intervals, so its duration must be an integer
+             multiple of the duration of its sampling interval.
+             Both durations are compared in milliseconds.  A
+             collection interval shorter than its sampling interval
+             is rejected by the same rule.";
+        }
         key "id";
         description
           "List of collection intervals defining aggregation
-           periods.";
+           periods.  The collection interval is always an integer
+           multiple of its sampling interval, so that every
+           collection interval contains the same expected number of
+           samples.  The boundaries of each collection interval
+           coincide with sampling instants: the server aligns its
+           sampling instants and collection interval boundaries to a
+           common time reference, such as the NE clock.";
         leaf id {
           type string;
           description
@@ -878,7 +972,9 @@ module ietf-pm-collection {
              configuration.";
         }
         leaf interval-value {
-          type uint32;
+          type uint32 {
+            range "1..max";
+          }
           default 15;
           description
             "Numeric value for the collection interval.";
@@ -956,8 +1052,7 @@ module ietf-pm-collection {
 
   grouping pm-periodic-collection-gr {
     description
-      "Hierarchical structure for periodic performance
-       measurements.";
+      "Hierarchical structure for periodic PM collection.";
     list parameter-profile {
       key "name";
       description "List of performance parameter profiles.";
@@ -970,9 +1065,13 @@ module ietf-pm-collection {
         description
           "List of PM parameters within the parameter profile.";
         leaf name {
-          type string;
+          type identityref {
+            base performance-parameter;
+          }
           description
-            "Name of the performance parameter being measured.";
+            "Identity of the performance parameter being
+             collected, derived from the performance-parameter
+             base identity.";
         }
         leaf measurement-method {
           type identityref {
@@ -1002,7 +1101,7 @@ module ietf-pm-collection {
    */
   container pm-periodic-collection {
     description
-      "Main container for periodic performance measurements.";
+      "Main container for periodic PM collection.";
     uses pm-periodic-collection-gr;
   }
 
@@ -1030,10 +1129,13 @@ module ietf-pm-collection {
             "List of PM parameters within the parameter
              profile.";
           leaf name {
-            type string;
+            type identityref {
+              base performance-parameter;
+            }
             description
-              "Name of the performance parameter being
-               monitored.";
+              "Identity of the performance parameter being
+               monitored, derived from the performance-parameter
+               base identity.";
           }
           list sampling-interval {
             key "id";

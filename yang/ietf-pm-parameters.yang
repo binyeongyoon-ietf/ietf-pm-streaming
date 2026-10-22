@@ -1,7 +1,14 @@
 module ietf-pm-parameters {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-pm-parameters";
-  prefix pm-param;
+  prefix pm-pa;
+
+  import ietf-pm-collection {
+    prefix pm-co;
+    reference
+      "RFC YYYY: A YANG Data Model for Performance Monitoring (PM)
+       Collection";
+  }
 
   organization
     "IETF Common Control and Measurement Plane (ccamp)
@@ -11,13 +18,32 @@ module ietf-pm-parameters {
      Editor: Bin Yeong Yoon
        <mailto:byyun@etri.re.kr>";
   description
-    "This YANG module defines performance management parameters
-     for common transport equipment, based on ITU-T G.7710.
+    "This YANG module defines the performance monitoring (PM)
+     parameters of common transport equipment, based on ITU-T
+     G.7710, as identities derived from the performance-parameter
+     base identity of ietf-pm-collection, and one feature for each
+     of the three transport parameter profiles
+     (itu-transport-maintenance-15min,
+     itu-transport-maintenance-24hr, and itu-transport-qos-24hr).
+     A server advertises the profiles it supports by means of
+     these features.  The profiles themselves are instances of
+     the parameter-profile list of ietf-pm-collection.
 
      Copyright (c) 2026 IETF Trust and the persons identified as
-     authors of the code.  All rights reserved.";
+     authors of the code.  All rights reserved.
 
-  revision 2026-06-03 {
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Revised BSD License
+     set forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (https://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC XXXX
+     (https://www.rfc-editor.org/info/rfcXXXX); see the RFC
+     itself for full legal notices.";
+
+  revision 2026-10-21 {
     description
       "Initial revision.";
     reference
@@ -25,142 +51,100 @@ module ietf-pm-parameters {
        Streaming on Common Transport Equipment";
   }
 
-  identity performance-parameter {
+  /*
+   * FEATURES: transport parameter profiles
+   */
+  feature itu-transport-maintenance-15min {
     description
-      "Base identity for performance monitoring parameters.";
+      "Indicates that the server supports the
+       itu-transport-maintenance-15min profile: the parameters
+       es, ses, bbe, bbc, and uas, collected as counts, snapshot,
+       and tidemarks over a 15-minute collection interval with a
+       default sampling interval of 1 second, as specified in
+       RFC XXXX.";
+    reference
+      "RFC XXXX; ITU-T G.7710";
   }
+
+  feature itu-transport-maintenance-24hr {
+    description
+      "Indicates that the server supports the
+       itu-transport-maintenance-24hr profile: the parameters
+       es, ses, bbe, bbc, uas, and pje, collected as counts,
+       snapshot, and tidemarks over a 24-hour collection
+       interval with a default sampling interval of 1 second, as
+       specified in RFC XXXX.";
+    reference
+      "RFC XXXX; ITU-T G.7710";
+  }
+
+  feature itu-transport-qos-24hr {
+    description
+      "Indicates that the server supports the
+       itu-transport-qos-24hr profile: the parameters es, ses,
+       bbe, bbc, uas, and sep, collected as counts only over a
+       24-hour collection interval with a default sampling
+       interval of 1 second, as specified in RFC XXXX.";
+    reference
+      "RFC XXXX; ITU-T G.7710";
+  }
+
+  /*
+   * IDENTITIES: transport performance parameters
+   */
   identity es {
-    base performance-parameter;
-    description "Errored Second.";
+    base pm-co:performance-parameter;
+    description
+      "Errored Second (ES).";
+    reference
+      "ITU-T G.7710";
   }
+
   identity ses {
-    base performance-parameter;
-    description "Severely Errored Second.";
+    base pm-co:performance-parameter;
+    description
+      "Severely Errored Second (SES).";
+    reference
+      "ITU-T G.7710";
   }
+
   identity bbe {
-    base performance-parameter;
-    description "Background Block Error.";
+    base pm-co:performance-parameter;
+    description
+      "Background Block Error (BBE).";
+    reference
+      "ITU-T G.7710";
   }
+
   identity bbc {
-    base performance-parameter;
-    description "Background Block Count.";
+    base pm-co:performance-parameter;
+    description
+      "Background Block Count (BBC).";
+    reference
+      "ITU-T G.7710";
   }
+
   identity uas {
-    base performance-parameter;
-    description "Unavailable Second.";
+    base pm-co:performance-parameter;
+    description
+      "Unavailable Second (UAS).";
+    reference
+      "ITU-T G.7710";
   }
+
   identity pje {
-    base performance-parameter;
-    description "Pointer Justification Event.";
+    base pm-co:performance-parameter;
+    description
+      "Pointer Justification Event (PJE).";
+    reference
+      "ITU-T G.7710";
   }
+
   identity sep {
-    base performance-parameter;
-    description "Severely Errored Period.";
-  }
-
-  container maintenance-parameters-15min {
-    config false;
+    base pm-co:performance-parameter;
     description
-      "Transport maintenance parameters for the 15-minute
-       monitoring interval.";
-    leaf es {
-      type uint32;
-      units "seconds";
-      description "Errored Second.";
-    }
-    leaf ses {
-      type uint32;
-      units "seconds";
-      description "Severely Errored Second.";
-    }
-    leaf bbe {
-      type uint32;
-      units "errors";
-      description "Background Block Error.";
-    }
-    leaf bbc {
-      type uint32;
-      units "blocks";
-      description "Background Block Count.";
-    }
-    leaf uas {
-      type uint32;
-      units "seconds";
-      description "Unavailable Second.";
-    }
-  }
-
-  container maintenance-parameters-24hr {
-    config false;
-    description
-      "Transport maintenance parameters for the 24-hour
-       monitoring interval.";
-    leaf es {
-      type uint32;
-      units "seconds";
-      description "Errored Second.";
-    }
-    leaf ses {
-      type uint32;
-      units "seconds";
-      description "Severely Errored Second.";
-    }
-    leaf bbe {
-      type uint32;
-      units "errors";
-      description "Background Block Error.";
-    }
-    leaf bbc {
-      type uint32;
-      units "blocks";
-      description "Background Block Count.";
-    }
-    leaf uas {
-      type uint32;
-      units "seconds";
-      description "Unavailable Second.";
-    }
-    leaf pje {
-      type uint32;
-      units "events";
-      description "Pointer Justification Event.";
-    }
-  }
-
-  container qos-parameters-24hr {
-    config false;
-    description
-      "Transport QoS parameters for the 24-hour monitoring
-       interval.";
-    leaf es {
-      type uint32;
-      units "seconds";
-      description "Errored Second.";
-    }
-    leaf ses {
-      type uint32;
-      units "seconds";
-      description "Severely Errored Second.";
-    }
-    leaf bbe {
-      type uint32;
-      units "errors";
-      description "Background Block Error.";
-    }
-    leaf bbc {
-      type uint32;
-      units "blocks";
-      description "Background Block Count.";
-    }
-    leaf uas {
-      type uint32;
-      units "seconds";
-      description "Unavailable Second.";
-    }
-    leaf sep {
-      type uint32;
-      units "periods";
-      description "Severely Errored Period.";
-    }
+      "Severely Errored Period (SEP).";
+    reference
+      "ITU-T G.7710";
   }
 }
