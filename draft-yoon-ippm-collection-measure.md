@@ -3,7 +3,7 @@ title: "A YANG Data Model for Performance Monitoring (PM) Collection"
 abbrev: "PM Collection YANG"
 category: std
 
-docname: draft-yoon-ippm-coection-measure-latest
+docname: draft-yoon-ippm-collection-measure-latest
 submissiontype: IETF
 number:
 date:
@@ -17,7 +17,7 @@ keyword:
 
 venue:
   github: "binyeongyoon-ietf/ietf-pm-streaming"
-  latest: "https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-ippm-coection-measure.html"
+  latest: "https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-ippm-collection-measure.html"
 
 author:
   -
@@ -58,7 +58,7 @@ normative:
 
 informative:
   RFC7799:
-  I-D.yoon-ippm-coection-interval-capabilities:
+  I-D.yoon-ippm-collection-interval-capabilities:
   I-D.yoon-ccamp-pm-streaming:
 
 --- abstract
@@ -584,7 +584,7 @@ per-notification tag.
 
 A server advertises which measurement methods it can support for a
 given parameter through the companion interval-capabilities model
-{{I-D.yoon-ippm-coection-interval-capabilities}}, so that a client
+{{I-D.yoon-ippm-collection-interval-capabilities}}, so that a client
 can select an appropriate method before configuring a measurement or
 establishing a subscription.
 
@@ -822,7 +822,7 @@ containers, and a profile can restrict a parameter to a subset of
 the three types (for example, counts only for a QoS profile). A
 client selects only the collection types that the server advertises
 for the parameter in the companion capabilities model
-{{I-D.yoon-ippm-coection-interval-capabilities}}.
+{{I-D.yoon-ippm-collection-interval-capabilities}}.
 
 This intentional limitation supports key objectives such as
 implementation simplicity, operational efficiency, and cross-vendor
@@ -1051,7 +1051,7 @@ results is a client-side concern. When a server does retain
 completed intervals, the number it keeps for each collection
 interval is advertised as `retained-interval-count` in the
 companion capabilities model
-{{I-D.yoon-ippm-coection-interval-capabilities}}. That count
+{{I-D.yoon-ippm-collection-interval-capabilities}}. That count
 bounds both how many completed intervals a client may read back and
 how long a reporting period may be, since a reporting period may
 span at most `retained-interval-count` collection intervals.
@@ -1595,27 +1595,152 @@ module: ietf-pm-collection
 
 # Manageability Considerations
 
-This section will be completed in a future revision of this
-document. Considerations to be addressed include the operational
-impact of large numbers of concurrent YANG-Push subscriptions for
-PM data, alignment of collection intervals with NE clock sources,
-and interaction with existing fault and configuration management
-workflows.
+This section discusses operational aspects of deploying the model
+defined in this document.
+
+Capability discovery before configuration:
+: A server is not required to support every sampling interval,
+  collection interval, or collection type for every parameter.
+  Before configuring a "parameter-profile" entry, a client SHOULD
+  read the capabilities advertised through
+  {{I-D.yoon-ippm-collection-interval-capabilities}} and configure
+  only combinations that the server supports.  A server rejects a
+  configuration that it does not support, including one whose
+  collection interval is not an integer multiple of its sampling
+  interval.
+
+Configuration and operational state:
+: Profiles, intervals, collection types, and thresholds are
+  configuration and are held in the running configuration
+  datastore.  Collected values, interval status, and validity
+  metadata are operational state and are read from the
+  operational state datastore {{!RFC8342}}.  A server may provide
+  profiles as system-defined configuration, which then appear in
+  the operational state datastore without client configuration.
+
+Scaling and load:
+: The processing load on a network element grows with the number
+  of configured "pm-parameter" and interval entries, with shorter
+  sampling intervals, and with the number of monitored objects.
+  The delivery load grows with the number of concurrent
+  YANG-Push subscriptions {{!RFC8639}} {{!RFC8641}} and with
+  shorter subscription periods.  Operators should choose profiles,
+  intervals, and subscription periods with these costs in mind.  A
+  periodic subscription period that matches the collection
+  interval delivers each completed result once, without redundant
+  updates.  A server MAY limit the number of entries or
+  subscriptions it accepts, and MAY reject a subscription it cannot
+  serve, as permitted by {{!RFC8639}} and {{!RFC8641}}.
+
+Time synchronization:
+: Collection interval boundaries are derived from the clock of the
+  network element.  For results to be comparable across network
+  elements, operators should synchronize those clocks, for example
+  with NTP or PTP.  An interval in which the clock was adjusted, or
+  in which data was otherwise incomplete, is marked by the suspect
+  interval flag (see {{interval-data-validity}}).
+
+Data validity:
+: A client SHOULD check "interval-data-status" before using a
+  collected value.  A value from an interval whose suspect interval
+  flag is set should not be treated as equivalent to a value from a
+  complete interval, for example in SLA reporting.  A value of zero
+  is interpreted according to the interval status, as described in
+  {{interval-data-validity}}.
+
+Retention:
+: A server is not required to retain completed intervals.  When it
+  does not, a client that needs a complete history must obtain each
+  result as its interval ends, either by subscription or by polling
+  close to the interval boundary.  When a server does retain
+  completed intervals, it advertises the number it keeps as
+  "retained-interval-count" in
+  {{I-D.yoon-ippm-collection-interval-capabilities}}.
+
+Threshold events and fault management:
+: Threshold events (see {{thresholding}}) indicate performance
+  degradation.  They are not equipment alarms, but an operator may
+  feed them into existing fault management workflows.  Thresholds
+  set too low can produce a large number of notifications.  The
+  standing condition method, with its reset threshold, can be used
+  to limit repeated reports for a persistent condition.
 
 # Security Considerations
 
-This section will be completed in a future revision of this
-document. The YANG module defined in this document defines data
-nodes that are designed to be accessed via network management
-protocols such as NETCONF {{!RFC6241}} or RESTCONF. The lowest
-NETCONF layer is the secure transport layer, and the mandatory-
-to-implement secure transport is Secure Shell (SSH). The Network
-Configuration Access Control Model (NACM) {{?RFC8341}} provides
-the means to restrict access for particular NETCONF or RESTCONF
-users to a preconfigured subset of all available NETCONF or
-RESTCONF protocol operations and content. Detailed analysis of
-sensitive readable nodes, writable nodes, and RPC operations
-will be added in a future revision.
+The YANG module specified in this document defines a schema for
+data that is designed to be accessed via network management
+protocols such as NETCONF {{!RFC6241}} or RESTCONF {{!RFC8040}}.
+The lowest NETCONF layer is the secure transport layer, and the
+mandatory-to-implement secure transport is Secure Shell (SSH)
+{{!RFC6242}}.  The lowest RESTCONF layer is HTTPS, and the
+mandatory-to-implement secure transport is TLS {{!RFC8446}}.
+
+The Network Configuration Access Control Model (NACM) {{!RFC8341}}
+provides the means to restrict access for particular NETCONF or
+RESTCONF users to a preconfigured subset of all available NETCONF
+or RESTCONF protocol operations and content.
+
+There are a number of data nodes defined in this YANG module that
+are writable/creatable/deletable (i.e., "config true", which is the
+default).  All writable data nodes are under the
+"/pm-periodic-collection" container.  These data nodes may be
+considered sensitive or vulnerable in some network environments.
+Write operations (e.g., edit-config) to these data nodes without
+proper protection can have a negative effect on network operations.
+These are the subtrees and data nodes and their
+sensitivity/vulnerability:
+
+"/pm-periodic-collection/parameter-profile", including its
+"pm-parameter", "sampling-interval", and "collection-interval"
+entries:
+: An attacker who can create entries, or shorten sampling
+  intervals, could raise the processing and memory load on the
+  network element and degrade its other functions.  An attacker who
+  can delete or modify entries could stop or alter the collection
+  of performance data, hiding service degradation from the operator
+  and corrupting the data used for SLA verification.
+
+".../collection-types/counts", ".../snapshot", and ".../tidemarks":
+: These presence containers enable collection types.  Removing them
+  silently stops the corresponding collection and threshold
+  reporting.
+
+".../transient-condition-config", ".../standing-condition-config",
+".../threshold-config", and ".../uniform-time-config":
+: Raising thresholds or the reset threshold could suppress threshold
+  reports and hide performance degradation.  Lowering them could
+  cause a flood of notifications towards clients.  Changing the
+  uniform time offset changes when snapshots are taken, which can
+  make results inconsistent across network elements.
+
+"measurement-method":
+: Changing this leaf could cause clients to misinterpret how the
+  collected values were obtained.
+
+Some of the readable data nodes in this YANG module may be
+considered sensitive or vulnerable in some network environments.
+It is thus important to control read access (e.g., via get,
+get-config, or notification) to these data nodes.  These are the
+subtrees and data nodes and their sensitivity/vulnerability:
+
+"collection-value", "high-collection-value", "low-collection-value",
+and "interval-data-status":
+: These nodes reveal error performance, unavailability periods, and
+  the quality of service delivered on monitored connections.  This
+  information can expose weak points in the network and indicate
+  when and where an attack is likely to have an effect.  It can
+  also reveal commercially sensitive information, such as SLA
+  compliance.  The configuration nodes can reveal which resources
+  and parameters an operator monitors and at which thresholds.
+
+The "pm-threshold-events" notification carries the same kind of
+information as the readable nodes, including the times of
+unavailability (BUT and EUT events) and of consecutive severely
+errored seconds (CSES events).  Access to it SHOULD be restricted
+in the same way, using NACM and the security mechanisms of the
+subscription framework {{!RFC8639}} {{!RFC8641}}.
+
+This YANG module defines no RPC operations or actions.
 
 # IANA Considerations
 
