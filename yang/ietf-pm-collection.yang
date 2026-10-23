@@ -702,45 +702,10 @@ module ietf-pm-collection {
       description
         "Contains snapshot configuration and values.";
       container uniform-time-config {
-        must "not(offset-value) or (unit
-              and (offset-value * ((unit = 'millisecond') * 1
-                 + (unit = 'second') * 1000
-                 + (unit = 'minute') * 60000
-                 + (unit = 'hour') * 3600000
-                 + (unit = 'day') * 86400000))
-              < (../../../interval-value
-                 * ((../../../unit = 'millisecond') * 1
-                 + (../../../unit = 'second') * 1000
-                 + (../../../unit = 'minute') * 60000
-                 + (../../../unit = 'hour') * 3600000
-                 + (../../../unit = 'day') * 86400000))
-              and (offset-value * ((unit = 'millisecond') * 1
-                 + (unit = 'second') * 1000
-                 + (unit = 'minute') * 60000
-                 + (unit = 'hour') * 3600000
-                 + (unit = 'day') * 86400000))
-              mod (../../../../interval-value
-                 * ((../../../../unit = 'millisecond') * 1
-                 + (../../../../unit = 'second') * 1000
-                 + (../../../../unit = 'minute') * 60000
-                 + (../../../../unit = 'hour') * 3600000
-                 + (../../../../unit = 'day') * 86400000))
-              = 0)" {
-          error-message
-            "The uniform-time offset must be given with a unit, be
-             shorter than the collection interval, and be a
-             multiple of the sampling interval.";
-          description
-            "The snapshot is taken at a sampling instant within the
-             collection interval.";
-        }
         description
           "Configuration of the uniform time: the fixed offset
            from the start of the collection interval at which the
-           single snapshot is taken.  The offset is shorter than
-           the collection interval and is a multiple of the
-           sampling interval, so that the snapshot coincides with
-           a sampling instant.  Taking snapshots at the same
+           single snapshot is taken.  Taking snapshots at the same
            uniform time across network elements lets their values
            be correlated, as defined in ITU-T G.7710.";
         leaf offset-value {
@@ -908,9 +873,7 @@ module ietf-pm-collection {
       key "id";
       description
         "List of sampling intervals defining data collection
-         frequency.  For non-periodic sampling (e.g., Poisson
-         sampling by an active measurement method), the sampling
-         interval is the nominal (mean) interval.";
+         frequency.";
       leaf id {
         type string;
         description
@@ -923,9 +886,7 @@ module ietf-pm-collection {
         }
         default 1;
         description
-          "Numeric value for the sampling interval.  The default
-           sampling interval is 1 second; other values may be
-           configured within the range the server advertises.";
+          "Numeric value for the sampling interval.";
       }
       leaf unit {
         type time-interval-unit;
@@ -933,38 +894,10 @@ module ietf-pm-collection {
         description "Time unit for the sampling interval value.";
       }
       list collection-interval {
-        must "(interval-value * ((unit = 'millisecond') * 1
-             + (unit = 'second') * 1000
-             + (unit = 'minute') * 60000
-             + (unit = 'hour') * 3600000
-             + (unit = 'day') * 86400000))
-              mod (../interval-value * ((../unit = 'millisecond') * 1
-                   + (../unit = 'second') * 1000
-                   + (../unit = 'minute') * 60000
-                   + (../unit = 'hour') * 3600000
-                   + (../unit = 'day') * 86400000))
-              = 0" {
-          error-message
-            "The collection interval must be a positive integer
-             multiple of its sampling interval.";
-          description
-            "A collection interval aggregates whole sampling
-             intervals, so its duration must be an integer
-             multiple of the duration of its sampling interval.
-             Both durations are compared in milliseconds.  A
-             collection interval shorter than its sampling interval
-             is rejected by the same rule.";
-        }
         key "id";
         description
           "List of collection intervals defining aggregation
-           periods.  The collection interval is always an integer
-           multiple of its sampling interval, so that every
-           collection interval contains the same expected number of
-           samples.  The boundaries of each collection interval
-           coincide with sampling instants: the server aligns its
-           sampling instants and collection interval boundaries to a
-           common time reference, such as the NE clock.";
+           periods.";
         leaf id {
           type string;
           description

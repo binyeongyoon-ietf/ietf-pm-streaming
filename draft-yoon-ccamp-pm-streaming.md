@@ -401,16 +401,7 @@ enabled; its "measurement-method" is "passive".
 
 Collection is always performed on sampled values, so every profile
 entry has a sampling interval.  The sampling interval in
-{{tab-profiles}} is the default.  The sampling interval is variable:
-a server MAY support other sampling intervals for the parameters of
-a profile, as advertised through
-{{I-D.yoon-ippm-collection-interval-capabilities}}, provided that the
-collection interval of the profile is an integer multiple of the
-sampling interval, as required by
-{{I-D.yoon-ippm-collection-measure}}.  For example, a 15-minute or
-24-hour collection interval can be used with a 100-millisecond,
-1-second, or 10-second sampling interval, but not with a 7-second
-one.
+{{tab-profiles}} is the default.
 
 The module defined in this document declares one YANG feature per
 profile, with the same name as the profile.  A server advertises
@@ -425,13 +416,11 @@ sampling interval, and collection interval, and MUST NOT reject it
 as unsupported.  A server MAY provide the entry as system-defined
 configuration, in which case it is present in the operational
 datastore with origin "system" {{?RFC8342}} without client
-configuration.  A server MAY additionally support other sampling
-intervals and other collection intervals for the parameters of a
-profile, as advertised through
-{{I-D.yoon-ippm-collection-interval-capabilities}}, provided that
-each collection interval is an integer multiple of its sampling
-interval; the sampling and collection intervals in {{tab-profiles}}
-are the defaults of the transport profiles.
+configuration.  A server MAY additionally support other collection
+intervals for the parameters of a profile, as advertised through
+{{I-D.yoon-ippm-collection-interval-capabilities}}; the sampling and
+collection intervals in {{tab-profiles}} are the defaults of the
+transport profiles.
 
 A server that advertises the "itu-transport-qos-24hr" feature MUST
 support the counts collection type for the parameters of that
