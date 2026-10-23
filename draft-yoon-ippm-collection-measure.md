@@ -620,67 +620,20 @@ enabling accurate assessments of network conditions. The sampled
 values are the input of the Collection stage, so collection is
 always performed on the samples of a sampling interval: in the
 model, a collection interval exists only within a sampling interval
-entry. The default sampling interval is 1 second; the sampling
-interval is configurable, and other values may be used within the
-range a server advertises.
+entry.
 
 Collection interval specifies the duration over which sampled
 performance data is aggregated or statistically processed. It helps
 manage large volumes of data by summarizing it into meaningful
 indicators for analysis, anomaly detection, and resource
-management. A collection interval aggregates whole sampling
-intervals, so its duration MUST be an integer multiple of the
-duration of its sampling interval. The model enforces this rule
-with a "must" constraint that compares both durations in
-milliseconds, so that a collection interval that is not a multiple
-of its sampling interval, or that is shorter than it, is rejected.
-For example, with a 15-minute collection interval, sampling
-intervals of 100 milliseconds, 1 second, 5 seconds, or 1 minute are
-valid, whereas 700 milliseconds or 7 seconds are not. Both interval
-values are positive.
-
-The multiple rule ensures that every collection interval is computed
-from the same expected number of samples, which keeps collected
-values comparable from one interval to the next: a counts value
-accumulates the same number of sampling periods, a tidemarks value
-is taken over the same number of observations, and the
-expected-sample-count of {{interval-data-validity}} is an integer,
-so that a complete interval can be told from a partial one. If the
-collection interval were not a multiple of the sampling interval,
-successive intervals would contain different numbers of samples,
-and a sample would straddle the boundary between two intervals,
-leaving it unclear to which interval it belongs.
-
-The multiple rule fixes the length of a collection interval but not
-its phase. To ensure that no sample straddles an interval boundary,
-the boundaries of each collection interval MUST coincide with
-sampling instants: the server MUST align its sampling instants and
-its collection interval boundaries to a common time reference, such
-as the NE clock, so that each collection interval starts at a
-sampling instant. When the sampling interval or the interval timing
-is changed during a collection interval, that interval does not
-contain the expected number of samples, and the server marks it as
-suspect with the "time-adjustment" reason (see
-{{interval-data-validity}}).
-
-The multiple rule and the expected number of samples assume periodic
-sampling. When the Stage 1 measurement method samples
-non-periodically, for example with the Poisson sampling used by some
-active measurement methods {{?RFC2330}} {{?RFC3432}}, the configured
-sampling interval is interpreted as the nominal (mean) interval, and
-the expected number of samples in a collection interval is
-approximate.
+management. Both interval values are positive.
 
 Uniform time is a fixed, predefined point within each collection
 interval at which a snapshot is taken. It enables a
 consistent and instantaneous view of network performance across
 intervals, without requiring data aggregation. This approach
 facilitates quick diagnostics and synchronization across monitoring
-systems. Because a snapshot is a sampled value, the uniform time is
-a sampling instant: its offset from the start of the collection
-interval MUST be shorter than the collection interval and MUST be a
-multiple of the sampling interval, and the model enforces both
-rules.
+systems.
 
 The acceptable ranges of sampling and collection intervals, and
 the timing accuracy required for a given parameter, are not fixed by
@@ -1593,7 +1546,35 @@ module: ietf-pm-collection
 ~~~~
 {:#fig-ni-tree title="Tree Diagram of the ietf-pm-collection Module"}
 
-# Manageability Considerations
+# Open Issues {#open-issues}
+{: removeInRFC="true"}
+
+The following issues on the timing relationship between sampling and
+collection intervals are open and will be resolved in a future
+revision of this document and of its companion documents
+{{I-D.yoon-ippm-collection-interval-capabilities}} and
+{{I-D.yoon-ccamp-pm-streaming}}.
+
+1. Interval multiple rule: whether a collection interval is required
+   to be an integer multiple of its sampling interval, and whether
+   the YANG module enforces this.
+
+2. Interval boundary alignment: how collection interval boundaries
+   are aligned with sampling instants, and to which interval a
+   sample that falls on a boundary belongs.  This affects the exact
+   value of "expected-sample-count".
+
+3. Uniform time offset: the permitted range of "offset-value"
+   relative to the collection interval, and whether the offset is
+   required to coincide with a sampling instant.
+
+4. Non-periodic sampling: the meaning of the sampling interval when
+   a measurement method samples non-periodically (for example,
+   Poisson sampling by an active measurement method).
+
+5. Sampling interval range: whether a server may support sampling
+   intervals other than the default, and how the remaining text on
+   interval values is aligned across the three documents.
 
 This section discusses operational aspects of deploying the model
 defined in this document.
@@ -1605,9 +1586,7 @@ Capability discovery before configuration:
   read the capabilities advertised through
   {{I-D.yoon-ippm-collection-interval-capabilities}} and configure
   only combinations that the server supports.  A server rejects a
-  configuration that it does not support, including one whose
-  collection interval is not an integer multiple of its sampling
-  interval.
+  configuration that it does not support.
 
 Configuration and operational state:
 : Profiles, intervals, collection types, and thresholds are

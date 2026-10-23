@@ -343,28 +343,9 @@ identities derived from "performance-parameter"), and capabilities
 (supported sampling and collection intervals, measurement methods,
 and collection types for each parameter).
 
-The model defines a key relationship: a collection interval MUST be a
-multiple of its corresponding sampling interval.  This ensures that
-aggregation periods align with the data collection frequency.  For
-example, if a server supports a 5-second sampling interval, valid
-collection intervals are 5s, 10s, 15s, 30s, 60s, and so on.  The
-relationship is expressed structurally by nesting collection intervals
-within their corresponding sampling interval entry, and it is
-enforced at configuration time by the companion model
-{{I-D.yoon-ippm-collection-measure}}.
-
-The sampling interval is variable: its default is 1 second, and a
-server may advertise a range of sampling values (for example, 100
-milliseconds to 10 seconds).  When ranges are advertised, not every
-combination of an advertised sampling value and an advertised
-collection value is valid.  A client MUST select a combination in
-which the collection interval is a multiple of the sampling
-interval; for example, a 15-minute collection interval can be
-paired with a 100-millisecond, 1-second, or 5-second sampling
-interval, but not with a 700-millisecond or 7-second one.  The
-companion model rejects any other combination.  The default values
-a server advertises for a sampling interval and its collection
-intervals MUST form a valid combination.
+The relationship between sampling and collection intervals is
+expressed structurally by nesting collection intervals within their
+corresponding sampling interval entry.
 
 For each interval, the model advertises:
 
