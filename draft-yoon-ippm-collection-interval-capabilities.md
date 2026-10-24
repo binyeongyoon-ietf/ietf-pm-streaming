@@ -480,7 +480,8 @@ defined in {{I-D.yoon-ccamp-pm-streaming}}.
     <datastore>ds:operational</datastore>
     <subtree-filter>
       <system-capabilities
-          xmlns="urn:ietf:params:xml:ns:yang:ietf-system-capabilities">
+          xmlns=
+            "urn:ietf:params:xml:ns:yang:ietf-system-capabilities">
         <pm-interval-capabilities
             xmlns=
           "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
@@ -514,8 +515,10 @@ within "system-capabilities" in the reply.
     <pm-parameter>
       <name>pm-pa:es</name>
       <supported-collection-types>counts</supported-collection-types>
-      <supported-collection-types>snapshot</supported-collection-types>
-      <supported-collection-types>tidemarks</supported-collection-types>
+      <supported-collection-types
+        >snapshot</supported-collection-types>
+      <supported-collection-types
+        >tidemarks</supported-collection-types>
       <interval-relationships>
         <sampling-interval>
           <id>1s</id>

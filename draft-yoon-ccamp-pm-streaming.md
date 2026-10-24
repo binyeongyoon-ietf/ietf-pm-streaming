@@ -34,6 +34,20 @@ author:
     org: woori-net
     email: young@woori-net.com
 
+contributor:
+ -
+    name: Kwangkoog Lee
+    org: KT
+    email: kwangkoog.lee@kt.com
+ -
+    name: Jongyoon Shin
+    org: SK Telecom
+    email: jongyoon.shin@sk.com
+ -
+    name: Sungyong Nam
+    org: LGU+
+    email: sy.nam@lguplus.co.kr
+
 normative:
   RFC6020:
   RFC6241:
@@ -482,7 +496,8 @@ keys, so the whole entry is returned.
     <datastore>ds:operational</datastore>
     <subtree-filter>
       <system-capabilities
-          xmlns="urn:ietf:params:xml:ns:yang:ietf-system-capabilities">
+          xmlns=
+            "urn:ietf:params:xml:ns:yang:ietf-system-capabilities">
         <pm-interval-capabilities
             xmlns=
           "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
@@ -516,8 +531,10 @@ within "system-capabilities" in the reply.
     <pm-parameter>
       <name>pm-pa:ses</name>
       <supported-collection-types>counts</supported-collection-types>
-      <supported-collection-types>snapshot</supported-collection-types>
-      <supported-collection-types>tidemarks</supported-collection-types>
+      <supported-collection-types
+        >snapshot</supported-collection-types>
+      <supported-collection-types
+        >tidemarks</supported-collection-types>
       <interval-relationships>
         <sampling-interval>
           <id>1s</id>
@@ -566,7 +583,8 @@ per 15-minute collection interval.
 <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
      message-id="101">
   <establish-subscription
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"
+      xmlns=
+        "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"
       xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push"
       xmlns:ds="urn:ietf:params:xml:ns:yang:ietf-datastores">
     <yp:datastore>ds:operational</yp:datastore>
@@ -648,7 +666,8 @@ No transport-specific event mechanism is required.
 <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
      message-id="102">
   <establish-subscription
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications">
+      xmlns=
+        "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications">
     <stream>NETCONF</stream>
     <stream-xpath-filter
         xmlns:pm-co="urn:ietf:params:xml:ns:yang:ietf-pm-collection">

@@ -1210,7 +1210,8 @@ that an update is sent once per collection interval.
 <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
      message-id="101">
   <establish-subscription
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"
+      xmlns=
+        "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"
       xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push"
       xmlns:ds="urn:ietf:params:xml:ns:yang:ietf-datastores">
     <yp:datastore>ds:operational</yp:datastore>
@@ -1265,7 +1266,8 @@ fully measured result.
                 <interval-value>15</interval-value>
                 <unit>minute</unit>
                 <interval-data-status>
-                  <suspect-interval-flag>false</suspect-interval-flag>
+                  <suspect-interval-flag
+                    >false</suspect-interval-flag>
                   <interval-status>complete</interval-status>
                 </interval-data-status>
                 <collection-types>
@@ -1344,7 +1346,8 @@ sent when the events occur.
 <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
      message-id="202">
   <establish-subscription
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications">
+      xmlns=
+        "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications">
     <stream>NETCONF</stream>
     <stream-xpath-filter
         xmlns:pm-co="urn:ietf:params:xml:ns:yang:ietf-pm-collection">
@@ -1546,35 +1549,7 @@ module: ietf-pm-collection
 ~~~~
 {:#fig-ni-tree title="Tree Diagram of the ietf-pm-collection Module"}
 
-# Open Issues {#open-issues}
-{: removeInRFC="true"}
-
-The following issues on the timing relationship between sampling and
-collection intervals are open and will be resolved in a future
-revision of this document and of its companion documents
-{{I-D.yoon-ippm-collection-interval-capabilities}} and
-{{I-D.yoon-ccamp-pm-streaming}}.
-
-1. Interval multiple rule: whether a collection interval is required
-   to be an integer multiple of its sampling interval, and whether
-   the YANG module enforces this.
-
-2. Interval boundary alignment: how collection interval boundaries
-   are aligned with sampling instants, and to which interval a
-   sample that falls on a boundary belongs.  This affects the exact
-   value of "expected-sample-count".
-
-3. Uniform time offset: the permitted range of "offset-value"
-   relative to the collection interval, and whether the offset is
-   required to coincide with a sampling instant.
-
-4. Non-periodic sampling: the meaning of the sampling interval when
-   a measurement method samples non-periodically (for example,
-   Poisson sampling by an active measurement method).
-
-5. Sampling interval range: whether a server may support sampling
-   intervals other than the default, and how the remaining text on
-   interval values is aligned across the three documents.
+# Manageability Considerations
 
 This section discusses operational aspects of deploying the model
 defined in this document.
