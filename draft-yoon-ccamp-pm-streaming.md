@@ -221,7 +221,7 @@ profiles, and the applicability guidance.
 
 The generic models are implemented within the Equipment Management
 Function (EMF) of a transport NE, as defined in ITU-T G.7710
-Section 6.2.  The PM collection model
+{{G7710}}.  The PM collection model
 {{I-D.yoon-ippm-collection-measure}} provides the data structures, the
 interval-capabilities model {{I-D.yoon-ippm-collection-interval-capabilities}}
 advertises the supported intervals, and the transport parameter
@@ -408,8 +408,8 @@ enabled; its "measurement-method" is "passive".
 
 | Profile (feature) | Parameters | Collection types | Sampling interval (default) | Collection interval |
 |-------------------|------------|------------------|-----------------------------|---------------------|
-| itu-transport-maintenance-15min | es, ses, bbe, bbc, uas | counts, snapshot, tidemarks | 1 second | 15 minutes |
-| itu-transport-maintenance-24hr | es, ses, bbe, bbc, uas, pje | counts, snapshot, tidemarks | 1 second | 24 hours |
+| itu-transport-maintenance-15min | es, ses, bbe, bbc, uas | counts | 1 second | 15 minutes |
+| itu-transport-maintenance-24hr | es, ses, bbe, bbc, uas, pje | counts | 1 second | 24 hours |
 | itu-transport-qos-24hr | es, ses, bbe, bbc, uas, sep | counts | 1 second | 24 hours |
 {:#tab-profiles title="Transport profiles of ITU-T G.7710"}
 
@@ -418,13 +418,20 @@ entry has a sampling interval.  The sampling interval in
 {{tab-profiles}} is the default.
 
 The module defined in this document declares one YANG feature per
-profile, with the same name as the profile.  A server advertises
-the transport profiles it supports by advertising the corresponding
-features in its YANG library {{RFC8525}}.
+profile, with the same name as the profile.  A transport profile is
+not an implementation option: ITU-T G.7710 leaves the set of
+performance monitoring functions supported by an NE to the
+technology-specific Recommendations and to the position of the NE
+in the network.  A server advertises in its YANG library
+{{RFC8525}} the feature of each transport profile that it supports
+as required by the applicable technology-specific Recommendation.
 
 A server that advertises a profile feature MUST support the
 corresponding "parameter-profile" entry as defined in
-{{tab-profiles}}: it MUST accept and honour the configuration of
+{{tab-profiles}} for each listed parameter that is applicable to
+the monitored transport layer (for example, PJE applies only to
+layers that use pointer justification): it MUST accept and honour
+the configuration of
 that entry with the listed parameters, collection types, default
 sampling interval, and collection interval, and MUST NOT reject it
 as unsupported.  A server MAY provide the entry as system-defined
@@ -435,12 +442,6 @@ intervals for the parameters of a profile, as advertised through
 {{I-D.yoon-ippm-collection-interval-capabilities}}; the sampling and
 collection intervals in {{tab-profiles}} are the defaults of the
 transport profiles.
-
-A server that advertises the "itu-transport-qos-24hr" feature MUST
-support the counts collection type for the parameters of that
-profile; whether it also supports the snapshot or tidemarks
-collection types for those parameters is advertised through
-{{I-D.yoon-ippm-collection-interval-capabilities}}.
 
 ## Transport Parameter Module {#pm-parameters}
 
