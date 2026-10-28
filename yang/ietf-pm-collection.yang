@@ -308,7 +308,7 @@ module ietf-pm-collection {
       "Base identity for the reason a collection interval is
        marked suspect (see suspect-interval-flag).";
     reference
-      "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
+      "ITU-T G.7710";
   }
 
   identity telemetry-loss {
@@ -524,7 +524,7 @@ module ietf-pm-collection {
        client tell a fully measured interval from an incomplete
        one, and a measured zero from an absent value.";
     reference
-      "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
+      "ITU-T G.7710";
     leaf suspect-interval-flag {
       type boolean;
       default false;
@@ -543,8 +543,7 @@ module ietf-pm-collection {
          yet been taken, and clears it to 'false' once the single
          snapshot has been taken at the uniform time.";
       reference
-        "ITU-T G.7710, clauses 10.2.9, 10.2.11, 10.2.13, and
-         10.2.15";
+        "ITU-T G.7710";
     }
     leaf interval-status {
       type interval-status;
@@ -612,15 +611,15 @@ module ietf-pm-collection {
       description
         "Timestamp marking the end of the collection interval to
          which the reported values apply.  This is the
-         end-of-interval timestamp defined in ITU-T G.7710
-         (clauses 10.2.11 and 10.2.15).  It is the authoritative
+         end-of-interval timestamp defined in ITU-T G.7710.
+         It is the authoritative
          measurement time for the interval and should be used for
          correlation in preference to the notification envelope
          eventTime, which reflects when the notification was
          generated rather than the measurement interval boundary.
          It is present once the interval has completed.";
       reference
-        "ITU-T G.7710, clauses 10.2.11 and 10.2.15";
+        "ITU-T G.7710";
     }
   }
 

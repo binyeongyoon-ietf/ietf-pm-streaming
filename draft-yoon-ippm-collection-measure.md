@@ -203,7 +203,7 @@ AI-driven applications (AI APP), as illustrated in
 
 The YANG data model specified in this document is implemented within
 the Equipment Management Function (EMF) of an NE, as defined in
-ITU-T G.7710 Section 6.2. It is exposed at the NE's management
+ITU-T G.7710. It is exposed at the NE's management
 interface and is consumed by remote clients such as operations
 systems (OS), Physical Network Controllers (PNCs), network digital
 twins (NDT), and AI-driven applications. Throughout this document
@@ -302,11 +302,11 @@ but the space of possible computed metrics is effectively unbounded
 (for example, averages, variances, or percentiles could all be
 derived). ITU-T G.7710 instead reflects several decades of
 operational experience by fixing a deliberately small set of
-collection forms and parameters: per clause 10.1.6.2 of {{G7710}},
-gauge measurements are limited to snapshots (an instantaneous value)
-and tidemarks (the maximum and minimum), and counts to a simple
-accumulation, rather than general statistical aggregations; and per
-clause 10.1.6.4 of {{G7710}}, the collected parameters are confined
+collection forms and parameters: in {{G7710}}, gauge measurements
+are limited to snapshots (an instantaneous value) and tidemarks (the
+maximum and minimum), and counts to a simple accumulation, rather
+than general statistical aggregations; and the collected parameters
+are confined
 to an operational set such as ES, SES, BBE, BBC, and UAS for
 maintenance and quality-of-service purposes. The collection types
 are themselves defined as the form in which results are stored,
@@ -926,7 +926,7 @@ delivery.
 ## Suspect Interval Flag
 
 The `suspect-interval-flag` follows the suspect interval flag of
-ITU-T G.7710, clauses 10.2.11 and 10.2.15. It is initialised to
+ITU-T G.7710. It is initialised to
 "false" at the start of each collection interval and is set to
 "true" whenever the data stored for the interval may be
 unreliable: when one or more periodic samples are missing, when
