@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>A YANG Data Model for Performance Monitoring Streaming on Common Transport Equipment</title>
+<meta content="Bin Yeong Yoon" name="author">
+<meta content="Youngkil You" name="author">
+<meta content="
+       This document applies the core Performance Monitoring (PM)
+collection and interval-capabilities YANG data models to common
+transport equipment.  It defines a YANG module of transport
+performance parameter identities, derived from the base identity of
+the PM collection model; it specifies the three transport parameter
+profiles of ITU-T G.7710 normatively; and it gives
+end-to-end examples that show capability discovery followed by
+YANG-Push subscription, notification, and threshold reporting for a
+transport profile. 
+    " name="description">
+<meta content="xml2rfc 3.34.1" name="generator">
+<meta content="performance monitoring" name="keyword">
+<meta content="streaming" name="keyword">
+<meta content="transport" name="keyword">
+<meta content="YANG" name="keyword">
+<meta content="draft-yoon-ccamp-pm-streaming-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.34.1
+    Python 3.14.8
+    ConfigArgParse 1.8.0
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.13.4
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.33.1
+    wcwidth 0.9.2
+-->
+<link href="draft-yoon-ccamp-pm-streaming.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
+}
+svg {
+  display: block;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
+}
+.alignCenter {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+      float: none;
+    }
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
+}
+.iref + a[href].internal {
+  color: var(--text-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
+  }
+  @media print {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+  & .prepared {
+    float: right;
+  }
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
+  }
+}
+
+/* Comments */
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
+      }
+    }
+    & a.toplink {
+      float: right;
+    }
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
+    }
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">PM Streaming Transport YANG</td>
+<td class="right">October 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Yoon &amp; You</td>
+<td class="center">Expires 2 May 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">CCAMP Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-yoon-ccamp-pm-streaming-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-10-29" class="published">29 October 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-05-02">2 May 2027</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">B. Y. Yoon</div>
+<div class="org">ETRI</div>
+</div>
+<div class="author">
+      <div class="author-name">Y. You</div>
+<div class="org">woori-net</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">A YANG Data Model for Performance Monitoring Streaming on Common Transport Equipment</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document applies the core Performance Monitoring (PM)
+collection and interval-capabilities YANG data models to common
+transport equipment.  It defines a YANG module of transport
+performance parameter identities, derived from the base identity of
+the PM collection model; it specifies the three transport parameter
+profiles of ITU-T G.7710 normatively; and it gives
+end-to-end examples that show capability discovery followed by
+YANG-Push subscription, notification, and threshold reporting for a
+transport profile.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        The latest revision of this draft can be found at <span><a href="https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-ccamp-pm-streaming.html">https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-ccamp-pm-streaming.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-yoon-ccamp-pm-streaming/">https://datatracker.ietf.org/doc/draft-yoon-ccamp-pm-streaming/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">
+        Discussion of this document takes place on the
+        Common Control and Measurement Plane Working Group mailing list (<span><a href="mailto:ccamp@ietf.org">mailto:ccamp@ietf.org</a></span>),
+        which is archived at <span><a href="https://mailarchive.ietf.org/arch/browse/ccamp/">https://mailarchive.ietf.org/arch/browse/ccamp/</a></span>.
+        Subscribe at <span><a href="https://www.ietf.org/mailman/listinfo/ccamp/">https://www.ietf.org/mailman/listinfo/ccamp/</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+<p id="section-note.1-4">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/binyeongyoon-ietf/ietf-pm-streaming">https://github.com/binyeongyoon-ietf/ietf-pm-streaming</a></span>.<a href="#section-note.1-4" class="pilcrow">¶</a></p>
+</section>
+<section class="note" id="section-note.2">
+      <h2 id="name-note-to-the-rfc-editor">
+<a href="#name-note-to-the-rfc-editor" class="section-name selfRef">Note to the RFC Editor</a>
+      </h2>
+<p id="section-note.2-1">Please replace "RFC XXXX" with the RFC number assigned to this
+document, and "RFC YYYY" with the RFC number assigned to
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>, throughout this document and
+in the YANG module, and remove this note.<a href="#section-note.2-1" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 2 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-relationship-to-the-core-do" class="internal xref">Relationship to the Core Documents</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-placement-in-the-transport-" class="internal xref">Placement in the Transport Network Element</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-transport-common-pm-paramet" class="internal xref">Transport Common PM Parameters and Profiles</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-transport-pm-parameters" class="internal xref">Transport PM Parameters</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-itu-transport-maintenance-1" class="internal xref">itu-transport-maintenance-15min Profile</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-itu-transport-maintenance-2" class="internal xref">itu-transport-maintenance-24hr Profile</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-itu-transport-qos-24hr-prof" class="internal xref">itu-transport-qos-24hr Profile</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.5">
+                <p id="section-toc.1-1.4.2.5.1"><a href="#section-4.5" class="auto internal xref">4.5</a>.  <a href="#name-profile-relationships-and-o" class="internal xref">Profile Relationships and Operational Integration</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.6">
+                <p id="section-toc.1-1.4.2.6.1"><a href="#section-4.6" class="auto internal xref">4.6</a>.  <a href="#name-transport-profile-definitio" class="internal xref">Transport Profile Definitions</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.7">
+                <p id="section-toc.1-1.4.2.7.1"><a href="#section-4.7" class="auto internal xref">4.7</a>.  <a href="#name-transport-parameter-module" class="internal xref">Transport Parameter Module</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-use-cases-streaming-a-trans" class="internal xref">Use Cases: Streaming a Transport Profile</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-step-1-discover-supported-i" class="internal xref">Step 1: Discover Supported Intervals</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-step-2-subscribe-to-periodi" class="internal xref">Step 2: Subscribe to Periodic Collection Data</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-step-3-receive-periodic-upd" class="internal xref">Step 3: Receive Periodic Updates</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-step-4-threshold-reporting" class="internal xref">Step 4: Threshold Reporting</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-streaming-considerations-fo" class="internal xref">Streaming Considerations for Transport Equipment</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-open-issues" class="internal xref">Open Issues</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-10.1" class="auto internal xref">10.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-10.2" class="auto internal xref">10.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-contributors" class="internal xref">Contributors</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Performance Monitoring (PM) data generated by a transport Network
+Element (NE) is processed into summarized statistics and delivered
+to external clients.  The continuous, push-based delivery of that
+data is referred to in this document as PM streaming.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">This document depends on two core documents that define the
+technology-neutral models used here.  The
+PM collection data model <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> defines
+the performance parameter structure, the sampling and collection
+interval hierarchy, the three collection types (counts, snapshot, and tidemarks), and the threshold-event
+notification.  The interval-capabilities model
+<span>[<a href="#I-D.yoon-ippm-collection-interval-capabilities" class="cite xref">I-D.yoon-ippm-collection-interval-capabilities</a>]</span> lets a server advertise
+which intervals, measurement methods, and collection types it
+supports.  Both models are generic and neutral to the transport
+technology.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">This document specifies how those generic models are applied to
+common transport equipment.  It defines a YANG module <span>[<a href="#RFC7950" class="cite xref">RFC7950</a>]</span>
+of the transport performance parameters as identities, specifies
+the three transport
+profiles of ITU-T G.7710 normatively, and gives end-to-end examples
+of capability discovery, subscription, notification, and threshold
+reporting.  This document does not define any new subscription or
+notification mechanism; the collected data and events are carried
+using the YANG-Push framework <span>[<a href="#RFC8639" class="cite xref">RFC8639</a>]</span> <span>[<a href="#RFC8640" class="cite xref">RFC8640</a>]</span> <span>[<a href="#RFC8641" class="cite xref">RFC8641</a>]</span>.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<div id="terminology">
+<section id="section-1.1">
+        <h3 id="name-terminology">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+        </h3>
+<p id="section-1.1-1">The term "client" refers to any consumer of the PM streaming
+interface of a transport NE, such as an operations system (OS), a
+Physical Network Controller (PNC), a network digital twin (NDT), or
+an AI-driven application.  The term "transport" is used in the sense
+of <span>[<a href="#G7710" class="cite xref">G7710</a>]</span> and covers technologies such as OTN, MPLS-TP, and
+transport Ethernet.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-2">The tree diagrams in this document use the notation defined in
+<span>[<a href="#RFC8340" class="cite xref">RFC8340</a>]</span>.<a href="#section-1.1-2" class="pilcrow">¶</a></p>
+<p id="section-1.1-3">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+"OPTIONAL" in this document are to be interpreted as described in
+BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they appear in
+all capitals, as shown here.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="doc-relationship">
+<section id="section-2">
+      <h2 id="name-relationship-to-the-core-do">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-relationship-to-the-core-do" class="section-name selfRef">Relationship to the Core Documents</a>
+      </h2>
+<p id="section-2-1">This document is a technology-specific document that depends on the
+two core documents, as shown in <a href="#fig-doc-relationship" class="auto internal xref">Figure 1</a>.  Other
+technology-specific documents can depend on the core documents in
+the same way.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<span id="name-relationship-between-the-co"></span><div id="fig-doc-relationship">
+<figure id="figure-1">
+        <div class="alignLeft art-text artwork" id="section-2-2.1">
+<pre>
+   +--------------------------------------------------------+
+   |  Core documents (technology-neutral)                   |
+   |                                                        |
+   |  (1) ietf-pm-collection  &lt;----  (2) ietf-pm-interval-  |
+   |      PM collection     imports      capabilities       |
+   |      (base identity                 (augments          |
+   |       performance-parameter)         RFC 9196)         |
+   +--------------------------------------------------------+
+               ^                               ^
+               | imports                       | advertises
+               | (normative)                   | capabilities
+   +--------------------------------------------------------+
+   |  Technology-specific documents                         |
+   |                                                        |
+   |  (3) ietf-pm-parameters (THIS DOCUMENT): transport     |
+   |  (other documents for other technologies)              |
+   +--------------------------------------------------------+
+</pre>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-relationship-between-the-co" class="selfRef">Relationship between the core documents and this document</a>
+        </figcaption></figure>
+</div>
+<p id="section-2-3">The documents play distinct, layered roles:<a href="#section-2-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2-4.1">
+          <p id="section-2-4.1.1">(1) The PM collection model
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> (module ietf-pm-collection) is
+the generic, transport-neutral core: the performance parameter
+structure and the "performance-parameter" base identity, the
+sampling and collection interval hierarchy, the three collection
+types (counts, snapshot, and tidemarks), and
+the threshold-event notification.<a href="#section-2-4.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-4.2">
+          <p id="section-2-4.2.1">(2) The PM interval-capabilities model
+<span>[<a href="#I-D.yoon-ippm-collection-interval-capabilities" class="cite xref">I-D.yoon-ippm-collection-interval-capabilities</a>]</span> (module
+ietf-pm-interval-capabilities) imports the profile-names type and
+the performance-parameter identity from (1) and augments the
+"ietf-system-capabilities" module of <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>, so that a server
+can advertise which sampling and collection intervals, measurement
+methods, and collection types it supports at the standard
+capability discovery anchor.<a href="#section-2-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-4.3">
+          <p id="section-2-4.3.1">(3) This document (module ietf-pm-parameters) defines the
+transport-specific PM parameter identities, derived from the
+"performance-parameter" base identity of (1); specifies the transport profiles (see
+<a href="#params-profiles" class="auto internal xref">Section 4</a>); and shows how the three modules are used
+together when PM data is streamed from common transport equipment.<a href="#section-2-4.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-2-5">This document's YANG module imports module (1) for the
+"performance-parameter" base identity; it does not import module
+(2).  A "pm-parameter" entry of (1) identifies its parameter by one
+of the identities defined here, so that the parameter values
+collected under (1), and the capabilities advertised under (2), are
+interpreted using these identities.  The normative collection and
+capability semantics remain in <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>
+and <span>[<a href="#I-D.yoon-ippm-collection-interval-capabilities" class="cite xref">I-D.yoon-ippm-collection-interval-capabilities</a>]</span>; this
+document adds the transport-specific parameter module (see
+<a href="#pm-parameters" class="auto internal xref">Section 4.7</a>), the normative definition of the transport
+profiles, and the applicability guidance.<a href="#section-2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="placement-in-the-transport-network-element">
+<section id="section-3">
+      <h2 id="name-placement-in-the-transport-">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-placement-in-the-transport-" class="section-name selfRef">Placement in the Transport Network Element</a>
+      </h2>
+<p id="section-3-1">The generic models are implemented within the Equipment Management
+Function (EMF) of a transport NE, as defined in ITU-T G.7710
+<span>[<a href="#G7710" class="cite xref">G7710</a>]</span>.  The PM collection model
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> provides the data structures, the
+interval-capabilities model <span>[<a href="#I-D.yoon-ippm-collection-interval-capabilities" class="cite xref">I-D.yoon-ippm-collection-interval-capabilities</a>]</span>
+advertises the supported intervals, and the transport parameter
+module defined in this document (see <a href="#pm-parameters" class="auto internal xref">Section 4.7</a>) identifies
+the transport parameters that the profiles refer to.  The data is
+exposed at the NE management interface and consumed by remote
+clients, as illustrated in <a href="#fig-arch" class="auto internal xref">Figure 2</a>.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<span id="name-pm-streaming-from-a-transpo"></span><div id="fig-arch">
+<figure id="figure-2">
+        <div class="alignLeft art-text artwork" id="section-3-2.1">
+<pre>
+   +------+  +-----+     +--------+
+   |  OS  |  | NDT | ... | AI APP |
+   +---+--+  +--+--+     +----+---+
+       |        |             |
+       |   PM data and notifications
+       |   via YANG-Push (RFC 8639/8640/8641)
+       |        |             |
+   +---+--------+-------------+---+
+   |       Transport NE           |
+   |  +-----------------------+   |
+   |  |  EMF / Collection     |   |
+   |  |  ietf-pm-collection(1)|   |
+   |  |  + interval-caps (2)  |   |
+   |  |  + pm-parameters (3)  |   |
+   |  +-----------------------+   |
+   +------------------------------+
+
+   OS:  Operations System
+   NDT: Network Digital Twins
+   APP: Application
+</pre>
+</div>
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
+<a href="#name-pm-streaming-from-a-transpo" class="selfRef">PM streaming from a transport NE</a>
+        </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="params-profiles">
+<section id="section-4">
+      <h2 id="name-transport-common-pm-paramet">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-transport-common-pm-paramet" class="section-name selfRef">Transport Common PM Parameters and Profiles</a>
+      </h2>
+<p id="section-4-1">Metric values of PM parameters are measured for maintenance and QoS
+monitoring over transport networks.  Quality of Service (QoS)
+parameters assess the network's long-term ability to deliver
+agreed-upon service quality.  They verify performance against
+contractual obligations defined in service-level agreements (SLAs)
+over longer intervals (24 hours, monthly periods).  By
+simultaneously measuring both directions of a bidirectional
+connection, QoS parameters provide a holistic view of the sustained
+quality experienced by users.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">Maintenance parameters focus on short-term monitoring and detailed
+analysis for operational reliability.  Over intervals such as 15
+minutes or 24 hours, they enable swift responses to intermittent
+faults, bursts of errors, and subtle performance changes.
+Maintenance parameters typically involve unidirectional analysis,
+where each direction of transmission is monitored independently.
+This approach helps operators precisely pinpoint faults,
+troubleshoot intermittent issues, and perform preventive maintenance
+effectively.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<div id="pm-parameter-identities">
+<section id="section-4.1">
+        <h3 id="name-transport-pm-parameters">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-transport-pm-parameters" class="section-name selfRef">Transport PM Parameters</a>
+        </h3>
+<p id="section-4.1-1">The PM parameters of common transport equipment defined in
+<span>[<a href="#G7710" class="cite xref">G7710</a>]</span> are listed below, together with the identity by which
+each is referred to in the "pm-parameter" list of
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>.  Additional parameters may be
+needed for packet networks and can be defined in the same way by
+deriving further identities from "performance-parameter".<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<span id="name-transport-pm-parameters-and"></span><div id="tab-parameters">
+<table class="center" id="table-1">
+          <caption>
+<a href="#table-1" class="selfRef">Table 1</a>:
+<a href="#name-transport-pm-parameters-and" class="selfRef">Transport PM parameters and their identities</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Parameter</th>
+              <th class="text-left" rowspan="1" colspan="1">Identity</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">ES</td>
+              <td class="text-left" rowspan="1" colspan="1">pm-pa:es</td>
+              <td class="text-left" rowspan="1" colspan="1">Errored Seconds</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SES</td>
+              <td class="text-left" rowspan="1" colspan="1">pm-pa:ses</td>
+              <td class="text-left" rowspan="1" colspan="1">Severely Errored Seconds</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">BBE</td>
+              <td class="text-left" rowspan="1" colspan="1">pm-pa:bbe</td>
+              <td class="text-left" rowspan="1" colspan="1">Background Block Errors</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">BBC</td>
+              <td class="text-left" rowspan="1" colspan="1">pm-pa:bbc</td>
+              <td class="text-left" rowspan="1" colspan="1">Background Block Count</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">UAS</td>
+              <td class="text-left" rowspan="1" colspan="1">pm-pa:uas</td>
+              <td class="text-left" rowspan="1" colspan="1">Unavailable Seconds</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SEP</td>
+              <td class="text-left" rowspan="1" colspan="1">pm-pa:sep</td>
+              <td class="text-left" rowspan="1" colspan="1">Severely Errored Period</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">PJE</td>
+              <td class="text-left" rowspan="1" colspan="1">pm-pa:pje</td>
+              <td class="text-left" rowspan="1" colspan="1">Pointer Justification Events</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-4.1-3">All of the transport PM parameters listed above are obtained by
+passive measurement in the sense of <span>[<a href="#RFC7799" class="cite xref">RFC7799</a>]</span>: they are derived
+from protocol counters and physical-layer signals already present on
+the monitored connection, without generating synthetic test traffic.
+When these parameters are configured through the PM collection
+model <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>, the optional
+"measurement-method" leaf of each "pm-parameter" is therefore set to
+"passive".<a href="#section-4.1-3" class="pilcrow">¶</a></p>
+<p id="section-4.1-4">According to collection types, purposes, and time intervals,
+different parameters are used.  The following three transport
+profiles, named using the profile-naming format of the PM
+collection model <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>, provide
+comprehensive coverage for maintenance and QoS monitoring across
+different temporal resolutions.  The "transport" network token
+indicates that a profile applies across multiple transport
+technologies (for example OTN, MPLS-TP, and transport Ethernet).
+The normative definition of the profiles is given in
+<a href="#pm-profiles" class="auto internal xref">Section 4.6</a>.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="itu-transport-maintenance-15min-profile">
+<section id="section-4.2">
+        <h3 id="name-itu-transport-maintenance-1">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-itu-transport-maintenance-1" class="section-name selfRef">itu-transport-maintenance-15min Profile</a>
+        </h3>
+<p id="section-4.2-1">The "itu-transport-maintenance-15min" profile is designed for
+short-term operational monitoring and rapid fault detection.  It
+uses all three collection types (counts, snapshot, and tidemarks)
+over 15-minute intervals.  The profile includes core maintenance
+parameters: ES, SES, BBE, BBC, and UAS.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<p id="section-4.2-2">The 15-minute interval enables operators to quickly detect and
+respond to performance degradation, making it ideal for proactive
+maintenance and immediate troubleshooting.  The combination of
+counts (for cumulative event tracking), snapshot (for instantaneous
+state capture), and tidemarks (for extreme value monitoring)
+provides a comprehensive view of network behaviour within each
+collection interval.  This profile is particularly valuable for
+network operations centres (NOCs) requiring real-time visibility
+into transport network health and for automated systems that need
+to trigger immediate responses to performance anomalies.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="itu-transport-maintenance-24hr-profile">
+<section id="section-4.3">
+        <h3 id="name-itu-transport-maintenance-2">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-itu-transport-maintenance-2" class="section-name selfRef">itu-transport-maintenance-24hr Profile</a>
+        </h3>
+<p id="section-4.3-1">The "itu-transport-maintenance-24hr" profile extends maintenance
+monitoring to longer-term analysis and trend identification.  Like
+the 15-minute profile, it employs all three collection types
+(counts, snapshot, and tidemarks) but over 24-hour intervals.  The
+parameter set includes ES, SES, BBE, BBC, UAS, and additionally
+PJE.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2">The 24-hour interval allows for comprehensive daily performance
+analysis, enabling operators to identify patterns, trends, and
+recurring issues not apparent in shorter intervals.  The inclusion
+of PJE provides additional insight into synchronisation-related
+performance issues that are more relevant over longer observation
+periods.  This profile supports strategic maintenance planning,
+capacity management, and historical performance analysis.  It
+complements the 15-minute profile by providing the broader context
+needed for long-term network optimisation and preventive
+maintenance strategies.<a href="#section-4.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="itu-transport-qos-24hr-profile">
+<section id="section-4.4">
+        <h3 id="name-itu-transport-qos-24hr-prof">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-itu-transport-qos-24hr-prof" class="section-name selfRef">itu-transport-qos-24hr Profile</a>
+        </h3>
+<p id="section-4.4-1">The "itu-transport-qos-24hr" profile is designed for QoS monitoring
+and SLA compliance verification.  Unlike the maintenance profiles,
+it focuses exclusively on the counts collection type over 24-hour
+intervals, emphasising sustained performance assessment rather than
+detailed operational monitoring.  The parameter set includes ES,
+SES, BBE, BBC, SEP, and UAS.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">The exclusive use of counts reflects its focus on cumulative
+performance over extended periods, which is essential for SLA
+compliance and service quality reporting.  The 24-hour interval
+aligns with typical SLA measurement periods and provides the
+statistical basis for service quality assessments.  The inclusion
+of SEP is particularly relevant for QoS monitoring as it represents
+sustained periods of degraded performance that directly impact
+service quality commitments.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="profile-relationships-and-operational-integration">
+<section id="section-4.5">
+        <h3 id="name-profile-relationships-and-o">
+<a href="#section-4.5" class="section-number selfRef">4.5. </a><a href="#name-profile-relationships-and-o" class="section-name selfRef">Profile Relationships and Operational Integration</a>
+        </h3>
+<p id="section-4.5-1">These three profiles work together to provide a comprehensive
+performance monitoring framework.  The
+"itu-transport-maintenance-15min" profile serves as the primary
+operational tool for immediate network management, while the
+"itu-transport-maintenance-24hr" profile provides the analytical
+foundation for strategic planning and trend analysis.  The
+"itu-transport-qos-24hr" profile ensures that service quality
+commitments are met and provides the data necessary for SLA
+reporting and customer assurance.<a href="#section-4.5-1" class="pilcrow">¶</a></p>
+<p id="section-4.5-2">The hierarchical relationship between these profiles enables
+operators to correlate short-term operational events with long-term
+performance trends and service quality metrics.  For example, a
+spike in ES detected by the 15-minute maintenance profile can be
+correlated with daily trends from the 24-hour maintenance profile
+and assessed against SLA thresholds defined in the QoS profile.
+This integrated approach supports both reactive troubleshooting and
+proactive network optimisation while ensuring compliance with
+service quality commitments.<a href="#section-4.5-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="pm-profiles">
+<section id="section-4.6">
+        <h3 id="name-transport-profile-definitio">
+<a href="#section-4.6" class="section-number selfRef">4.6. </a><a href="#name-transport-profile-definitio" class="section-name selfRef">Transport Profile Definitions</a>
+        </h3>
+<p id="section-4.6-1">The three transport profiles are defined in <a href="#tab-profiles" class="auto internal xref">Table 2</a>, which
+follows <span>[<a href="#G7710" class="cite xref">G7710</a>]</span>.  Each profile is an entry of the
+"parameter-profile" list of <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>,
+keyed by the profile name, containing one "pm-parameter" entry for
+each listed parameter.  Each "pm-parameter" entry has a
+"sampling-interval" entry and, within it, a "collection-interval" of
+the listed duration under which the listed collection types are
+enabled; its "measurement-method" is "passive".<a href="#section-4.6-1" class="pilcrow">¶</a></p>
+<span id="name-transport-profiles-of-itu-t"></span><div id="tab-profiles">
+<table class="center" id="table-2">
+          <caption>
+<a href="#table-2" class="selfRef">Table 2</a>:
+<a href="#name-transport-profiles-of-itu-t" class="selfRef">Transport profiles of ITU-T G.7710</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Profile</th>
+              <th class="text-left" rowspan="1" colspan="1">Parameters</th>
+              <th class="text-left" rowspan="1" colspan="1">Collection types</th>
+              <th class="text-left" rowspan="1" colspan="1">Sampling interval (default)</th>
+              <th class="text-left" rowspan="1" colspan="1">Collection interval</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">itu-transport-maintenance-15min</td>
+              <td class="text-left" rowspan="1" colspan="1">es, ses, bbe, bbc, uas</td>
+              <td class="text-left" rowspan="1" colspan="1">counts</td>
+              <td class="text-left" rowspan="1" colspan="1">1 second</td>
+              <td class="text-left" rowspan="1" colspan="1">15 minutes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">itu-transport-maintenance-24hr</td>
+              <td class="text-left" rowspan="1" colspan="1">es, ses, bbe, bbc, uas, pje</td>
+              <td class="text-left" rowspan="1" colspan="1">counts</td>
+              <td class="text-left" rowspan="1" colspan="1">1 second</td>
+              <td class="text-left" rowspan="1" colspan="1">24 hours</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">itu-transport-qos-24hr</td>
+              <td class="text-left" rowspan="1" colspan="1">es, ses, bbe, bbc, uas, sep</td>
+              <td class="text-left" rowspan="1" colspan="1">counts</td>
+              <td class="text-left" rowspan="1" colspan="1">1 second</td>
+              <td class="text-left" rowspan="1" colspan="1">24 hours</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-4.6-3">Collection is always performed on sampled values, so every profile
+entry has a sampling interval.  The sampling interval in
+<a href="#tab-profiles" class="auto internal xref">Table 2</a> is the default.<a href="#section-4.6-3" class="pilcrow">¶</a></p>
+<p id="section-4.6-4">A server MAY provide a transport profile entry as system-defined
+configuration, in which case it is present in the operational
+datastore with origin "system" <span>[<a href="#RFC8342" class="cite xref">RFC8342</a>]</span> without client
+configuration.  A server MAY additionally support other collection
+intervals for the parameters of a profile, as advertised through
+<span>[<a href="#I-D.yoon-ippm-collection-interval-capabilities" class="cite xref">I-D.yoon-ippm-collection-interval-capabilities</a>]</span>; the sampling and
+collection intervals in <a href="#tab-profiles" class="auto internal xref">Table 2</a> are the defaults of the
+transport profiles.<a href="#section-4.6-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="pm-parameters">
+<section id="section-4.7">
+        <h3 id="name-transport-parameter-module">
+<a href="#section-4.7" class="section-number selfRef">4.7. </a><a href="#name-transport-parameter-module" class="section-name selfRef">Transport Parameter Module</a>
+        </h3>
+<p id="section-4.7-1">The following module defines the transport performance parameters
+as identities derived from "pm-co:performance-parameter" of
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>.  The module defines no data
+nodes, so it has no tree diagram; its identities are summarised in
+<a href="#tab-module" class="auto internal xref">Table 3</a>.<a href="#section-4.7-1" class="pilcrow">¶</a></p>
+<span id="name-contents-of-the-ietf-pm-par"></span><div id="tab-module">
+<table class="center" id="table-3">
+          <caption>
+<a href="#table-3" class="selfRef">Table 3</a>:
+<a href="#name-contents-of-the-ietf-pm-par" class="selfRef">Contents of the ietf-pm-parameters module</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Statement</th>
+              <th class="text-left" rowspan="1" colspan="1">Name</th>
+              <th class="text-left" rowspan="1" colspan="1">Base / reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">identity</td>
+              <td class="text-left" rowspan="1" colspan="1">es, ses, bbe, bbc, uas, pje, sep</td>
+              <td class="text-left" rowspan="1" colspan="1">pm-co:performance-parameter</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<div class="breakable lang-yang sourcecode" id="section-4.7-3">
+<pre>&lt;CODE BEGINS&gt; file "ietf-pm-parameters.yang"
+
+module ietf-pm-parameters {
+  yang-version 1.1;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-pm-parameters";
+  prefix pm-pa;
+
+  import ietf-pm-collection {
+    prefix pm-co;
+    reference
+      "RFC YYYY: A YANG Data Model for Performance Monitoring (PM)
+       Collection";
+  }
+
+  organization
+    "IETF Common Control and Measurement Plane (ccamp)
+     Working Group";
+  contact
+    "WG Web: &lt;https://datatracker.ietf.org/wg/ccamp/&gt;
+     Editor: Bin Yeong Yoon
+       &lt;mailto:byyun@etri.re.kr&gt;";
+  description
+    "This YANG module defines the performance monitoring (PM)
+     parameters of common transport equipment, based on ITU-T
+     G.7710, as identities derived from the performance-parameter
+     base identity of ietf-pm-collection.  The three transport
+     parameter profiles (itu-transport-maintenance-15min,
+     itu-transport-maintenance-24hr, and itu-transport-qos-24hr)
+     are instances of the parameter-profile list of
+     ietf-pm-collection.
+
+     Copyright (c) 2026 IETF Trust and the persons identified as
+     authors of the code.  All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Revised BSD License
+     set forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (https://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC XXXX
+     (https://www.rfc-editor.org/info/rfcXXXX); see the RFC
+     itself for full legal notices.";
+
+  revision 2026-10-29 {
+    description
+      "Initial revision.";
+    reference
+      "RFC XXXX: A YANG Data Model for Performance Monitoring
+       Streaming on Common Transport Equipment";
+  }
+
+  /*
+   * IDENTITIES: transport performance parameters
+   */
+  identity es {
+    base pm-co:performance-parameter;
+    description
+      "Errored Second (ES).";
+    reference
+      "ITU-T G.7710";
+  }
+
+  identity ses {
+    base pm-co:performance-parameter;
+    description
+      "Severely Errored Second (SES).";
+    reference
+      "ITU-T G.7710";
+  }
+
+  identity bbe {
+    base pm-co:performance-parameter;
+    description
+      "Background Block Error (BBE).";
+    reference
+      "ITU-T G.7710";
+  }
+
+  identity bbc {
+    base pm-co:performance-parameter;
+    description
+      "Background Block Count (BBC).";
+    reference
+      "ITU-T G.7710";
+  }
+
+  identity uas {
+    base pm-co:performance-parameter;
+    description
+      "Unavailable Second (UAS).";
+    reference
+      "ITU-T G.7710";
+  }
+
+  identity pje {
+    base pm-co:performance-parameter;
+    description
+      "Pointer Justification Event (PJE).";
+    reference
+      "ITU-T G.7710";
+  }
+
+  identity sep {
+    base pm-co:performance-parameter;
+    description
+      "Severely Errored Period (SEP).";
+    reference
+      "ITU-T G.7710";
+  }
+}
+
+&lt;CODE ENDS&gt;</pre><a href="#section-4.7-3" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="use-cases-streaming-a-transport-profile">
+<section id="section-5">
+      <h2 id="name-use-cases-streaming-a-trans">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-use-cases-streaming-a-trans" class="section-name selfRef">Use Cases: Streaming a Transport Profile</a>
+      </h2>
+<p id="section-5-1">This section shows the end-to-end flow for a transport profile,
+from capability discovery to subscription, notification, and
+threshold reporting.  The examples use the SES parameter
+("pm-pa:ses") of the "itu-transport-maintenance-15min" profile.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<div id="step-1-discover-supported-intervals">
+<section id="section-5.1">
+        <h3 id="name-step-1-discover-supported-i">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-step-1-discover-supported-i" class="section-name selfRef">Step 1: Discover Supported Intervals</a>
+        </h3>
+<p id="section-5.1-1">The client first reads the interval capabilities
+<span>[<a href="#I-D.yoon-ippm-collection-interval-capabilities" class="cite xref">I-D.yoon-ippm-collection-interval-capabilities</a>]</span> for the parameter, to learn
+which sampling and collection intervals, and which collection
+types, the transport NE supports.
+These capabilities are advertised by augmenting the
+"ietf-system-capabilities" container of <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>, so the client
+retrieves them under "system-capabilities", the same anchor used for
+subscription and notification capabilities.  The client uses a NETCONF <code>&lt;get-data&gt;</code>
+request <span>[<a href="#RFC8526" class="cite xref">RFC8526</a>]</span> on the operational datastore, as shown in
+<a href="#fig-cap" class="auto internal xref">Figure 3</a>; the subtree filter selects the parameter by its list
+keys, so the whole entry is returned.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<span id="name-capability-discovery-for-a-"></span><div id="fig-cap">
+<figure id="figure-3">
+          <div class="lang-xml sourcecode" id="section-5.1-2.1">
+<pre>
+&lt;rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="301"&gt;
+  &lt;get-data
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-nmda"
+      xmlns:ds="urn:ietf:params:xml:ns:yang:ietf-datastores"&gt;
+    &lt;datastore&gt;ds:operational&lt;/datastore&gt;
+    &lt;subtree-filter&gt;
+      &lt;system-capabilities
+          xmlns=
+            "urn:ietf:params:xml:ns:yang:ietf-system-capabilities"&gt;
+        &lt;pm-interval-capabilities
+            xmlns=
+          "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
+            xmlns:pm-pa=
+              "urn:ietf:params:xml:ns:yang:ietf-pm-parameters"&gt;
+          &lt;parameter-profile&gt;
+            &lt;name&gt;itu-transport-maintenance-15min&lt;/name&gt;
+            &lt;pm-parameter&gt;
+              &lt;name&gt;pm-pa:ses&lt;/name&gt;
+            &lt;/pm-parameter&gt;
+          &lt;/parameter-profile&gt;
+        &lt;/pm-interval-capabilities&gt;
+      &lt;/system-capabilities&gt;
+    &lt;/subtree-filter&gt;
+  &lt;/get-data&gt;
+&lt;/rpc&gt;
+</pre>
+</div>
+<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
+<a href="#name-capability-discovery-for-a-" class="selfRef">Capability discovery for a transport parameter</a>
+          </figcaption></figure>
+</div>
+<p id="section-5.1-3"><a href="#fig-cap-reply" class="auto internal xref">Figure 4</a> shows the "pm-interval-capabilities" data returned
+within "system-capabilities" in the reply.<a href="#section-5.1-3" class="pilcrow">¶</a></p>
+<span id="name-capability-discovery-reply-"></span><div id="fig-cap-reply">
+<figure id="figure-4">
+          <div class="lang-xml sourcecode" id="section-5.1-4.1">
+<pre>
+&lt;pm-interval-capabilities
+    xmlns=
+  "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
+    xmlns:pm-pa=
+      "urn:ietf:params:xml:ns:yang:ietf-pm-parameters"&gt;
+  &lt;parameter-profile&gt;
+    &lt;name&gt;itu-transport-maintenance-15min&lt;/name&gt;
+    &lt;pm-parameter&gt;
+      &lt;name&gt;pm-pa:ses&lt;/name&gt;
+      &lt;supported-collection-types&gt;counts&lt;/supported-collection-types&gt;
+      &lt;interval-relationships&gt;
+        &lt;sampling-interval&gt;
+          &lt;id&gt;1s&lt;/id&gt;
+          &lt;min-value&gt;1&lt;/min-value&gt;
+          &lt;max-value&gt;1&lt;/max-value&gt;
+          &lt;units&gt;second&lt;/units&gt;
+          &lt;default-value&gt;1&lt;/default-value&gt;
+          &lt;default-unit&gt;second&lt;/default-unit&gt;
+          &lt;granularity&gt;1&lt;/granularity&gt;
+          &lt;collection-interval&gt;
+            &lt;id&gt;collection-range&lt;/id&gt;
+            &lt;min-value&gt;5&lt;/min-value&gt;
+            &lt;max-value&gt;1440&lt;/max-value&gt;
+            &lt;units&gt;minute&lt;/units&gt;
+            &lt;default-value&gt;15&lt;/default-value&gt;
+            &lt;default-unit&gt;minute&lt;/default-unit&gt;
+            &lt;granularity&gt;5&lt;/granularity&gt;
+            &lt;retained-interval-count&gt;1&lt;/retained-interval-count&gt;
+          &lt;/collection-interval&gt;
+        &lt;/sampling-interval&gt;
+      &lt;/interval-relationships&gt;
+    &lt;/pm-parameter&gt;
+  &lt;/parameter-profile&gt;
+&lt;/pm-interval-capabilities&gt;
+</pre>
+</div>
+<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<a href="#name-capability-discovery-reply-" class="selfRef">Capability discovery reply data for a transport parameter</a>
+          </figcaption></figure>
+</div>
+<p id="section-5.1-5">The reply shows that the NE supports 1-second sampling and a
+collection interval range of 5 to 1440 minutes with 5-minute
+granularity, defaulting to 15 minutes, and that it supports the
+counts collection type for the parameter,
+and that it retains the most recently completed collection interval.
+The client therefore selects a 1-second sampling interval, a
+15-minute collection interval, and the counts collection type, which
+the NE supports.<a href="#section-5.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="step-2-subscribe-to-periodic-collection-data">
+<section id="section-5.2">
+        <h3 id="name-step-2-subscribe-to-periodi">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-step-2-subscribe-to-periodi" class="section-name selfRef">Step 2: Subscribe to Periodic Collection Data</a>
+        </h3>
+<p id="section-5.2-1">Using the supported intervals, the client establishes a periodic
+YANG-Push subscription <span>[<a href="#RFC8641" class="cite xref">RFC8641</a>]</span> to the counts collection value in
+the operational datastore.  The period is expressed in centiseconds
+and is set to 90000 (900 seconds), so that an update is sent once
+per 15-minute collection interval.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<span id="name-subscription-to-a-transport"></span><div id="fig-sub">
+<figure id="figure-5">
+          <div class="lang-xml sourcecode" id="section-5.2-2.1">
+<pre>
+&lt;rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="101"&gt;
+  &lt;establish-subscription
+      xmlns=
+        "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"
+      xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push"
+      xmlns:ds="urn:ietf:params:xml:ns:yang:ietf-datastores"&gt;
+    &lt;yp:datastore&gt;ds:operational&lt;/yp:datastore&gt;
+    &lt;yp:datastore-xpath-filter
+        xmlns:pm-co="urn:ietf:params:xml:ns:yang:ietf-pm-collection"
+        xmlns:pm-pa="urn:ietf:params:xml:ns:yang:ietf-pm-parameters"&gt;
+      /pm-co:pm-periodic-collection/
+        parameter-profile[name='itu-transport-maintenance-15min']/
+        pm-parameter[name='pm-pa:ses']/
+        sampling-interval[id='1s']/
+        collection-interval[id='15min']/
+        collection-types/counts/collection-value
+    &lt;/yp:datastore-xpath-filter&gt;
+    &lt;encoding&gt;encode-xml&lt;/encoding&gt;
+    &lt;yp:periodic&gt;
+      &lt;yp:period&gt;90000&lt;/yp:period&gt;
+      &lt;yp:anchor-time&gt;2026-07-01T00:00:00Z&lt;/yp:anchor-time&gt;
+    &lt;/yp:periodic&gt;
+  &lt;/establish-subscription&gt;
+&lt;/rpc&gt;
+</pre>
+</div>
+<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
+<a href="#name-subscription-to-a-transport" class="selfRef">Subscription to a transport profile parameter</a>
+          </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="step-3-receive-periodic-updates">
+<section id="section-5.3">
+        <h3 id="name-step-3-receive-periodic-upd">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-step-3-receive-periodic-upd" class="section-name selfRef">Step 3: Receive Periodic Updates</a>
+        </h3>
+<p id="section-5.3-1">Once per period the NE sends a "push-update" notification
+<span>[<a href="#RFC8641" class="cite xref">RFC8641</a>]</span> for the subscription, whose identifier returned by the
+NE is 39.  The update contains the selected data only.  The
+collected value of 5 is the total severely errored seconds in the
+period.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<span id="name-periodic-update-push-update"></span><div id="fig-notif">
+<figure id="figure-6">
+          <div class="lang-xml sourcecode" id="section-5.3-2.1">
+<pre>
+&lt;notification
+    xmlns="urn:ietf:params:xml:ns:netconf:notification:1.0"&gt;
+  &lt;eventTime&gt;2026-07-01T00:15:00Z&lt;/eventTime&gt;
+  &lt;push-update xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push"&gt;
+    &lt;id&gt;39&lt;/id&gt;
+    &lt;datastore-contents&gt;
+      &lt;pm-periodic-collection
+          xmlns="urn:ietf:params:xml:ns:yang:ietf-pm-collection"
+          xmlns:pm-pa=
+            "urn:ietf:params:xml:ns:yang:ietf-pm-parameters"&gt;
+        &lt;parameter-profile&gt;
+          &lt;name&gt;itu-transport-maintenance-15min&lt;/name&gt;
+          &lt;pm-parameter&gt;
+            &lt;name&gt;pm-pa:ses&lt;/name&gt;
+            &lt;sampling-interval&gt;
+              &lt;id&gt;1s&lt;/id&gt;
+              &lt;collection-interval&gt;
+                &lt;id&gt;15min&lt;/id&gt;
+                &lt;collection-types&gt;
+                  &lt;counts&gt;
+                    &lt;collection-value&gt;5&lt;/collection-value&gt;
+                  &lt;/counts&gt;
+                &lt;/collection-types&gt;
+              &lt;/collection-interval&gt;
+            &lt;/sampling-interval&gt;
+          &lt;/pm-parameter&gt;
+        &lt;/parameter-profile&gt;
+      &lt;/pm-periodic-collection&gt;
+    &lt;/datastore-contents&gt;
+  &lt;/push-update&gt;
+&lt;/notification&gt;
+</pre>
+</div>
+<figcaption><a href="#figure-6" class="selfRef">Figure 6</a>:
+<a href="#name-periodic-update-push-update" class="selfRef">Periodic update (push-update) for the transport profile</a>
+          </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="step-4-threshold-reporting">
+<section id="section-5.4">
+        <h3 id="name-step-4-threshold-reporting">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-step-4-threshold-reporting" class="section-name selfRef">Step 4: Threshold Reporting</a>
+        </h3>
+<p id="section-5.4-1">The client can also subscribe to threshold events.  Threshold events
+are YANG notifications, not datastore data, so the client subscribes
+to an event stream, here the "NETCONF" event stream, using
+subscribed notifications <span>[<a href="#RFC8639" class="cite xref">RFC8639</a>]</span>, without a datastore or a
+period.  When the counts value crosses the configured transient
+threshold during the interval, a Threshold Report is delivered using
+the "pm-threshold-events" notification of the PM collection model.
+No transport-specific event mechanism is required.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+<span id="name-subscription-to-threshold-e"></span><div id="fig-thr-sub">
+<figure id="figure-7">
+          <div class="lang-xml sourcecode" id="section-5.4-2.1">
+<pre>
+&lt;rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="102"&gt;
+  &lt;establish-subscription
+      xmlns=
+        "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"&gt;
+    &lt;stream&gt;NETCONF&lt;/stream&gt;
+    &lt;stream-xpath-filter
+        xmlns:pm-co="urn:ietf:params:xml:ns:yang:ietf-pm-collection"&gt;
+      /pm-co:pm-threshold-events
+    &lt;/stream-xpath-filter&gt;
+    &lt;encoding&gt;encode-xml&lt;/encoding&gt;
+  &lt;/establish-subscription&gt;
+&lt;/rpc&gt;
+</pre>
+</div>
+<figcaption><a href="#figure-7" class="selfRef">Figure 7</a>:
+<a href="#name-subscription-to-threshold-e" class="selfRef">Subscription to threshold events</a>
+          </figcaption></figure>
+</div>
+<span id="name-transient-threshold-notific"></span><div id="fig-thr-notif">
+<figure id="figure-8">
+          <div class="lang-xml sourcecode" id="section-5.4-3.1">
+<pre>
+&lt;notification
+    xmlns="urn:ietf:params:xml:ns:netconf:notification:1.0"&gt;
+  &lt;eventTime&gt;2026-07-01T00:09:00Z&lt;/eventTime&gt;
+  &lt;pm-threshold-events
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-pm-collection"
+      xmlns:pm-pa=
+        "urn:ietf:params:xml:ns:yang:ietf-pm-parameters"&gt;
+    &lt;periodic-events&gt;
+      &lt;parameter-profile&gt;
+        &lt;name&gt;itu-transport-maintenance-15min&lt;/name&gt;
+        &lt;pm-parameter&gt;
+          &lt;name&gt;pm-pa:ses&lt;/name&gt;
+          &lt;sampling-interval&gt;
+            &lt;id&gt;1s&lt;/id&gt;
+            &lt;collection-interval&gt;
+              &lt;id&gt;15min&lt;/id&gt;
+              &lt;event-types&gt;
+                &lt;counts-transient&gt;
+                  &lt;event-type&gt;Threshold-Crossed-Event&lt;/event-type&gt;
+                  &lt;event-occurred&gt;true&lt;/event-occurred&gt;
+                  &lt;event-time&gt;2026-07-01T00:09:00Z&lt;/event-time&gt;
+                &lt;/counts-transient&gt;
+              &lt;/event-types&gt;
+            &lt;/collection-interval&gt;
+          &lt;/sampling-interval&gt;
+        &lt;/pm-parameter&gt;
+      &lt;/parameter-profile&gt;
+    &lt;/periodic-events&gt;
+  &lt;/pm-threshold-events&gt;
+&lt;/notification&gt;
+</pre>
+</div>
+<figcaption><a href="#figure-8" class="selfRef">Figure 8</a>:
+<a href="#name-transient-threshold-notific" class="selfRef">Transient threshold notification</a>
+          </figcaption></figure>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="streaming-considerations-for-transport-equipment">
+<section id="section-6">
+      <h2 id="name-streaming-considerations-fo">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-streaming-considerations-fo" class="section-name selfRef">Streaming Considerations for Transport Equipment</a>
+      </h2>
+<p id="section-6-1">On transport equipment the following points apply.  Collection
+intervals should align with the NE clock source so that interval
+boundaries are consistent across the network and snapshots taken at
+a uniform time can be correlated across NEs.  A transport NE may
+serve many parameters across many monitored objects (links,
+tunnels, equipment sensors), so operators should consider the load
+of large numbers of concurrent subscriptions and choose profiles
+and intervals accordingly.  Threshold events, both periodic and the
+non-periodic BUT, EUT, and CSES events, are carried in the
+notification defined by the PM collection model.<a href="#section-6-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="open-issues">
+<section id="section-7">
+      <h2 id="name-open-issues">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-open-issues" class="section-name selfRef">Open Issues</a>
+      </h2>
+<p id="section-7-1">This section is to be removed before publication.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<p id="section-7-2">The representation of the transport profiles in YANG is left for
+discussion in the Working Group.  The profile contents (parameters,
+collection types, and default intervals) are given in
+<a href="#tab-profiles" class="auto internal xref">Table 2</a>.  What remains open is how a server indicates the
+profiles it supports, and how the applicability of each parameter
+to a given transport layer is expressed.  Candidates, none of which
+requires changes to the core documents, include one YANG feature per
+profile advertised in the YANG library <span>[<a href="#RFC8525" class="cite xref">RFC8525</a>]</span>, the profiles
+published as YANG instance data <span>[<a href="#RFC9195" class="cite xref">RFC9195</a>]</span>, and the capability
+advertisement of <span>[<a href="#I-D.yoon-ippm-collection-interval-capabilities" class="cite xref">I-D.yoon-ippm-collection-interval-capabilities</a>]</span>.<a href="#section-7-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-8">
+      <h2 id="name-security-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-8-1">The YANG module defined in this document defines only identities;
+it defines no data nodes, RPCs, actions, or
+notifications, and therefore introduces no new data that could be
+read, written, or delivered through network management protocols.
+The identities defined here are used as values of the "pm-parameter"
+name leaf of <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> and of
+<span>[<a href="#I-D.yoon-ippm-collection-interval-capabilities" class="cite xref">I-D.yoon-ippm-collection-interval-capabilities</a>]</span>; the security
+considerations of those documents apply to the data nodes in which
+these identities appear.  Those data nodes are designed to be
+accessed via NETCONF <span>[<a href="#RFC6241" class="cite xref">RFC6241</a>]</span> or RESTCONF over a secure transport
+such as SSH, with access restricted using the Network Configuration
+Access Control Model (NACM) <span>[<a href="#RFC8341" class="cite xref">RFC8341</a>]</span>.  The security
+considerations of the YANG-Push framework <span>[<a href="#RFC8639" class="cite xref">RFC8639</a>]</span> <span>[<a href="#RFC8641" class="cite xref">RFC8641</a>]</span>
+also apply.<a href="#section-8-1" class="pilcrow">¶</a></p>
+<p id="section-8-2">The exposed performance and capability data can reveal information
+about the transport network; operators may wish
+to restrict access accordingly.<a href="#section-8-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-9">
+      <h2 id="name-iana-considerations">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-9-1">This document requests IANA to register the following URI in the
+"ns" subregistry within the "IETF XML Registry":<a href="#section-9-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-9-2">
+<pre>
+   URI: urn:ietf:params:xml:ns:yang:ietf-pm-parameters
+   Registrant Contact: The IESG.
+   XML: N/A; the requested URI is an XML namespace.
+</pre><a href="#section-9-2" class="pilcrow">¶</a>
+</div>
+<p id="section-9-3">This document requests IANA to register the following YANG module
+in the "YANG Module Names" registry <span>[<a href="#RFC6020" class="cite xref">RFC6020</a>]</span>:<a href="#section-9-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-9-4">
+<pre>
+   Name:      ietf-pm-parameters
+   Namespace: urn:ietf:params:xml:ns:yang:ietf-pm-parameters
+   Prefix:    pm-pa
+   Reference: RFC XXXX
+</pre><a href="#section-9-4" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="sec-combined-references">
+<section id="section-10">
+      <h2 id="name-references">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<div id="sec-normative-references">
+<section id="section-10.1">
+        <h3 id="name-normative-references">
+<a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="G7710">[G7710]</dt>
+        <dd>
+<span class="refAuthor">ITU-T</span>, <span class="refTitle">"Common Equipment Management Function Requirements"</span>, <span class="seriesInfo">ITU-T Recommendation G.7710</span>, <time datetime="2025-11" class="refDate">November 2025</time>, <span>&lt;<a href="https://www.itu.int/rec/T-REC-G.7710">https://www.itu.int/rec/T-REC-G.7710</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.yoon-ippm-collection-interval-capabilities">[I-D.yoon-ippm-collection-interval-capabilities]</dt>
+        <dd>
+<span class="refAuthor">Yoon, B. Y.</span> and <span class="refAuthor">Y. You</span>, <span class="refTitle">"A YANG Data Model for Collection Interval Capabilities"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-yoon-ippm-collection-interval-capabilities-00</span>, <time datetime="2026-07-05" class="refDate">5 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-yoon-ippm-collection-interval-capabilities-00">https://datatracker.ietf.org/doc/html/draft-yoon-ippm-collection-interval-capabilities-00</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.yoon-ippm-collection-measure">[I-D.yoon-ippm-collection-measure]</dt>
+        <dd>
+<span class="refAuthor">Yoon, B. Y.</span> and <span class="refAuthor">Y. You</span>, <span class="refTitle">"A YANG Data Model for Collection Measurement"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-yoon-ippm-collection-measure-00</span>, <time datetime="2026-07-05" class="refDate">5 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-yoon-ippm-collection-measure-00">https://datatracker.ietf.org/doc/html/draft-yoon-ippm-collection-measure-00</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6020">[RFC6020]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M., Ed.</span>, <span class="refTitle">"YANG - A Data Modeling Language for the Network Configuration Protocol (NETCONF)"</span>, <span class="seriesInfo">RFC 6020</span>, <span class="seriesInfo">DOI 10.17487/RFC6020</span>, <time datetime="2010-10" class="refDate">October 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6020">https://www.rfc-editor.org/rfc/rfc6020</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6241">[RFC6241]</dt>
+        <dd>
+<span class="refAuthor">Enns, R., Ed.</span>, <span class="refAuthor">Bjorklund, M., Ed.</span>, <span class="refAuthor">Schoenwaelder, J., Ed.</span>, and <span class="refAuthor">A. Bierman, Ed.</span>, <span class="refTitle">"Network Configuration Protocol (NETCONF)"</span>, <span class="seriesInfo">RFC 6241</span>, <span class="seriesInfo">DOI 10.17487/RFC6241</span>, <time datetime="2011-06" class="refDate">June 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6241">https://www.rfc-editor.org/rfc/rfc6241</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7950">[RFC7950]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M., Ed.</span>, <span class="refTitle">"The YANG 1.1 Data Modeling Language"</span>, <span class="seriesInfo">RFC 7950</span>, <span class="seriesInfo">DOI 10.17487/RFC7950</span>, <time datetime="2016-08" class="refDate">August 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7950">https://www.rfc-editor.org/rfc/rfc7950</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+        <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8340">[RFC8340]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M.</span> and <span class="refAuthor">L. Berger, Ed.</span>, <span class="refTitle">"YANG Tree Diagrams"</span>, <span class="seriesInfo">BCP 215</span>, <span class="seriesInfo">RFC 8340</span>, <span class="seriesInfo">DOI 10.17487/RFC8340</span>, <time datetime="2018-03" class="refDate">March 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8340">https://www.rfc-editor.org/rfc/rfc8340</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8341">[RFC8341]</dt>
+        <dd>
+<span class="refAuthor">Bierman, A.</span> and <span class="refAuthor">M. Bjorklund</span>, <span class="refTitle">"Network Configuration Access Control Model"</span>, <span class="seriesInfo">STD 91</span>, <span class="seriesInfo">RFC 8341</span>, <span class="seriesInfo">DOI 10.17487/RFC8341</span>, <time datetime="2018-03" class="refDate">March 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8341">https://www.rfc-editor.org/rfc/rfc8341</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8639">[RFC8639]</dt>
+        <dd>
+<span class="refAuthor">Voit, E.</span>, <span class="refAuthor">Clemm, A.</span>, <span class="refAuthor">Gonzalez Prieto, A.</span>, <span class="refAuthor">Nilsen-Nygaard, E.</span>, and <span class="refAuthor">A. Tripathy</span>, <span class="refTitle">"Subscription to YANG Notifications"</span>, <span class="seriesInfo">RFC 8639</span>, <span class="seriesInfo">DOI 10.17487/RFC8639</span>, <time datetime="2019-09" class="refDate">September 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8639">https://www.rfc-editor.org/rfc/rfc8639</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8640">[RFC8640]</dt>
+        <dd>
+<span class="refAuthor">Voit, E.</span>, <span class="refAuthor">Clemm, A.</span>, <span class="refAuthor">Gonzalez Prieto, A.</span>, <span class="refAuthor">Nilsen-Nygaard, E.</span>, and <span class="refAuthor">A. Tripathy</span>, <span class="refTitle">"Dynamic Subscription to YANG Events and Datastores over NETCONF"</span>, <span class="seriesInfo">RFC 8640</span>, <span class="seriesInfo">DOI 10.17487/RFC8640</span>, <time datetime="2019-09" class="refDate">September 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8640">https://www.rfc-editor.org/rfc/rfc8640</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8641">[RFC8641]</dt>
+      <dd>
+<span class="refAuthor">Clemm, A.</span> and <span class="refAuthor">E. Voit</span>, <span class="refTitle">"Subscription to YANG Notifications for Datastore Updates"</span>, <span class="seriesInfo">RFC 8641</span>, <span class="seriesInfo">DOI 10.17487/RFC8641</span>, <time datetime="2019-09" class="refDate">September 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8641">https://www.rfc-editor.org/rfc/rfc8641</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-10.2">
+        <h3 id="name-informative-references">
+<a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC7799">[RFC7799]</dt>
+        <dd>
+<span class="refAuthor">Morton, A.</span>, <span class="refTitle">"Active and Passive Metrics and Methods (with Hybrid Types In-Between)"</span>, <span class="seriesInfo">RFC 7799</span>, <span class="seriesInfo">DOI 10.17487/RFC7799</span>, <time datetime="2016-05" class="refDate">May 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7799">https://www.rfc-editor.org/rfc/rfc7799</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8342">[RFC8342]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M.</span>, <span class="refAuthor">Schoenwaelder, J.</span>, <span class="refAuthor">Shafer, P.</span>, <span class="refAuthor">Watsen, K.</span>, and <span class="refAuthor">R. Wilton</span>, <span class="refTitle">"Network Management Datastore Architecture (NMDA)"</span>, <span class="seriesInfo">RFC 8342</span>, <span class="seriesInfo">DOI 10.17487/RFC8342</span>, <time datetime="2018-03" class="refDate">March 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8342">https://www.rfc-editor.org/rfc/rfc8342</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8525">[RFC8525]</dt>
+        <dd>
+<span class="refAuthor">Bierman, A.</span>, <span class="refAuthor">Bjorklund, M.</span>, <span class="refAuthor">Schoenwaelder, J.</span>, <span class="refAuthor">Watsen, K.</span>, and <span class="refAuthor">R. Wilton</span>, <span class="refTitle">"YANG Library"</span>, <span class="seriesInfo">RFC 8525</span>, <span class="seriesInfo">DOI 10.17487/RFC8525</span>, <time datetime="2019-03" class="refDate">March 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8525">https://www.rfc-editor.org/rfc/rfc8525</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8526">[RFC8526]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M.</span>, <span class="refAuthor">Schoenwaelder, J.</span>, <span class="refAuthor">Shafer, P.</span>, <span class="refAuthor">Watsen, K.</span>, and <span class="refAuthor">R. Wilton</span>, <span class="refTitle">"NETCONF Extensions to Support the Network Management Datastore Architecture"</span>, <span class="seriesInfo">RFC 8526</span>, <span class="seriesInfo">DOI 10.17487/RFC8526</span>, <time datetime="2019-03" class="refDate">March 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8526">https://www.rfc-editor.org/rfc/rfc8526</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9195">[RFC9195]</dt>
+        <dd>
+<span class="refAuthor">Lengyel, B.</span> and <span class="refAuthor">B. Claise</span>, <span class="refTitle">"A File Format for YANG Instance Data"</span>, <span class="seriesInfo">RFC 9195</span>, <span class="seriesInfo">DOI 10.17487/RFC9195</span>, <time datetime="2022-02" class="refDate">February 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9195">https://www.rfc-editor.org/rfc/rfc9195</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9196">[RFC9196]</dt>
+      <dd>
+<span class="refAuthor">Lengyel, B.</span>, <span class="refAuthor">Clemm, A.</span>, and <span class="refAuthor">B. Claise</span>, <span class="refTitle">"YANG Modules Describing Capabilities for Systems and Datastore Update Notifications"</span>, <span class="seriesInfo">RFC 9196</span>, <span class="seriesInfo">DOI 10.17487/RFC9196</span>, <time datetime="2022-02" class="refDate">February 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9196">https://www.rfc-editor.org/rfc/rfc9196</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="contributors">
+<section id="appendix-A">
+      <h2 id="name-contributors">
+<a href="#name-contributors" class="section-name selfRef">Contributors</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Kwangkoog Lee</span></div>
+<div dir="auto" class="left"><span class="org">KT</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:kwangkoog.lee@kt.com" class="email">kwangkoog.lee@kt.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Jongyoon Shin</span></div>
+<div dir="auto" class="left"><span class="org">SK Telecom</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:jongyoon.shin@sk.com" class="email">jongyoon.shin@sk.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Sungyong Nam</span></div>
+<div dir="auto" class="left"><span class="org">LGU+</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:sy.nam@lguplus.co.kr" class="email">sy.nam@lguplus.co.kr</a>
+</div>
+</address>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Bin Yeong Yoon</span></div>
+<div dir="auto" class="left"><span class="org">ETRI</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:byyun@etri.re.kr" class="email">byyun@etri.re.kr</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Youngkil You</span></div>
+<div dir="auto" class="left"><span class="org">woori-net</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:young@woori-net.com" class="email">young@woori-net.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
