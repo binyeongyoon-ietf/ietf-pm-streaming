@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>A YANG Data Model for Performance Monitoring (PM) Interval Capabilities</title>
+<meta content="Bin Yeong Yoon" name="author">
+<meta content="Youngkil You" name="author">
+<meta content='
+       This document defines a YANG data model, "ietf-pm-interval-capabilities",
+that enables a server to advertise which sampling and collection
+intervals, measurement methods, and collection types it supports for
+each performance monitoring (PM) parameter.  A client reads this
+capability information before configuring PM collection, so that it
+selects only values that the server can honour.  The capabilities
+are advertised by augmenting the "ietf-system-capabilities" module
+defined in  , so that a client discovers them at the same
+well-known location used for subscription and notification
+capabilities.  The model imports the "profile-names" and
+"collection-type" types and the "performance-parameter" and
+"measurement-method" identities from the companion PM collection
+model defined in
+  and mirrors its
+profile-and-parameter structure, ensuring direct alignment between
+capability discovery and collection configuration.  The model does
+not define collection data structures or any delivery mechanism;
+those are defined in the companion document. 
+    ' name="description">
+<meta content="xml2rfc 3.34.1" name="generator">
+<meta content="performance monitoring" name="keyword">
+<meta content="interval capabilities" name="keyword">
+<meta content="capability advertisement" name="keyword">
+<meta content="YANG" name="keyword">
+<meta content="draft-yoon-ippm-collection-interval-capabilities-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.34.1
+    Python 3.14.8
+    ConfigArgParse 1.8.0
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.13.4
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.33.1
+    wcwidth 0.9.2
+-->
+<link href="draft-yoon-ippm-collection-interval-capabilities.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
+}
+svg {
+  display: block;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
+}
+.alignCenter {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+      float: none;
+    }
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
+}
+.iref + a[href].internal {
+  color: var(--text-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
+  }
+  @media print {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+  & .prepared {
+    float: right;
+  }
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
+  }
+}
+
+/* Comments */
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
+      }
+    }
+    & a.toplink {
+      float: right;
+    }
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
+    }
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">PM Interval Capabilities YANG</td>
+<td class="right">October 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Yoon &amp; You</td>
+<td class="center">Expires 2 May 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">IPPM Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-yoon-ippm-collection-interval-capabilities-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-10-29" class="published">29 October 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-05-02">2 May 2027</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">B. Y. Yoon</div>
+<div class="org">ETRI</div>
+</div>
+<div class="author">
+      <div class="author-name">Y. You</div>
+<div class="org">woori-net</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">A YANG Data Model for Performance Monitoring (PM) Interval Capabilities</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document defines a YANG data model, "ietf-pm-interval-capabilities",
+that enables a server to advertise which sampling and collection
+intervals, measurement methods, and collection types it supports for
+each performance monitoring (PM) parameter.  A client reads this
+capability information before configuring PM collection, so that it
+selects only values that the server can honour.  The capabilities
+are advertised by augmenting the "ietf-system-capabilities" module
+defined in <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>, so that a client discovers them at the same
+well-known location used for subscription and notification
+capabilities.  The model imports the "profile-names" and
+"collection-type" types and the "performance-parameter" and
+"measurement-method" identities from the companion PM collection
+model defined in
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> and mirrors its
+profile-and-parameter structure, ensuring direct alignment between
+capability discovery and collection configuration.  The model does
+not define collection data structures or any delivery mechanism;
+those are defined in the companion document.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        The latest revision of this draft can be found at <span><a href="https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-ippm-collection-interval-capabilities.html">https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-ippm-collection-interval-capabilities.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-yoon-ippm-collection-interval-capabilities/">https://datatracker.ietf.org/doc/draft-yoon-ippm-collection-interval-capabilities/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/binyeongyoon-ietf/ietf-pm-streaming">https://github.com/binyeongyoon-ietf/ietf-pm-streaming</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+</section>
+<section class="note" id="section-note.2">
+      <h2 id="name-note-to-the-rfc-editor">
+<a href="#name-note-to-the-rfc-editor" class="section-name selfRef">Note to the RFC Editor</a>
+      </h2>
+<p id="section-note.2-1">Please replace "RFC XXXX" with the RFC number assigned to this
+document, and "RFC YYYY" with the RFC number assigned to
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>, throughout this document and
+in the YANG module, and remove this note.<a href="#section-note.2-1" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 2 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-relationship-to-companion-d" class="internal xref">Relationship to Companion Documents</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-motivation" class="internal xref">Motivation</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-monitoring-objectives-requi" class="internal xref">Monitoring Objectives Require Different Intervals</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-equipment-performance-deter" class="internal xref">Equipment Performance Determines Achievable Intervals</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.3">
+                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="auto internal xref">2.3</a>.  <a href="#name-multi-vendor-interoperabili" class="internal xref">Multi-Vendor Interoperability</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-structure-and-the-sampling-" class="internal xref">Structure and the Sampling/Collection Relationship</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-capability-discovery-and-co" class="internal xref">Capability Discovery and Configuration Workflow</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-interval-capabilities-examp" class="internal xref">Interval Capabilities Example</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-tree-diagram" class="internal xref">Tree Diagram</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-yang-module" class="internal xref">YANG Module</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-manageability-consideration" class="internal xref">Manageability Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
+                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.2">
+                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-contributors" class="internal xref">Contributors</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">The PM collection data model defined in
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> allows a client to configure sampling
+and collection intervals for performance parameters within named
+parameter profiles.  The same parameter may require different intervals
+depending on its type and monitoring objective, and different network
+elements support different ranges and granularities of intervals.
+Without a prior discovery step, a client risks configuring interval
+values that the server cannot honour, leading to configuration errors or
+suboptimal monitoring.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">This document defines a YANG data model <span>[<a href="#RFC7950" class="cite xref">RFC7950</a>]</span>,
+"ietf-pm-interval-capabilities", for advertising the interval
+capabilities a server supports.  A client reads
+this information from the operational datastore before it configures
+PM collection.  The model mirrors the profile-and-parameter structure
+of the companion PM collection model and reuses its
+"profile-names" type and "performance-parameter" identity, so that
+capability discovery aligns directly with collection configuration.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">In addition to interval ranges, the same discovery step advertises
+which measurement methods <span>[<a href="#RFC7799" class="cite xref">RFC7799</a>]</span> the server can apply to each
+parameter (active, passive, or hybrid). A parameter may be
+measurable by more than one method on a given network element -- for
+example, delay measured either by an active probe or by a hybrid
+in-band technique -- and a client needs to know the available
+methods before it configures a measurement or establishes a
+subscription, so that it obtains data with the intended operational
+meaning. Advertising the supported methods alongside the supported
+intervals lets the client make both choices in a single discovery
+step, using the companion configuration model
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">The same discovery step also advertises which collection types
+(counts, snapshot, and tidemarks) the server supports for each
+parameter, so that a client knows which types it can enable before
+it configures a parameter; a profile may also restrict a parameter to a subset of
+the types, for example counts only.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">Rather than defining a separate top-level container, this module
+augments the "system-capabilities" container of the
+"ietf-system-capabilities" module defined in <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>.  RFC 9196
+provides a placeholder structure that other modules augment to expose
+YANG-related system capabilities; the companion module
+"ietf-notification-capabilities" (Section 3 of <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>) uses the
+same anchor to advertise subscription and notification capabilities.
+By augmenting the same anchor, this module lets a NETCONF or RESTCONF
+client discover the PM interval capabilities and the
+subscription capabilities through a single, standardised query, without
+prior knowledge of this module's own layout.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">This document does not define collection data structures, collection
+types, threshold events, or any delivery mechanism.  All of those are
+defined in the companion document <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<div id="terminology">
+<section id="section-1.1">
+        <h3 id="name-terminology">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+        </h3>
+<p id="section-1.1-1">The terms "client", "server", "datastore", and "operational state" are
+used as defined in <span>[<a href="#RFC6241" class="cite xref">RFC6241</a>]</span> and <span>[<a href="#RFC8342" class="cite xref">RFC8342</a>]</span>.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-2">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+"OPTIONAL" in this document are to be interpreted as described in
+BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they appear in
+all capitals, as shown here.<a href="#section-1.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="relationship">
+<section id="section-1.2">
+        <h3 id="name-relationship-to-companion-d">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-relationship-to-companion-d" class="section-name selfRef">Relationship to Companion Documents</a>
+        </h3>
+<p id="section-1.2-1">The functional division between this document and
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> is as follows.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<p id="section-1.2-2"><span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> defines "ietf-pm-collection", which
+configures PM collection and exposes the collected data.  This
+document depends only on the types and identities that it imports
+from that module.<a href="#section-1.2-2" class="pilcrow">¶</a></p>
+<p id="section-1.2-3">This document defines "ietf-pm-interval-capabilities", which covers:<a href="#section-1.2-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.2-4.1">
+            <p id="section-1.2-4.1.1">Read-only advertisement of the sampling and collection interval
+ranges, units, defaults, and granularity that a server supports<a href="#section-1.2-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-4.2">
+            <p id="section-1.2-4.2.1">Read-only advertisement of the measurement methods and collection
+types that a server supports for each parameter<a href="#section-1.2-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-4.3">
+            <p id="section-1.2-4.3.1">Hierarchical alignment with the companion model's profile-and-
+parameter structure<a href="#section-1.2-4.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-4.4">
+            <p id="section-1.2-4.4.1">Capability discovery prior to collection configuration<a href="#section-1.2-4.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-1.2-5">The separation of concerns is:<a href="#section-1.2-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.2-6.1">
+            <p id="section-1.2-6.1.1">"What data is collected and how it is structured" is in
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>.<a href="#section-1.2-6.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-6.2">
+            <p id="section-1.2-6.2.1">"Which configurations the server can support" is in this
+document.<a href="#section-1.2-6.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-1.2-7">Specific performance parameters are defined as identities derived
+from "performance-parameter" in other documents.<a href="#section-1.2-7" class="pilcrow">¶</a></p>
+<p id="section-1.2-8"><a href="#fig-document-relationship" class="auto internal xref">Figure 1</a> illustrates the relationship between
+the two YANG modules.<a href="#section-1.2-8" class="pilcrow">¶</a></p>
+<span id="name-relationship-between-ietf-p"></span><div id="fig-document-relationship">
+<figure id="figure-1">
+          <div class="alignLeft art-ascii-art art-text artwork" id="section-1.2-9.1">
+<pre>
+  +------------------------------------------+
+  |     ietf-pm-interval-capabilities        |
+  |         (this document)                  |
+  |                                          |
+  |  pm-interval-capabilities                |
+  |    parameter-profile [profile-names] -+  |
+  |      pm-parameter [identityref]       |  |
+  |        supported-collection-types     |  |
+  |        interval-relationships         |  |
+  |          sampling-interval            |  |
+  |            collection-interval        |  |
+  +------------------------------|-----------+
+                                 | imports profile-names,
+                                 | performance-parameter,
+                                 | measurement-method,
+                                 | collection-type
+                                 v
+  +------------------------------------------+
+  |     ietf-pm-collection                   |
+  |     (companion document)                 |
+  |     PM collection model                  |
+  +------------------------------------------+
+</pre>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-relationship-between-ietf-p" class="selfRef">Relationship between ietf-pm-interval-capabilities and ietf-pm-collection</a>
+          </figcaption></figure>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="motivation">
+<section id="section-2">
+      <h2 id="name-motivation">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-motivation" class="section-name selfRef">Motivation</a>
+      </h2>
+<p id="section-2-1">ITU-T G.7710 <span>[<a href="#G7710" class="cite xref">G7710</a>]</span> does not include a clause that mandates a
+capability-discovery mechanism for configurable measurement timing
+parameters.  However, because sampling and collection intervals are
+configurable, a client needs to know in advance which intervals a given
+server can support, so that requests can be built without violating
+implementation constraints.  This module provides that advertisement.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<div id="monitoring-objectives-require-different-intervals">
+<section id="section-2.1">
+        <h3 id="name-monitoring-objectives-requi">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-monitoring-objectives-requi" class="section-name selfRef">Monitoring Objectives Require Different Intervals</a>
+        </h3>
+<p id="section-2.1-1">The same PM parameter may need to be collected simultaneously at
+multiple sampling and collection interval combinations, each serving
+a distinct operational objective.  As illustrated by the use cases in
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>, the number of lost packets counted
+every second may be aggregated over a 1-minute interval for rapid fault
+detection in a Network Operations Center (NOC), over a 15-minute
+interval for routine maintenance monitoring, and over a 24-hour interval for daily QoS reporting -- all
+three objectives active concurrently on the same parameter.  Similarly,
+latency parameters may be sampled at sub-second granularity with short
+collection intervals for digital twin synchronization, or at longer
+intervals for AI/ML model training.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">A client wishing to configure all of these combinations for all
+parameters in a profile must first verify that the target server
+supports every required interval.  Without a capability discovery
+step, the client has no way to know whether a desired combination is
+valid on the specific server, and may submit configurations that the
+server silently truncates, rejects, or rounds to the nearest supported
+value.<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="equipment-performance-determines-achievable-intervals">
+<section id="section-2.2">
+        <h3 id="name-equipment-performance-deter">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-equipment-performance-deter" class="section-name selfRef">Equipment Performance Determines Achievable Intervals</a>
+        </h3>
+<p id="section-2.2-1">Beyond monitoring objective, the processing capacity of the network
+element itself directly determines which interval configurations are
+feasible for a given parameter.  Network elements vary significantly
+in their measurement engines and hardware resources.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-2">High-performance network elements with dedicated measurement processors
+can support short minimum sampling intervals and fine-grained
+collection interval steps, enabling high-resolution monitoring for
+demanding use cases such as real-time fault detection, network digital
+twins, and AI-driven analytics.  For example, such a device may support
+a 100-millisecond sampling interval for the lost-packets parameter,
+with collection intervals
+as short as 1 minute and a 5-second granularity step.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<p id="section-2.2-3">Lower-specification network elements, constrained by processing
+resources or hardware architecture, may support only longer minimum
+intervals and coarser granularity steps.  The same lost-packets parameter on
+such a device might have a minimum sampling interval of 1 second and
+a minimum collection interval of 15 minutes, adequate for traditional
+operations and maintenance monitoring but insufficient for sub-minute
+analytics.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.2-4"><a href="#tab-equipment-classes" class="auto internal xref">Table 1</a> shows an example comparison for the
+lost-packets parameter.<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+<span id="name-example-interval-capabiliti"></span><div id="tab-equipment-classes">
+<table class="center" id="table-1">
+          <caption>
+<a href="#table-1" class="selfRef">Table 1</a>:
+<a href="#name-example-interval-capabiliti" class="selfRef">Example interval capabilities by equipment class (lost-packets parameter)</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Equipment class</th>
+              <th class="text-left" rowspan="1" colspan="1">Min. sampling</th>
+              <th class="text-left" rowspan="1" colspan="1">Min. collection interval</th>
+              <th class="text-left" rowspan="1" colspan="1">Granularity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">High-performance</td>
+              <td class="text-left" rowspan="1" colspan="1">100 ms</td>
+              <td class="text-left" rowspan="1" colspan="1">1 min</td>
+              <td class="text-left" rowspan="1" colspan="1">5 s</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Standard</td>
+              <td class="text-left" rowspan="1" colspan="1">1 s</td>
+              <td class="text-left" rowspan="1" colspan="1">1 min</td>
+              <td class="text-left" rowspan="1" colspan="1">1 min</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Low-specification</td>
+              <td class="text-left" rowspan="1" colspan="1">1 s</td>
+              <td class="text-left" rowspan="1" colspan="1">15 min</td>
+              <td class="text-left" rowspan="1" colspan="1">15 min</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-2.2-6">A client operating across a heterogeneous network cannot assume a
+uniform interval floor and must discover the capabilities of each
+network element individually.  The interval capability model enables
+a client to select the highest-resolution intervals a given server
+supports for each operational objective, rather than applying a
+conservative lowest-common-denominator configuration across all
+devices.<a href="#section-2.2-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="multi-vendor-interoperability">
+<section id="section-2.3">
+        <h3 id="name-multi-vendor-interoperabili">
+<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-multi-vendor-interoperabili" class="section-name selfRef">Multi-Vendor Interoperability</a>
+        </h3>
+<p id="section-2.3-1">Equipment from different vendors supports different ranges and
+granularities of intervals, and may impose implementation-specific
+constraints on the relationship between sampling and collection
+intervals.  In multi-vendor networks, clients must adapt to the
+capabilities of each element.  Without a discovery mechanism, clients
+risk configuration failures, suboptimal monitoring, or system
+instability.  A standardised capability model addresses these
+challenges and enables interoperability across diverse network
+environments.<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="structure-and-the-samplingcollection-relationship">
+<section id="section-3">
+      <h2 id="name-structure-and-the-sampling-">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-structure-and-the-sampling-" class="section-name selfRef">Structure and the Sampling/Collection Relationship</a>
+      </h2>
+<p id="section-3-1">The module follows a hierarchical structure that mirrors the
+configuration structure of the PM collection model defined in
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>,
+ensuring consistency between capability discovery and actual
+configuration.  It has three levels: parameter profiles (collections of
+related parameters such as "example-ip-qos-15min"),
+PM parameters (individual parameters identified by identities
+derived from "performance-parameter"), and capabilities
+(supported sampling and collection intervals, measurement methods,
+and collection types for each parameter).<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">The relationship between sampling and collection intervals is
+expressed structurally by nesting collection intervals within their
+corresponding sampling interval entry.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">For each interval, the model advertises:<a href="#section-3-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3-4.1">
+          <p id="section-3-4.1.1">min-value: minimum supported numeric value<a href="#section-3-4.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-4.2">
+          <p id="section-3-4.2.1">max-value: maximum supported numeric value<a href="#section-3-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-4.3">
+          <p id="section-3-4.3.1">units: list of supported time units (e.g., second, minute)<a href="#section-3-4.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-4.4">
+          <p id="section-3-4.4.1">default-value: recommended default numeric value<a href="#section-3-4.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-4.5">
+          <p id="section-3-4.5.1">default-unit: recommended default time unit<a href="#section-3-4.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-4.6">
+          <p id="section-3-4.6.1">granularity: step size; valid values must be multiples of this<a href="#section-3-4.6.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-3-5">For a collection interval, the model additionally advertises
+<code>retained-interval-count</code>: the number of completed intervals the
+server retains after they end.  This value bounds both how many
+completed intervals a client may read back and, for push delivery,
+how long a reporting period may be, since a reporting period may
+span at most <code>retained-interval-count</code> collection intervals.  A
+client uses it to choose a reporting period the server can honour.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-6">For each parameter, the model additionally advertises
+<code>supported-collection-types</code>: the collection types (counts,
+snapshot, tidemarks) that the server can collect for the parameter.
+A client enables only the advertised collection types.  An
+absent list means the server does not advertise collection-type
+information for the parameter.<a href="#section-3-6" class="pilcrow">¶</a></p>
+<p id="section-3-7">Once a client knows the supported intervals, it can pair a single
+supported sampling interval with several supported collection intervals
+to serve different operational purposes for the same parameter.  The
+"Use Cases" section of <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> gives concrete
+examples of such combinations, which motivate the ranges and
+granularities a server advertises here.<a href="#section-3-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="capability-discovery-and-configuration-workflow">
+<section id="section-4">
+      <h2 id="name-capability-discovery-and-co">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-capability-discovery-and-co" class="section-name selfRef">Capability Discovery and Configuration Workflow</a>
+      </h2>
+<p id="section-4-1">A client performs the following three steps to configure PM
+collection and access the collected data correctly.  Steps 2 and 3 use the companion
+model defined in <span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>; Step 1 uses the
+model defined in this document.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<span id="name-combined-capability-discove"></span><div id="fig-workflow">
+<figure id="figure-2">
+        <div class="alignLeft art-ascii-art art-text artwork" id="section-4-2.1">
+<pre>
+  +-----------+                        +-----------+
+  |  Client   |                        |  Server   |
+  | (NMS/Ctrl)|                        |   (NE)    |
+  +-----+-----+                        +-----+-----+
+        |                                    |
+        |  Step 1: Discover intervals        |
+        |  [ietf-pm-interval-capabilities]   |
+        |---NETCONF get-data--------------&gt; |
+        |&lt;--pm-interval-capabilities-------- |
+        |                                    |
+        |  Step 2: Configure collection      |
+        |  [ietf-pm-collection]              |
+        |---NETCONF edit-config-----------&gt; |
+        |&lt;--OK------------------------------ |
+        |                                    |
+        |  Step 3: Access data               |
+        |  [ietf-pm-collection]              |
+        |                                    |
+        |  Option A: Pull (polling)          |
+        |---NETCONF get-data--------------&gt; |
+        |&lt;--collected data----------------- |
+        |                                    |
+        |  Option B: Push (YANG-Push)        |
+        |---establish-subscription--------&gt; |
+        |&lt;--periodic-notifications---------- |
+        |                                    |
+</pre>
+</div>
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
+<a href="#name-combined-capability-discove" class="selfRef">Combined Capability Discovery and Data Access Workflow</a>
+        </figcaption></figure>
+</div>
+<p id="section-4-3"><strong>Step 1 -- Discover interval capabilities (this document).</strong>
+On session establishment, the server's YANG Library <span>[<a href="#RFC8525" class="cite xref">RFC8525</a>]</span> and
+capability information indicate whether "ietf-pm-collection" and
+"ietf-pm-interval-capabilities" are both supported.  The client
+queries the "pm-interval-capabilities" container, which this module
+augments into the "system-capabilities" container of
+"ietf-system-capabilities" <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>.  Because that container is
+"config false", the augmented nodes inherit "config false" and reside
+in the operational datastore per the Network Management Datastore
+Architecture (NMDA) <span>[<a href="#RFC8342" class="cite xref">RFC8342</a>]</span>.  Querying the same anchor also returns
+any subscription and notification capabilities advertised there by
+"ietf-notification-capabilities" (Section 3 of <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>).
+From it, the client retrieves the supported sampling and collection
+intervals for each parameter and profile, including the minimum and
+maximum values, allowed units, and granularity, together with the
+supported measurement methods and collection types.  This runtime exposure
+follows the model described in <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span> for advertising capabilities
+in operational state.  The same information MAY also be published as
+static instance data using the format defined in <span>[<a href="#RFC9195" class="cite xref">RFC9195</a>]</span>.  The
+interval ranges advertised here correspond to the Measurement Timing
+aspect of the Performance Metric Specification described in
+Section 5.4.2 of <span>[<a href="#RFC6390" class="cite xref">RFC6390</a>]</span>; this document provides the runtime
+discovery of those timing constraints, which the companion model
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span> then applies when collection is
+configured.<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-4"><strong>Step 2 -- Configure collection (companion document).</strong>
+The client configures PM collection using "ietf-pm-collection"
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>, selecting
+only sampling and collection interval values, measurement methods,
+and collection types that Step 1 confirmed the server supports.  This
+avoids configuration errors such as an unsupported interval or
+collection type being rejected during collection setup or
+subscription establishment.<a href="#section-4-4" class="pilcrow">¶</a></p>
+<p id="section-4-5"><strong>Step 3 -- Access data (companion document).</strong>
+The client accesses the collected PM data, by pull-based retrieval
+or push-based subscription, as specified in
+<span>[<a href="#I-D.yoon-ippm-collection-measure" class="cite xref">I-D.yoon-ippm-collection-measure</a>]</span>.<a href="#section-4-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="interval-capabilities-example">
+<section id="section-5">
+      <h2 id="name-interval-capabilities-examp">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-interval-capabilities-examp" class="section-name selfRef">Interval Capabilities Example</a>
+      </h2>
+<p id="section-5-1"><a href="#fig-cap-example" class="auto internal xref">Figure 3</a> shows a NETCONF <code>&lt;get-data&gt;</code> request <span>[<a href="#RFC8526" class="cite xref">RFC8526</a>]</span>
+that retrieves, from the operational datastore, the capabilities
+advertised for the "ex:lost-packets" parameter in the
+"example-ip-qos-15min" profile.  The subtree filter
+selects the parameter by its list keys only, so the whole entry is
+returned.  The parameter is identified by "ex:lost-packets", an
+example identity derived from "performance-parameter".<a href="#section-5-1" class="pilcrow">¶</a></p>
+<span id="name-interval-capabilities-disco"></span><div id="fig-cap-example">
+<figure id="figure-3">
+        <div class="lang-xml sourcecode" id="section-5-2.1">
+<pre>
+&lt;rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+     message-id="301"&gt;
+  &lt;get-data
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-nmda"
+      xmlns:ds="urn:ietf:params:xml:ns:yang:ietf-datastores"&gt;
+    &lt;datastore&gt;ds:operational&lt;/datastore&gt;
+    &lt;subtree-filter&gt;
+      &lt;system-capabilities
+          xmlns=
+            "urn:ietf:params:xml:ns:yang:ietf-system-capabilities"&gt;
+        &lt;pm-interval-capabilities
+            xmlns=
+          "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
+            xmlns:ex="urn:example:pm-parameters"&gt;
+          &lt;parameter-profile&gt;
+            &lt;name&gt;example-ip-qos-15min&lt;/name&gt;
+            &lt;pm-parameter&gt;
+              &lt;name&gt;ex:lost-packets&lt;/name&gt;
+            &lt;/pm-parameter&gt;
+          &lt;/parameter-profile&gt;
+        &lt;/pm-interval-capabilities&gt;
+      &lt;/system-capabilities&gt;
+    &lt;/subtree-filter&gt;
+  &lt;/get-data&gt;
+&lt;/rpc&gt;
+</pre>
+</div>
+<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
+<a href="#name-interval-capabilities-disco" class="selfRef">Interval Capabilities Discovery Request Example</a>
+        </figcaption></figure>
+</div>
+<p id="section-5-3"><a href="#fig-cap-reply" class="auto internal xref">Figure 4</a> shows the "pm-interval-capabilities" data returned
+within "system-capabilities" in the reply.<a href="#section-5-3" class="pilcrow">¶</a></p>
+<span id="name-interval-capabilities-discov"></span><div id="fig-cap-reply">
+<figure id="figure-4">
+        <div class="lang-xml sourcecode" id="section-5-4.1">
+<pre>
+&lt;pm-interval-capabilities
+    xmlns=
+  "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
+    xmlns:ex="urn:example:pm-parameters"&gt;
+  &lt;parameter-profile&gt;
+    &lt;name&gt;example-ip-qos-15min&lt;/name&gt;
+    &lt;pm-parameter&gt;
+      &lt;name&gt;ex:lost-packets&lt;/name&gt;
+      &lt;supported-collection-types&gt;counts&lt;/supported-collection-types&gt;
+      &lt;interval-relationships&gt;
+        &lt;sampling-interval&gt;
+          &lt;id&gt;1s&lt;/id&gt;
+          &lt;min-value&gt;1&lt;/min-value&gt;
+          &lt;max-value&gt;1&lt;/max-value&gt;
+          &lt;units&gt;second&lt;/units&gt;
+          &lt;default-value&gt;1&lt;/default-value&gt;
+          &lt;default-unit&gt;second&lt;/default-unit&gt;
+          &lt;granularity&gt;1&lt;/granularity&gt;
+          &lt;collection-interval&gt;
+            &lt;id&gt;collection-range&lt;/id&gt;
+            &lt;min-value&gt;5&lt;/min-value&gt;
+            &lt;max-value&gt;1440&lt;/max-value&gt;
+            &lt;units&gt;minute&lt;/units&gt;
+            &lt;default-value&gt;15&lt;/default-value&gt;
+            &lt;default-unit&gt;minute&lt;/default-unit&gt;
+            &lt;granularity&gt;5&lt;/granularity&gt;
+            &lt;retained-interval-count&gt;1&lt;/retained-interval-count&gt;
+          &lt;/collection-interval&gt;
+        &lt;/sampling-interval&gt;
+      &lt;/interval-relationships&gt;
+    &lt;/pm-parameter&gt;
+  &lt;/parameter-profile&gt;
+&lt;/pm-interval-capabilities&gt;
+</pre>
+</div>
+<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<a href="#name-interval-capabilities-discov" class="selfRef">Interval Capabilities Discovery Reply Data Example</a>
+        </figcaption></figure>
+</div>
+<p id="section-5-5">The reply indicates that the server supports 1-second sampling and
+a collection interval range of 5 to 1440 minutes with 5-minute
+granularity, with a default of 15 minutes; that it supports the
+counts collection type for the parameter;
+and that it retains the most recently completed collection
+interval.  Using this information, the client can configure the
+"ex:lost-packets" parameter in "ietf-pm-collection" with any collection interval
+that is a multiple of 5 within the range 5 to 1440 minutes, and
+with the counts collection type, knowing the server will
+accept the configuration.<a href="#section-5-5" class="pilcrow">¶</a></p>
+<p id="section-5-6">When the server also advertises supported measurement methods for
+the parameter, the reply additionally lists one or more
+"supported-measurement-method" values (and optionally a
+"default-measurement-method"), from which the client selects the
+method to configure in "ietf-pm-collection".<a href="#section-5-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="tree-diagram">
+<section id="section-6">
+      <h2 id="name-tree-diagram">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-tree-diagram" class="section-name selfRef">Tree Diagram</a>
+      </h2>
+<p id="section-6-1">The following tree diagram, using the notation defined in <span>[<a href="#RFC8340" class="cite xref">RFC8340</a>]</span>,
+shows the structure of the "ietf-pm-interval-capabilities" module.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<span id="name-tree-diagram-of-ietf-pm-int"></span><div id="fig-tree">
+<figure id="figure-5">
+        <div class="alignLeft art-ascii-art art-text artwork" id="section-6-2.1">
+<pre>
+module: ietf-pm-interval-capabilities
+
+  augment /sysc:system-capabilities:
+    +--ro pm-interval-capabilities
+       +--ro parameter-profile* [name]
+          +--ro name            pm-co:profile-names
+          +--ro pm-parameter* [name]
+             +--ro name                            identityref
+             +--ro supported-measurement-method*   identityref
+             +--ro default-measurement-method?     identityref
+             +--ro supported-collection-types*
+             |       pm-co:collection-type
+             +--ro interval-relationships
+                +--ro sampling-interval* [id]
+                   +--ro id                      string
+                   +--ro min-value?              uint32
+                   +--ro max-value?              uint32
+                   +--ro units*                  interval-unit
+                   +--ro default-value?          uint32
+                   +--ro default-unit?           interval-unit
+                   +--ro granularity?            uint32
+                   +--ro collection-interval* [id]
+                      +--ro id               string
+                      +--ro min-value?       uint32
+                      +--ro max-value?       uint32
+                      +--ro units*           interval-unit
+                      +--ro default-value?   uint32
+                      +--ro default-unit?    interval-unit
+                      +--ro granularity?     uint32
+                      +--ro retained-interval-count?   uint32
+</pre>
+</div>
+<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
+<a href="#name-tree-diagram-of-ietf-pm-int" class="selfRef">Tree Diagram of ietf-pm-interval-capabilities</a>
+        </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="yang-module">
+<section id="section-7">
+      <h2 id="name-yang-module">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-yang-module" class="section-name selfRef">YANG Module</a>
+      </h2>
+<div class="breakable lang-yang sourcecode" id="section-7-1">
+<pre>&lt;CODE BEGINS&gt; file "ietf-pm-interval-capabilities.yang"
+
+module ietf-pm-interval-capabilities {
+  yang-version 1.1;
+  namespace
+    "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities";
+  prefix pm-ic;
+
+  import ietf-pm-collection {
+    prefix pm-co;
+    reference
+      "RFC YYYY: A YANG Data Model for Performance Monitoring (PM)
+       Collection";
+  }
+
+  import ietf-system-capabilities {
+    prefix sysc;
+    reference
+      "RFC 9196: YANG Modules Describing Capabilities for
+       Systems and Datastore Update Notifications";
+  }
+
+  organization
+    "IETF IP Performance Metrics (ippm) Working Group";
+  contact
+    "WG Web: &lt;https://datatracker.ietf.org/wg/ippm/&gt;
+     Editor: Bin Yeong Yoon &lt;mailto:byyun@etri.re.kr&gt;";
+  description
+    "This YANG module defines a data model for advertising
+     performance monitoring (PM) interval capabilities in network
+     equipment.  The module enables clients to discover which
+     sampling and collection intervals, measurement methods, and
+     collection types a server supports for each performance
+     parameter within each parameter profile, before configuring
+     PM collection.
+
+     This module provides hierarchical interval capability
+     discovery, in which collection intervals are nested within
+     their corresponding sampling interval, and each parameter
+     can have different interval capabilities within each
+     parameter profile.
+
+     This module imports the profile-names type, the
+     performance-parameter and measurement-method identities,
+     and the collection-type typedef from ietf-pm-collection and
+     mirrors its profile-and-parameter structure.  It does not
+     define collection data structures, collection types, or any
+     delivery mechanism; those are defined in ietf-pm-collection.
+
+     The key words 'MUST', 'MUST NOT', 'REQUIRED', 'SHALL',
+     'SHALL NOT', 'SHOULD', 'SHOULD NOT', 'RECOMMENDED',
+     'NOT RECOMMENDED', 'MAY', and 'OPTIONAL' in this document
+     are to be interpreted as described in BCP 14 (RFC 2119)
+     (RFC 8174) when, and only when, they appear in all
+     capitals, as shown here.
+
+     Copyright (c) 2026 IETF Trust and the persons identified as
+     authors of the code.  All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Revised BSD License
+     set forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (https://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC XXXX
+     (https://www.rfc-editor.org/info/rfcXXXX); see the RFC
+     itself for full legal notices.";
+
+  revision 2026-10-29 {
+    description
+      "Initial revision.";
+    reference
+      "RFC XXXX: A YANG Data Model for Performance Monitoring (PM)
+       Interval Capabilities";
+  }
+
+  /*
+   * TYPEDEFs
+   */
+  typedef interval-unit {
+    type enumeration {
+      enum millisecond {
+        description "Time interval in milliseconds.";
+      }
+      enum second {
+        description "Time interval in seconds.";
+      }
+      enum minute {
+        description "Time interval in minutes.";
+      }
+      enum hour {
+        description "Time interval in hours.";
+      }
+      enum day {
+        description "Time interval in days.";
+      }
+    }
+    description "Supported units for expressing time intervals.";
+  }
+
+  /*
+   * GROUPINGS
+   */
+  grouping interval-constraints {
+    description
+      "Capability constraints for a single interval type,
+       covering the supported range, units, default, and
+       granularity.  Used for both sampling intervals and
+       collection intervals.";
+    leaf min-value {
+      type uint32;
+      description
+        "Minimum supported value for this interval.";
+    }
+    leaf max-value {
+      type uint32;
+      description
+        "Maximum supported value for this interval.";
+    }
+    leaf-list units {
+      type interval-unit;
+      description
+        "List of supported time units for this interval.";
+    }
+    leaf default-value {
+      type uint32;
+      description
+        "Default value recommended for this interval.";
+    }
+    leaf default-unit {
+      type interval-unit;
+      description
+        "Default unit recommended for this interval.";
+    }
+    leaf granularity {
+      type uint32;
+      description
+        "Granularity step for interval values.  Only values
+         that are multiples of this granularity are supported.
+         For example, if granularity is 5, valid values are
+         5, 10, 15, 20, and so on.";
+    }
+  }
+
+  grouping parameter-interval-capabilities {
+    description
+      "Capabilities for a single PM parameter within a profile.
+       The structure nests collection intervals within their
+       corresponding sampling interval, reflecting the
+       constraints that ietf-pm-collection places on the
+       relationship between the two intervals.";
+    leaf name {
+      type identityref {
+        base pm-co:performance-parameter;
+      }
+      description
+        "Identity of the performance parameter, derived from the
+         performance-parameter base identity of
+         ietf-pm-collection.  This value corresponds to the
+         pm-parameter name leaf in ietf-pm-collection.";
+    }
+    leaf-list supported-measurement-method {
+      type identityref {
+        base pm-co:measurement-method;
+      }
+      description
+        "The set of IPPM measurement methods (RFC 7799) that
+         this server can apply to this parameter.  A client
+         selects one of the advertised methods when configuring
+         the parameter in ietf-pm-collection.  An empty or
+         absent list means the server does not advertise
+         measurement-method information for this parameter.";
+      reference
+        "RFC 7799: Active and Passive Metrics and Methods (with
+         Hybrid Types In-Between)";
+    }
+    leaf default-measurement-method {
+      type identityref {
+        base pm-co:measurement-method;
+      }
+      description
+        "The measurement method the server uses for this
+         parameter when a client configures the parameter
+         without selecting a method.  When present, it MUST be
+         a member of supported-measurement-method.";
+      reference
+        "RFC 7799: Active and Passive Metrics and Methods (with
+         Hybrid Types In-Between)";
+    }
+    leaf-list supported-collection-types {
+      type pm-co:collection-type;
+      description
+        "The set of collection types (counts, snapshot,
+         tidemarks) that this server supports for this
+         parameter.  A client enables only the advertised
+         collection types when configuring the parameter in
+         ietf-pm-collection.  An empty or absent list means the
+         server does not advertise collection-type information
+         for this parameter.";
+    }
+    container interval-relationships {
+      description
+        "Hierarchical relationships between sampling and
+         collection intervals for this parameter.  Each
+         advertised combination of sampling and collection
+         interval MUST satisfy the constraints of
+         ietf-pm-collection.";
+      list sampling-interval {
+        key "id";
+        description
+          "List of supported sampling intervals and their
+           compatible collection intervals.";
+        leaf id {
+          type string;
+          description
+            "Unique identifier for this sampling interval
+             capability entry.";
+        }
+        uses interval-constraints;
+        list collection-interval {
+          key "id";
+          description
+            "List of supported collection intervals for
+             this sampling interval.";
+          leaf id {
+            type string;
+            description
+              "Unique identifier for this collection
+               interval capability entry.";
+          }
+          uses interval-constraints;
+          leaf retained-interval-count {
+            type uint32;
+            description
+              "Number of completed intervals of this collection
+               interval that the server retains after they end.
+               It bounds how many completed intervals a client
+               may read back and, for push delivery, how long a
+               reporting period may be: a reporting period may
+               span at most retained-interval-count collection
+               intervals.  A value of 1 means only the most
+               recently completed interval is retained; 0 means
+               completed intervals are not retained (each is
+               delivered only as it ends).";
+          }
+        }
+      }
+    }
+  }
+
+  grouping profile-parameter-capabilities {
+    description
+      "Capabilities for all PM parameters within a single
+       parameter profile.";
+    leaf name {
+      type pm-co:profile-names;
+      description
+        "Name of the parameter profile.  This value
+         corresponds to the parameter-profile name leaf in
+         ietf-pm-collection (e.g.,
+         example-ip-qos-15min).";
+    }
+    list pm-parameter {
+      key "name";
+      description
+        "List of PM parameters and their capabilities within
+         this profile.";
+      uses parameter-interval-capabilities;
+    }
+  }
+
+  /*
+   * AUGMENTATION OF ietf-system-capabilities (RFC 9196)
+   *
+   * The capabilities are advertised by augmenting the
+   * "system-capabilities" container defined in RFC 9196.  This
+   * places the PM interval capabilities at the same well-known
+   * location at which a NETCONF/RESTCONF client discovers
+   * subscription and notification capabilities
+   * (ietf-notification-capabilities, RFC 9196 Section 3), so that
+   * both can be retrieved in a single, standardised query.  The
+   * "pm-interval-capabilities" wrapper container cleanly separates
+   * this capability group from other capabilities augmented into
+   * the same anchor.  All augmented nodes inherit "config false"
+   * from sysc:system-capabilities and therefore reside in the
+   * operational datastore.
+   */
+  augment "/sysc:system-capabilities" {
+    description
+      "Augments the system capabilities with PM interval
+       capabilities, advertising the sampling and collection
+       intervals, measurement methods, and collection types that
+       this server supports, organised by parameter profile and
+       PM parameter.";
+    container pm-interval-capabilities {
+      description
+        "Read-only advertisement of the PM capabilities of this
+         server, organised by parameter profile and PM
+         parameter.  A client reads this container to determine
+         which interval values, measurement methods, and
+         collection types are valid before configuring PM
+         collection in ietf-pm-collection.";
+      list parameter-profile {
+        key "name";
+        description
+          "List of parameter profiles and their per-parameter
+           capabilities.";
+        uses profile-parameter-capabilities;
+      }
+    }
+  }
+}
+
+&lt;CODE ENDS&gt;</pre><a href="#section-7-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="manageability-considerations">
+<section id="section-8">
+      <h2 id="name-manageability-consideration">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-manageability-consideration" class="section-name selfRef">Manageability Considerations</a>
+      </h2>
+<p id="section-8-1">A server SHOULD ensure that the capabilities advertised in
+"pm-interval-capabilities" remain consistent with its actual ability
+to honour interval configurations in "ietf-pm-collection".  If a
+server's resources change dynamically (e.g., due to load), it SHOULD
+update the operational datastore accordingly, and clients that have
+already configured measurements using previously advertised values
+SHOULD be notified through standard NETCONF or YANG-Push mechanisms.<a href="#section-8-1" class="pilcrow">¶</a></p>
+<p id="section-8-2">Operators SHOULD verify that the interval values configured in
+"ietf-pm-collection" fall within the ranges advertised in this module
+before deploying measurement configurations in production.<a href="#section-8-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-9">
+      <h2 id="name-security-considerations">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-9-1">The YANG module defined in this document defines data nodes that are
+designed to be accessed via network management protocols such as
+NETCONF <span>[<a href="#RFC6241" class="cite xref">RFC6241</a>]</span> or RESTCONF.  The module augments the
+"system-capabilities" container of "ietf-system-capabilities"
+<span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>, which is "config false"; all nodes added by this module
+therefore inherit "config false" and reside in the operational
+datastore.  Following the guidance in <span>[<a href="#RFC9196" class="cite xref">RFC9196</a>]</span>, this section
+documents the security considerations of the augmented nodes.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<p id="section-9-2">The lowest NETCONF layer is the secure transport layer, and the
+mandatory-to-implement secure transport is Secure Shell (SSH).  The
+Network Configuration Access Control Model (NACM) <span>[<a href="#RFC8341" class="cite xref">RFC8341</a>]</span> provides
+the means to restrict access for particular NETCONF or RESTCONF users
+to a preconfigured subset of all available NETCONF or RESTCONF
+protocol operations and content.<a href="#section-9-2" class="pilcrow">¶</a></p>
+<p id="section-9-3">Although all nodes are read-only, the capability information they
+expose can reveal vendor-specific implementation details about the
+equipment, such as supported interval ranges and granularities.
+Operators SHOULD restrict read access to authorised management clients
+to prevent unintended disclosure of device implementation
+characteristics.<a href="#section-9-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-10">
+      <h2 id="name-iana-considerations">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-10-1">This document requests IANA to register the following URI in the
+"ns" subregistry within the "IETF XML Registry" <span>[<a href="#RFC3688" class="cite xref">RFC3688</a>]</span>:<a href="#section-10-1" class="pilcrow">¶</a></p>
+<p id="section-10-2">URI: urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities
+   Registrant Contact: The IESG.
+   XML: N/A; the requested URI is an XML namespace.<a href="#section-10-2" class="pilcrow">¶</a></p>
+<p id="section-10-3">This document requests IANA to register the following YANG module
+in the "YANG Module Names" registry <span>[<a href="#RFC6020" class="cite xref">RFC6020</a>]</span>:<a href="#section-10-3" class="pilcrow">¶</a></p>
+<p id="section-10-4">Name:      ietf-pm-interval-capabilities
+   Namespace:
+     urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities
+   Prefix:    pm-ic
+   Reference: RFC XXXX<a href="#section-10-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-combined-references">
+<section id="section-11">
+      <h2 id="name-references">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<div id="sec-normative-references">
+<section id="section-11.1">
+        <h3 id="name-normative-references">
+<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="I-D.yoon-ippm-collection-measure">[I-D.yoon-ippm-collection-measure]</dt>
+        <dd>
+<span class="refAuthor">Yoon, B. Y.</span> and <span class="refAuthor">Y. You</span>, <span class="refTitle">"A YANG Data Model for Collection Measurement"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-yoon-ippm-collection-measure-00</span>, <time datetime="2026-07-05" class="refDate">5 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-yoon-ippm-collection-measure-00">https://datatracker.ietf.org/doc/html/draft-yoon-ippm-collection-measure-00</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6020">[RFC6020]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M., Ed.</span>, <span class="refTitle">"YANG - A Data Modeling Language for the Network Configuration Protocol (NETCONF)"</span>, <span class="seriesInfo">RFC 6020</span>, <span class="seriesInfo">DOI 10.17487/RFC6020</span>, <time datetime="2010-10" class="refDate">October 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6020">https://www.rfc-editor.org/rfc/rfc6020</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6241">[RFC6241]</dt>
+        <dd>
+<span class="refAuthor">Enns, R., Ed.</span>, <span class="refAuthor">Bjorklund, M., Ed.</span>, <span class="refAuthor">Schoenwaelder, J., Ed.</span>, and <span class="refAuthor">A. Bierman, Ed.</span>, <span class="refTitle">"Network Configuration Protocol (NETCONF)"</span>, <span class="seriesInfo">RFC 6241</span>, <span class="seriesInfo">DOI 10.17487/RFC6241</span>, <time datetime="2011-06" class="refDate">June 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6241">https://www.rfc-editor.org/rfc/rfc6241</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7950">[RFC7950]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M., Ed.</span>, <span class="refTitle">"The YANG 1.1 Data Modeling Language"</span>, <span class="seriesInfo">RFC 7950</span>, <span class="seriesInfo">DOI 10.17487/RFC7950</span>, <time datetime="2016-08" class="refDate">August 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7950">https://www.rfc-editor.org/rfc/rfc7950</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+        <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8340">[RFC8340]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M.</span> and <span class="refAuthor">L. Berger, Ed.</span>, <span class="refTitle">"YANG Tree Diagrams"</span>, <span class="seriesInfo">BCP 215</span>, <span class="seriesInfo">RFC 8340</span>, <span class="seriesInfo">DOI 10.17487/RFC8340</span>, <time datetime="2018-03" class="refDate">March 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8340">https://www.rfc-editor.org/rfc/rfc8340</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8341">[RFC8341]</dt>
+        <dd>
+<span class="refAuthor">Bierman, A.</span> and <span class="refAuthor">M. Bjorklund</span>, <span class="refTitle">"Network Configuration Access Control Model"</span>, <span class="seriesInfo">STD 91</span>, <span class="seriesInfo">RFC 8341</span>, <span class="seriesInfo">DOI 10.17487/RFC8341</span>, <time datetime="2018-03" class="refDate">March 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8341">https://www.rfc-editor.org/rfc/rfc8341</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8342">[RFC8342]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M.</span>, <span class="refAuthor">Schoenwaelder, J.</span>, <span class="refAuthor">Shafer, P.</span>, <span class="refAuthor">Watsen, K.</span>, and <span class="refAuthor">R. Wilton</span>, <span class="refTitle">"Network Management Datastore Architecture (NMDA)"</span>, <span class="seriesInfo">RFC 8342</span>, <span class="seriesInfo">DOI 10.17487/RFC8342</span>, <time datetime="2018-03" class="refDate">March 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8342">https://www.rfc-editor.org/rfc/rfc8342</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8525">[RFC8525]</dt>
+        <dd>
+<span class="refAuthor">Bierman, A.</span>, <span class="refAuthor">Bjorklund, M.</span>, <span class="refAuthor">Schoenwaelder, J.</span>, <span class="refAuthor">Watsen, K.</span>, and <span class="refAuthor">R. Wilton</span>, <span class="refTitle">"YANG Library"</span>, <span class="seriesInfo">RFC 8525</span>, <span class="seriesInfo">DOI 10.17487/RFC8525</span>, <time datetime="2019-03" class="refDate">March 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8525">https://www.rfc-editor.org/rfc/rfc8525</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9196">[RFC9196]</dt>
+      <dd>
+<span class="refAuthor">Lengyel, B.</span>, <span class="refAuthor">Clemm, A.</span>, and <span class="refAuthor">B. Claise</span>, <span class="refTitle">"YANG Modules Describing Capabilities for Systems and Datastore Update Notifications"</span>, <span class="seriesInfo">RFC 9196</span>, <span class="seriesInfo">DOI 10.17487/RFC9196</span>, <time datetime="2022-02" class="refDate">February 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9196">https://www.rfc-editor.org/rfc/rfc9196</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-11.2">
+        <h3 id="name-informative-references">
+<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="G7710">[G7710]</dt>
+        <dd>
+<span class="refAuthor">ITU-T</span>, <span class="refTitle">"Common Equipment Management Function Requirements"</span>, <span class="seriesInfo">ITU-T Recommendation G.7710</span>, <time datetime="2025-11" class="refDate">November 2025</time>, <span>&lt;<a href="https://www.itu.int/rec/T-REC-G.7710">https://www.itu.int/rec/T-REC-G.7710</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3688">[RFC3688]</dt>
+        <dd>
+<span class="refAuthor">Mealling, M.</span>, <span class="refTitle">"The IETF XML Registry"</span>, <span class="seriesInfo">BCP 81</span>, <span class="seriesInfo">RFC 3688</span>, <span class="seriesInfo">DOI 10.17487/RFC3688</span>, <time datetime="2004-01" class="refDate">January 2004</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3688">https://www.rfc-editor.org/rfc/rfc3688</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6390">[RFC6390]</dt>
+        <dd>
+<span class="refAuthor">Clark, A.</span> and <span class="refAuthor">B. Claise</span>, <span class="refTitle">"Guidelines for Considering New Performance Metric Development"</span>, <span class="seriesInfo">BCP 170</span>, <span class="seriesInfo">RFC 6390</span>, <span class="seriesInfo">DOI 10.17487/RFC6390</span>, <time datetime="2011-10" class="refDate">October 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6390">https://www.rfc-editor.org/rfc/rfc6390</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7799">[RFC7799]</dt>
+        <dd>
+<span class="refAuthor">Morton, A.</span>, <span class="refTitle">"Active and Passive Metrics and Methods (with Hybrid Types In-Between)"</span>, <span class="seriesInfo">RFC 7799</span>, <span class="seriesInfo">DOI 10.17487/RFC7799</span>, <time datetime="2016-05" class="refDate">May 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7799">https://www.rfc-editor.org/rfc/rfc7799</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8526">[RFC8526]</dt>
+        <dd>
+<span class="refAuthor">Bjorklund, M.</span>, <span class="refAuthor">Schoenwaelder, J.</span>, <span class="refAuthor">Shafer, P.</span>, <span class="refAuthor">Watsen, K.</span>, and <span class="refAuthor">R. Wilton</span>, <span class="refTitle">"NETCONF Extensions to Support the Network Management Datastore Architecture"</span>, <span class="seriesInfo">RFC 8526</span>, <span class="seriesInfo">DOI 10.17487/RFC8526</span>, <time datetime="2019-03" class="refDate">March 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8526">https://www.rfc-editor.org/rfc/rfc8526</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9195">[RFC9195]</dt>
+      <dd>
+<span class="refAuthor">Lengyel, B.</span> and <span class="refAuthor">B. Claise</span>, <span class="refTitle">"A File Format for YANG Instance Data"</span>, <span class="seriesInfo">RFC 9195</span>, <span class="seriesInfo">DOI 10.17487/RFC9195</span>, <time datetime="2022-02" class="refDate">February 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9195">https://www.rfc-editor.org/rfc/rfc9195</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="contributors">
+<section id="appendix-A">
+      <h2 id="name-contributors">
+<a href="#name-contributors" class="section-name selfRef">Contributors</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Kwangkoog Lee</span></div>
+<div dir="auto" class="left"><span class="org">KT</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:kwangkoog.lee@kt.com" class="email">kwangkoog.lee@kt.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Jongyoon Shin</span></div>
+<div dir="auto" class="left"><span class="org">SK Telecom</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:jongyoon.shin@sk.com" class="email">jongyoon.shin@sk.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Sungyong Nam</span></div>
+<div dir="auto" class="left"><span class="org">LGU+</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:sy.nam@lguplus.co.kr" class="email">sy.nam@lguplus.co.kr</a>
+</div>
+</address>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Bin Yeong Yoon</span></div>
+<div dir="auto" class="left"><span class="org">ETRI</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:byyun@etri.re.kr" class="email">byyun@etri.re.kr</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Youngkil You</span></div>
+<div dir="auto" class="left"><span class="org">woori-net</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:young@woori-net.com" class="email">young@woori-net.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
