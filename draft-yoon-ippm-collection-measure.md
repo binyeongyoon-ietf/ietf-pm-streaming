@@ -58,8 +58,6 @@ normative:
 
 informative:
   RFC7799:
-  I-D.yoon-ippm-collection-interval-capabilities:
-  I-D.yoon-ccamp-pm-streaming:
 
 --- abstract
 
@@ -72,7 +70,7 @@ clients via pull-based mechanisms or delivered via push-based
 mechanisms such as YANG-Push. This document does not define new
 performance metrics; the base metrics are those of the IPPM
 framework, and the model specifies the collection and exposure of
-the operationally important subset identified by ITU-T G.7710.
+the operationally important subset.
 
 --- middle
 
@@ -140,7 +138,7 @@ methods such as OWAMP {{?RFC4656}}, TWAMP {{?RFC5357}}, and STAMP
 methods such as IOAM {{?RFC9197}} augment or observe existing user
 traffic in transit. Passive methods, such as direct observation of
 physical-layer signals and the reading of protocol counters (for
-example ES, SES, BBE), draw solely from traffic and signals already
+example interface packet counters), draw solely from traffic and signals already
 present, without generating test packets. Environmental sensor
 readings (for example temperature or voltage) are not classified by
 this axis, because no packet or signal observation is involved.
@@ -231,7 +229,7 @@ types map onto the result organization of the IPPM framework.
 
 ~~~~ ascii-art
 +--------------------------------------------------------------------+
-| Collection (G.7710):  counts | snapshot | tidemarks                |
+| Collection:  counts | snapshot | tidemarks                         |
 |                                                                    |
 |  +--------------+   +-------------------------------------------+  |
 |  |  Snapshot    |   | Computed Performance Metrics              |  |
@@ -258,24 +256,22 @@ The base metrics aggregated by this model are produced in Stage 1
 (Sampling) and are expected to be specified following the
 Performance Metric Specification of Section 5.4 of {{?RFC6390}}.
 This document does not define or redefine those base metrics, nor
-does it introduce new performance metrics or parameters; following
-ITU-T G.7710, it identifies the operationally important subset
+does it introduce new performance metrics or parameters; it
+identifies the operationally important subset
 (counts, snapshot, and tidemarks) and defines the YANG structures
 that compute, retain, and expose their
 aggregated values over the configured collection intervals. The
 acceptable ranges of sampling and collection intervals, and the
 required timing accuracy called for in Section 5.4.2 of
-{{?RFC6390}}, are determined by the referenced ITU-T G.7710
-recommendation and by the parameter profiles defined in this
-document, rather than being fixed by the YANG model itself.
+{{?RFC6390}}, are determined by the parameter profiles defined in
+this document, rather than being fixed by the YANG model itself.
 
 Except where {{?RFC6390}} is explicitly referenced, this document
 uses the term "Sampling" for the Stage 1 activity described above
 and "Collection" for the Stage 2 activity. A collection interval
 (YANG node collection-interval) is the window over which sampled
 values are aggregated within the Collection stage; it is distinct
-from the sampling interval at which raw values are produced, and
-both retain the meaning derived from ITU-T G.7710.
+from the sampling interval at which raw values are produced.
 
 ## Motivation and Scope
 
@@ -293,16 +289,16 @@ and high-level streaming subscriptions, since existing YANG models
 tend to focus on static configuration or simple state data and do
 not offer the structures required to express counts, snapshot, and
 tidemarks collection together with profile-based parameter grouping
-and threshold semantics aligned with ITU-T G.7710.
+and threshold semantics.
 
 A further motivation concerns which performance information to
 collect and in what form. The IETF performance metric framework
 {{?RFC6390}} provides methods for defining and computing metrics,
 but the space of possible computed metrics is effectively unbounded
 (for example, averages, variances, or percentiles could all be
-derived). ITU-T G.7710 instead reflects several decades of
-operational experience by fixing a deliberately small set of
-collection forms and parameters: in {{G7710}}, gauge measurements
+derived). ITU-T G.7710 {{G7710}} instead reflects several decades
+of operational experience by fixing a deliberately small set of
+collection forms and parameters: gauge measurements
 are limited to snapshots (an instantaneous value) and tidemarks (the
 maximum and minimum), and counts to a simple accumulation, rather
 than general statistical aggregations; and the collected parameters
@@ -323,18 +319,12 @@ related Recommendations.
 The scope of this document is therefore limited to the Collection
 stage. Within that scope, this document specifies YANG data models
 that enable: (a) flexible processing of performance metrics beyond
-simple counts, including Snapshot and Tidemarks, as defined in
-ITU-T G.7710; (b) configurable sampling and collection intervals
+simple counts, including Snapshot and Tidemarks; (b) configurable sampling and collection intervals
 that are not restricted to the legacy 15-minute or 24-hour windows;
 and (c) data and notification structure that supports flexible
 delivery of processed PM data to management systems, compatible
 with both pull-based retrieval and push-based subscription
 mechanisms.
-
-The data model defined in this document realizes the Collection-stage
-functions described in {{G7710}}, in particular
-performance-monitoring data, collection types, and threshold
-reporting.
 
 The Collection-stage data and notifications defined here are
 compatible with the existing YANG-Push framework
@@ -410,17 +400,13 @@ IEEE, IETF, MEF, and TM Forum.
 
 The data model defined in this document is parameter-agnostic: it
 specifies how performance parameters are collected, aggregated, and
-exposed, rather than defining the parameters themselves. The network
-and transport performance parameters listed above (for example, ES,
-SES, UAS, BBE, BBC) are the primary parameters in scope, and each is
-expected to be specified following the Performance Metric
+exposed, rather than defining the parameters themselves. Each
+performance parameter is expected to be specified following the Performance Metric
 Specification template of Section 5.4.4 of {{?RFC6390}} (metric
 name, description, method of measurement or calculation, units,
-measurement point, and measurement timing). The remaining categories
-(network environment, energy and sustainability, security, mobile
-network, and application-aware parameters) are listed as
-illustrative examples of the model's extensibility and are not
-themselves defined by this document; the specification of any such
+measurement point, and measurement timing). The parameters listed
+above are illustrative and are not themselves defined by this
+document; the specification of any such
 parameter is left to the relevant standards body.
 
 ### Parameter Identities {#parameter-identities}
@@ -428,11 +414,9 @@ parameter is left to the relevant standards body.
 This module defines the base identity `performance-parameter`. The
 key of each `pm-parameter` entry is an `identityref` whose base is
 this identity. Specific parameters are defined as identities derived
-from it in other modules; for example, the transport parameters of
-ITU-T G.7710 (ES, SES, BBE, BBC, UAS, PJE, and SEP) are defined in
-the `ietf-pm-parameters` module of {{I-D.yoon-ccamp-pm-streaming}},
-and parameters for other network domains can be defined in the same
-way by the relevant standards body. Identity-based typing lets a
+from it in other modules; parameters of specific network
+technologies are defined in the same way in other documents, by the
+relevant standards body. Identity-based typing lets a
 server validate the parameters a client configures and lets clients
 interpret collected values consistently across vendors.
 
@@ -459,20 +443,14 @@ elements and management systems.
 The use of parameter profiles improves operational efficiency by
 allowing operators, applications, and controllers to activate or
 reference a coherent set of parameters using a single profile
-identifier. For example, the `itu-transport-maintenance-15min`
-profile includes parameters such as errored seconds (ES),
-severely errored seconds (SES), and unavailable seconds (UAS),
-which are typically monitored together for network maintenance and
-fault detection purposes (see {{I-D.yoon-ccamp-pm-streaming}}). Similarly, the `example-ip-qos-24hr`
-profile may include delay, jitter, and loss parameters used in
-service quality reporting. Parameter profiles support role-based
+identifier. For example, a maintenance profile may group the error
+counters of an interface that are monitored together for fault
+detection, and a QoS profile may group delay, jitter, and loss
+parameters used in service quality reporting. Parameter profiles support role-based
 access control, operational alignment, and measurement policy
 abstraction, enabling network operators and analytics systems to
 tailor data collection and reporting according to the needs of
-different users and services. The profile abstraction also aligns
-with ITU-T G.7710, which identifies multiple classes of performance
-monitoring (e.g., maintenance, service-level, and compliance
-monitoring), each requiring specific sets of performance parameters.
+different users and services.
 
 By modeling profiles as list entries keyed by a structured name
 (profile-names type), the YANG design ensures extensibility and
@@ -512,19 +490,15 @@ Where:
 
 Examples:
 
-- itu-transport-maintenance-15min
-- itu-transport-qos-24hr
-- ieee-access-availability
+- example-ip-qos-15min
 - example-ip-qos-24hr
+- example-mobile-availability-24hr
 - vendorx-otn-sla
 
 Note: profile names that begin with `ietf-` are reserved for
 profiles that IETF actually defines; placeholder examples in this
 document use `example-` to avoid implying IETF endorsement of
 profiles not yet specified.
-
-The term 'transport' means that the profile applies to multiple
-technologies (e.g., OTN, MPLS-TP, Transport Ethernet, etc.).
 
 The 15-minute interval provides granular, real-time monitoring,
 allowing network operators to quickly detect and address short-term
@@ -582,12 +556,6 @@ therefore associated with the corresponding value both in pull-based
 retrieval and in push-based notifications, without requiring any
 per-notification tag.
 
-A server advertises which measurement methods it can support for a
-given parameter through the companion interval-capabilities model
-{{I-D.yoon-ippm-collection-interval-capabilities}}, so that a client
-can select an appropriate method before configuring a measurement or
-establishing a subscription.
-
 # Periodic Collection
 
 ## Interval Timing
@@ -639,8 +607,8 @@ The acceptable ranges of sampling and collection intervals, and
 the timing accuracy required for a given parameter, are not fixed by
 this YANG model. As noted in Section 5.4.2 of {{?RFC6390}}, these
 constraints are part of the specification of each performance
-metric; in this document they are determined by ITU-T G.7710 and by
-the parameter profile in use, and a server advertises the intervals
+metric; in this document they are determined by the parameter
+profile in use, and a server advertises the intervals
 it supports as part of its capabilities.
 
 ### Use Cases
@@ -658,13 +626,13 @@ for cumulative event parameters, tidemarks for varying parameters
 where extremes are operationally significant, and snapshot for
 point-in-time operating state.
 
-In a Network Operations Center (NOC), errored seconds (ES) can be
-sampled every second and processed with multiple collection
+In a Network Operations Center (NOC), the number of lost packets
+can be sampled every second and processed with multiple collection
 intervals using the counts collection type. A 1-minute collection
 interval supports rapid fault indication, enabling fast recognition
 of service degradation. A 15-minute collection interval supports
 routine maintenance monitoring and aligns with established
-operational practices described in ITU-T G.7710. A 24-hour
+operational practice. A 24-hour
 collection interval supports daily QoS reporting and provides a
 broader view of service quality over time.
 
@@ -718,7 +686,7 @@ tidemarks represent interval extremes.
 
 | Client (param) | Samp. | Coll. interval | Type      | Purpose            |
 |----------------|-------|----------------|-----------|--------------------|
-| NOC (ES)       | 1s    | 1min  | counts    | Rapid fault alert  |
+| NOC (loss)     | 1s    | 1min  | counts    | Rapid fault alert  |
 |                | 1s    | 15min | counts    | Maintenance        |
 |                | 1s    | 24hr  | counts    | Daily QoS report   |
 | NOC (latency)  | 500ms | 1min  | tidemarks | Delay spike detect |
@@ -760,7 +728,7 @@ tidemarks represent interval extremes.
 ~~~~
 {:#fig-collection-types-tree title="Collection Types Subtree"}
 
-The collection types defined based on ITU-T G.7710 establish a
+The collection types establish a
 focused and efficient framework for network performance monitoring
 by specifying three core collection types: counts, snapshot, and
 tidemarks.
@@ -772,10 +740,7 @@ collection type for the parameter over that interval; its absence
 indicates that it does not. A client therefore selects the
 collection types of a parameter by creating the corresponding
 containers, and a profile can restrict a parameter to a subset of
-the three types (for example, counts only for a QoS profile). A
-client selects only the collection types that the server advertises
-for the parameter in the companion capabilities model
-{{I-D.yoon-ippm-collection-interval-capabilities}}.
+the three types (for example, counts only for a QoS profile).
 
 This intentional limitation supports key objectives such as
 implementation simplicity, operational efficiency, and cross-vendor
@@ -868,7 +833,7 @@ uniform-time snapshots is then aggregated and analyzed to
 understand the immediate state across the entire network. By
 taking snapshots simultaneously across all network elements,
 operators can correlate data between different parts of the
-transport network. Snapshots are collected at pre-determined
+network. Snapshots are collected at pre-determined
 uniform times within fixed collection intervals. The uniform
 time and fixed intervals can be configured based on the needs of
 the network.
@@ -889,7 +854,7 @@ tidemark could reveal intermittent spikes in errors that require
 attention. Conversely, a low tidemark may expose periods of
 severely degraded signal quality or throughput.
 
-# Interval Data Validity {#interval-data-validity}
+# Collection Interval Data Validity {#interval-data-validity}
 
 The collection types above summarise the samples that were
 available during a collection interval. When some of the expected
@@ -937,7 +902,7 @@ a suspect flag of "true" knows that the value should be treated
 with caution.
 
 For the snapshot collection type the initialisation is inverted:
-following ITU-T G.7710, the flag is set to "true" at the start of
+the flag is set to "true" at the start of
 the interval to indicate that no snapshot has yet been taken, and
 is cleared to "false" once the single snapshot has been taken at
 the uniform time.
@@ -984,7 +949,7 @@ the measurement -- not the sum of available time, since it
 advances during unavailable time as well. The
 `interval-start-time` and `interval-end-time` leaves record when
 the interval began and ended; `interval-end-time` is the
-end-of-interval timestamp defined in ITU-T G.7710 and is the
+end-of-interval timestamp and is the
 authoritative measurement time, to be used for correlation in
 preference to the notification envelope eventTime.
 
@@ -1001,13 +966,9 @@ the server keeps for a bounded time after the interval ends.
 This model does not require a server to retain completed intervals.
 When results are delivered as each interval ends, retention of past
 results is a client-side concern. When a server does retain
-completed intervals, the number it keeps for each collection
-interval is advertised as `retained-interval-count` in the
-companion capabilities model
-{{I-D.yoon-ippm-collection-interval-capabilities}}. That count
-bounds both how many completed intervals a client may read back and
-how long a reporting period may be, since a reporting period may
-span at most `retained-interval-count` collection intervals.
+completed intervals, the number it keeps bounds both how many
+completed intervals a client may read back and how long a reporting
+period may be.
 
 The validity metadata that describes an interval -- the suspect
 flag, the sample coverage, the elapsed time, and the start and end
@@ -1076,6 +1037,73 @@ and YANG-Push RPCs and notifications. The data retrieved or
 delivered is used for maintenance and Quality of Service (QoS)
 monitoring in networks.
 
+## Example Module {#example-module}
+
+The examples in this document use the example module shown in
+{{fig-example-module}}.  It defines two example parameters:
+"ex:lost-packets", an event parameter used with the counts
+collection type, and "ex:one-way-delay", a gauge parameter measured
+with IOAM {{?RFC9197}} and used with the snapshot and tidemarks
+collection types.  Parameters of
+specific network technologies are defined in other documents in the
+same way.
+
+~~~~ yang
+module example-pm-parameters {
+  yang-version 1.1;
+  namespace "urn:example:pm-parameters";
+  prefix ex;
+
+  import ietf-pm-collection {
+    prefix pm-co;
+    reference
+      "RFC XXXX: A YANG Data Model for Performance Monitoring (PM)
+       Collection";
+  }
+
+  organization
+    "Example organization";
+  contact
+    "Example contact";
+  description
+    "This module defines example performance parameters, derived
+     from the performance-parameter base identity of
+     ietf-pm-collection, for use in the examples of this
+     document only.  It is not intended for implementation.
+     Parameters of specific network technologies are defined in
+     other documents in the same way.";
+
+  revision 2026-10-29 {
+    description
+      "Initial revision.";
+    reference
+      "RFC XXXX: A YANG Data Model for Performance Monitoring (PM)
+       Collection";
+  }
+
+  identity lost-packets {
+    base pm-co:performance-parameter;
+    description
+      "Example event parameter: the number of packets lost in
+       each sampling interval.  It is used with the counts
+       collection type.";
+  }
+
+  identity one-way-delay {
+    base pm-co:performance-parameter;
+    description
+      "Example gauge parameter: the mean one-way delay, in
+       microseconds, of the packets measured with In situ OAM
+       (IOAM) in each sampling interval.  It is used with the
+       snapshot and tidemarks collection types.";
+    reference
+      "RFC 9197: Data Fields for In Situ Operations,
+       Administration, and Maintenance (IOAM)";
+  }
+}
+~~~~
+{:#fig-example-module title="Example Module Used in the Examples"}
+
 ## Pull-Based Polling {#polling}
 
 The operational state data defined in this document can be
@@ -1100,10 +1128,9 @@ the active collection interval. These leaves are the YANG
 equivalents of SNMP counter and gauge objects in classical PM MIBs.
 
 {{fig-polling-example}} shows a NETCONF `<get-data>` request that
-retrieves the current errored-seconds (ES) count for the
-`itu-transport-maintenance-15min` profile (identity `pm-pa:es` of
-{{I-D.yoon-ccamp-pm-streaming}}), sampled every second over a
-15-minute collection interval. A client may issue this
+retrieves the current count of the `ex:lost-packets` parameter
+(see {{example-module}}) in the `example-ip-qos-15min`
+profile, sampled every second over a 15-minute collection interval. A client may issue this
 request at any time to read the in-progress counter value, or at
 the end of each collection interval to collect the final result,
 replicating the behavior of a traditional SNMP polling cycle.
@@ -1118,12 +1145,11 @@ replicating the behavior of a traditional SNMP polling cycle.
     <subtree-filter>
       <pm-periodic-collection
           xmlns="urn:ietf:params:xml:ns:yang:ietf-pm-collection"
-          xmlns:pm-pa=
-            "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
+          xmlns:ex="urn:example:pm-parameters">
         <parameter-profile>
-          <name>itu-transport-maintenance-15min</name>
+          <name>example-ip-qos-15min</name>
           <pm-parameter>
-            <name>pm-pa:es</name>
+            <name>ex:lost-packets</name>
             <sampling-interval>
               <id>1s</id>
               <collection-interval>
@@ -1145,7 +1171,7 @@ replicating the behavior of a traditional SNMP polling cycle.
 {:#fig-polling-example title="Pull-Based Polling Request Example (NETCONF get-data)"}
 
 {{fig-polling-reply}} shows the corresponding reply, in which the
-server returns the current ES count of 7 accumulated during the
+server returns the current count of 7 accumulated during the
 collection interval in progress. This is equivalent to the value
 that a classical SNMP GET would retrieve from a performance-history
 MIB object.
@@ -1156,12 +1182,11 @@ MIB object.
   <data xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-nmda">
     <pm-periodic-collection
         xmlns="urn:ietf:params:xml:ns:yang:ietf-pm-collection"
-        xmlns:pm-pa=
-          "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
+        xmlns:ex="urn:example:pm-parameters">
       <parameter-profile>
-        <name>itu-transport-maintenance-15min</name>
+        <name>example-ip-qos-15min</name>
         <pm-parameter>
-          <name>pm-pa:es</name>
+          <name>ex:lost-packets</name>
           <sampling-interval>
             <id>1s</id>
             <collection-interval>
@@ -1199,8 +1224,9 @@ monitoring, historical analysis, or triggering automated responses
 based on performance thresholds.
 
 {{fig-periodic-sub-example}} shows a periodic subscription
-{{!RFC8641}} to the operational datastore for the ES parameter in
-the `itu-transport-maintenance-15min` profile. The XPath filter
+{{!RFC8641}} to the operational datastore for the `ex:lost-packets`
+parameter in the `example-ip-qos-15min` profile. The
+XPath filter
 selects the 15-minute collection interval entry, sampled every
 second, including its collection values and interval data status.
 The period is expressed in centiseconds: 90000 (900 seconds), so
@@ -1217,10 +1243,10 @@ that an update is sent once per collection interval.
     <yp:datastore>ds:operational</yp:datastore>
     <yp:datastore-xpath-filter
         xmlns:pm-co="urn:ietf:params:xml:ns:yang:ietf-pm-collection"
-        xmlns:pm-pa="urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
+        xmlns:ex="urn:example:pm-parameters">
       /pm-co:pm-periodic-collection/
-        parameter-profile[name='itu-transport-maintenance-15min']/
-        pm-parameter[name='pm-pa:es']/
+        parameter-profile[name='example-ip-qos-15min']/
+        pm-parameter[name='ex:lost-packets']/
         sampling-interval[id='1s']/
         collection-interval[id='15min']
     </yp:datastore-xpath-filter>
@@ -1237,10 +1263,10 @@ that an update is sent once per collection interval.
 {{fig-periodic-notif-example}} shows the resulting "push-update"
 notification {{!RFC8641}} for the subscription, whose identifier
 returned by the server is 39. It reports the counts collection
-value of the ES parameter in the `itu-transport-maintenance-15min`
-profile, sampled every second and aggregated over a 15-minute
-interval. The collected value (10) represents the total errored
-seconds in that period. The accompanying interval-data-status shows
+value of the `ex:lost-packets` parameter in the
+`example-ip-qos-15min` profile, sampled every second
+and aggregated over a 15-minute interval. The collected value (10)
+represents the total number of lost packets in that period. The accompanying interval-data-status shows
 that the interval is complete and not suspect, so the value is a
 fully measured result.
 
@@ -1253,12 +1279,11 @@ fully measured result.
     <datastore-contents>
       <pm-periodic-collection
           xmlns="urn:ietf:params:xml:ns:yang:ietf-pm-collection"
-          xmlns:pm-pa=
-            "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
+          xmlns:ex="urn:example:pm-parameters">
         <parameter-profile>
-          <name>itu-transport-maintenance-15min</name>
+          <name>example-ip-qos-15min</name>
           <pm-parameter>
-            <name>pm-pa:es</name>
+            <name>ex:lost-packets</name>
             <sampling-interval>
               <id>1s</id>
               <collection-interval>
@@ -1360,8 +1385,9 @@ sent when the events occur.
 {:#fig-threshold-sub-example title="Threshold Event Subscription Example"}
 
 {{fig-threshold-notif-example}} reports a high-OOR-event threshold
-crossing for the snapshot collection type of the ES parameter in the
-`itu-transport-maintenance-15min` profile, with 1-second sampling
+crossing for the tidemarks collection type of the
+`ex:one-way-delay` parameter in the
+`example-ip-qos-15min` profile, with 1-second sampling
 and 15-minute collection interval. It shows the event type,
 occurrence, and timestamp as defined in the YANG model.
 
@@ -1371,13 +1397,12 @@ occurrence, and timestamp as defined in the YANG model.
   <eventTime>2026-07-01T00:05:23Z</eventTime>
   <pm-threshold-events
       xmlns="urn:ietf:params:xml:ns:yang:ietf-pm-collection"
-      xmlns:pm-pa=
-        "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
+      xmlns:ex="urn:example:pm-parameters">
     <periodic-events>
       <parameter-profile>
-        <name>itu-transport-maintenance-15min</name>
+        <name>example-ip-qos-15min</name>
         <pm-parameter>
-          <name>pm-pa:es</name>
+          <name>ex:one-way-delay</name>
           <sampling-interval>
             <id>1s</id>
             <interval-value>1</interval-value>
@@ -1387,11 +1412,11 @@ occurrence, and timestamp as defined in the YANG model.
               <interval-value>15</interval-value>
               <unit>minute</unit>
               <event-types>
-                <snapshot>
+                <tidemarks>
                   <event-type>High-OOR-event</event-type>
                   <event-occurred>true</event-occurred>
                   <event-time>2026-07-01T00:05:23Z</event-time>
-                </snapshot>
+                </tidemarks>
               </event-types>
             </collection-interval>
           </sampling-interval>
@@ -1556,12 +1581,10 @@ defined in this document.
 
 Capability discovery before configuration:
 : A server is not required to support every sampling interval,
-  collection interval, or collection type for every parameter.
-  Before configuring a "parameter-profile" entry, a client SHOULD
-  read the capabilities advertised through
-  {{I-D.yoon-ippm-collection-interval-capabilities}} and configure
-  only combinations that the server supports.  A server rejects a
-  configuration that it does not support.
+  collection interval, or collection type for every parameter, and
+  it rejects a configuration that it does not support.  How a client
+  discovers the supported combinations before configuration is
+  outside the scope of this document.
 
 Configuration and operational state:
 : Profiles, intervals, collection types, and thresholds are
@@ -1606,10 +1629,7 @@ Retention:
 : A server is not required to retain completed intervals.  When it
   does not, a client that needs a complete history must obtain each
   result as its interval ends, either by subscription or by polling
-  close to the interval boundary.  When a server does retain
-  completed intervals, it advertises the number it keeps as
-  "retained-interval-count" in
-  {{I-D.yoon-ippm-collection-interval-capabilities}}.
+  close to the interval boundary.
 
 Threshold events and fault management:
 : Threshold events (see {{thresholding}}) indicate performance

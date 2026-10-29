@@ -54,6 +54,8 @@ normative:
   RFC8525:
   RFC9196:
   I-D.yoon-ippm-collection-measure:
+
+informative:
   G7710:
     title: Common Equipment Management Function Requirements
     author:
@@ -62,12 +64,9 @@ normative:
     target: https://www.itu.int/rec/T-REC-G.7710
     seriesinfo:
       ITU-T: Recommendation G.7710
-
-informative:
   RFC7799:
   RFC6390:
   RFC9195:
-  I-D.yoon-ccamp-pm-streaming:
 
 --- abstract
 
@@ -135,10 +134,8 @@ step, using the companion configuration model
 
 The same discovery step also advertises which collection types
 (counts, snapshot, and tidemarks) the server supports for each
-parameter.  In the companion model each collection type is a
-presence container that a client creates to enable it, so a client
-needs to know which types the server supports before it configures a
-parameter; a profile may also restrict a parameter to a subset of
+parameter, so that a client knows which types it can enable before
+it configures a parameter; a profile may also restrict a parameter to a subset of
 the types, for example counts only.
 
 Rather than defining a separate top-level container, this module
@@ -174,17 +171,9 @@ The functional division between this document and
 {{I-D.yoon-ippm-collection-measure}} is as follows.
 
 {{I-D.yoon-ippm-collection-measure}} defines "ietf-pm-collection", which
-covers:
-
-- Parameter profiles and PM parameter groupings, and the
-  "performance-parameter" base identity from which specific
-  parameters are derived
-- Three collection types: Counts, Snapshot, and Tidemarks (per
-  ITU-T G.7710 {{G7710}})
-- Configurable sampling and collection intervals
-- Threshold event notifications (periodic and non-periodic)
-- Data structures accessible via pull-based retrieval (NETCONF, RESTCONF)
-  or push-based subscription (YANG-Push)
+configures PM collection and exposes the collected data.  This
+document depends only on the types and identities that it imports
+from that module.
 
 This document defines "ietf-pm-interval-capabilities", which covers:
 
@@ -203,10 +192,8 @@ The separation of concerns is:
 - "Which configurations the server can support" is in this
   document.
 
-Specific performance parameters, such as the transport parameters of
-ITU-T G.7710, are defined as identities derived from
-"performance-parameter" in other documents, for example
-{{I-D.yoon-ccamp-pm-streaming}}.
+Specific performance parameters are defined as identities derived
+from "performance-parameter" in other documents.
 
 {{fig-document-relationship}} illustrates the relationship between
 the two YANG modules.
@@ -232,15 +219,7 @@ the two YANG modules.
   +------------------------------------------+
   |     ietf-pm-collection                   |
   |     (companion document)                 |
-  |                                          |
-  |  pm-periodic-collection                  |
-  |    parameter-profile [profile-names]     |
-  |      pm-parameter [identityref]          |
-  |        sampling-interval                 |
-  |          collection-interval             |
-  |            collection-types              |
-  |              counts / snapshot /         |
-  |              tidemarks                   |
+  |     PM collection model                  |
   +------------------------------------------+
 ~~~~
 {:#fig-document-relationship title="Relationship between ietf-pm-interval-capabilities and ietf-pm-collection"}
@@ -259,11 +238,10 @@ implementation constraints.  This module provides that advertisement.
 The same PM parameter may need to be collected simultaneously at
 multiple sampling and collection interval combinations, each serving
 a distinct operational objective.  As illustrated by the use cases in
-{{I-D.yoon-ippm-collection-measure}}, Errored Seconds (ES) sampled every
-second may be aggregated over a 1-minute interval for rapid fault
+{{I-D.yoon-ippm-collection-measure}}, the number of lost packets counted
+every second may be aggregated over a 1-minute interval for rapid fault
 detection in a Network Operations Center (NOC), over a 15-minute
-interval for routine maintenance monitoring aligned with ITU-T G.7710
-{{G7710}}, and over a 24-hour interval for daily QoS reporting -- all
+interval for routine maintenance monitoring, and over a 24-hour interval for daily QoS reporting -- all
 three objectives active concurrently on the same parameter.  Similarly,
 latency parameters may be sampled at sub-second granularity with short
 collection intervals for digital twin synchronization, or at longer
@@ -289,26 +267,27 @@ can support short minimum sampling intervals and fine-grained
 collection interval steps, enabling high-resolution monitoring for
 demanding use cases such as real-time fault detection, network digital
 twins, and AI-driven analytics.  For example, such a device may support
-a 100-millisecond sampling interval for ES, with collection intervals
+a 100-millisecond sampling interval for the lost-packets parameter,
+with collection intervals
 as short as 1 minute and a 5-second granularity step.
 
 Lower-specification network elements, constrained by processing
 resources or hardware architecture, may support only longer minimum
-intervals and coarser granularity steps.  The same ES parameter on
+intervals and coarser granularity steps.  The same lost-packets parameter on
 such a device might have a minimum sampling interval of 1 second and
 a minimum collection interval of 15 minutes, adequate for traditional
 operations and maintenance monitoring but insufficient for sub-minute
 analytics.
 
-{{tab-equipment-classes}} shows an example comparison for the ES
-parameter.
+{{tab-equipment-classes}} shows an example comparison for the
+lost-packets parameter.
 
 | Equipment class | Min. sampling | Min. collection interval | Granularity |
 |-----------------|---------------|---------------------------|-------------|
 | High-performance | 100 ms | 1 min | 5 s |
 | Standard | 1 s | 1 min | 1 min |
 | Low-specification | 1 s | 15 min | 15 min |
-{:#tab-equipment-classes title="Example interval capabilities by equipment class (ES parameter)"}
+{:#tab-equipment-classes title="Example interval capabilities by equipment class (lost-packets parameter)"}
 
 A client operating across a heterogeneous network cannot assume a
 uniform interval floor and must discover the capabilities of each
@@ -337,9 +316,9 @@ configuration structure of the PM collection model defined in
 {{I-D.yoon-ippm-collection-measure}},
 ensuring consistency between capability discovery and actual
 configuration.  It has three levels: parameter profiles (collections of
-related parameters such as "itu-transport-maintenance-15min"), PM
-parameters (individual parameters such as ES, SES, BBE, identified by
-identities derived from "performance-parameter"), and capabilities
+related parameters such as "example-ip-qos-15min"),
+PM parameters (individual parameters identified by identities
+derived from "performance-parameter"), and capabilities
 (supported sampling and collection intervals, measurement methods,
 and collection types for each parameter).
 
@@ -367,8 +346,7 @@ client uses it to choose a reporting period the server can honour.
 For each parameter, the model additionally advertises
 `supported-collection-types`: the collection types (counts,
 snapshot, tidemarks) that the server can collect for the parameter.
-In the companion model each collection type is a presence container,
-so a client creates only the containers of the advertised types.  An
+A client enables only the advertised collection types.  An
 absent list means the server does not advertise collection-type
 information for the parameter.
 
@@ -407,7 +385,7 @@ model defined in this document.
         |                                    |
         |  Option A: Pull (polling)          |
         |---NETCONF get-data--------------> |
-        |<--collection-value--------------- |
+        |<--collected data----------------- |
         |                                    |
         |  Option B: Push (YANG-Push)        |
         |---establish-subscription--------> |
@@ -443,8 +421,8 @@ discovery of those timing constraints, which the companion model
 configured.
 
 **Step 2 -- Configure collection (companion document).**
-The client configures the "pm-periodic-collection" container defined
-in "ietf-pm-collection" {{I-D.yoon-ippm-collection-measure}}, selecting
+The client configures PM collection using "ietf-pm-collection"
+{{I-D.yoon-ippm-collection-measure}}, selecting
 only sampling and collection interval values, measurement methods,
 and collection types that Step 1 confirmed the server supports.  This
 avoids configuration errors such as an unsupported interval or
@@ -452,24 +430,19 @@ collection type being rejected during collection setup or
 subscription establishment.
 
 **Step 3 -- Access data (companion document).**
-The client accesses the collected PM data using either pull-based
-retrieval or push-based subscription, both supported by "ietf-pm-
-collection".  For pull-based access, the client issues NETCONF
-"get-data" {{?RFC8526}} or RESTCONF GET operations against the operational
-datastore to read current collection values.  For push-based access,
-the client establishes a YANG-Push subscription per {{!RFC8639}},
-{{!RFC8641}}, {{!RFC8640}} to receive periodic or threshold-triggered
-notifications.
+The client accesses the collected PM data, by pull-based retrieval
+or push-based subscription, as specified in
+{{I-D.yoon-ippm-collection-measure}}.
 
 # Interval Capabilities Example
 
 {{fig-cap-example}} shows a NETCONF `<get-data>` request {{?RFC8526}}
 that retrieves, from the operational datastore, the capabilities
-advertised for the ES parameter in the
-"itu-transport-maintenance-15min" profile.  The subtree filter
+advertised for the "ex:lost-packets" parameter in the
+"example-ip-qos-15min" profile.  The subtree filter
 selects the parameter by its list keys only, so the whole entry is
-returned.  The parameter is identified by the identity "pm-pa:es"
-defined in {{I-D.yoon-ccamp-pm-streaming}}.
+returned.  The parameter is identified by "ex:lost-packets", an
+example identity derived from "performance-parameter".
 
 ~~~~ xml
 <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
@@ -485,12 +458,11 @@ defined in {{I-D.yoon-ccamp-pm-streaming}}.
         <pm-interval-capabilities
             xmlns=
           "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
-            xmlns:pm-pa=
-              "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
+            xmlns:ex="urn:example:pm-parameters">
           <parameter-profile>
-            <name>itu-transport-maintenance-15min</name>
+            <name>example-ip-qos-15min</name>
             <pm-parameter>
-              <name>pm-pa:es</name>
+              <name>ex:lost-packets</name>
             </pm-parameter>
           </parameter-profile>
         </pm-interval-capabilities>
@@ -508,17 +480,12 @@ within "system-capabilities" in the reply.
 <pm-interval-capabilities
     xmlns=
   "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
-    xmlns:pm-pa=
-      "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
+    xmlns:ex="urn:example:pm-parameters">
   <parameter-profile>
-    <name>itu-transport-maintenance-15min</name>
+    <name>example-ip-qos-15min</name>
     <pm-parameter>
-      <name>pm-pa:es</name>
+      <name>ex:lost-packets</name>
       <supported-collection-types>counts</supported-collection-types>
-      <supported-collection-types
-        >snapshot</supported-collection-types>
-      <supported-collection-types
-        >tidemarks</supported-collection-types>
       <interval-relationships>
         <sampling-interval>
           <id>1s</id>
@@ -549,12 +516,12 @@ within "system-capabilities" in the reply.
 The reply indicates that the server supports 1-second sampling and
 a collection interval range of 5 to 1440 minutes with 5-minute
 granularity, with a default of 15 minutes; that it supports the
-counts, snapshot, and tidemarks collection types for the parameter;
+counts collection type for the parameter;
 and that it retains the most recently completed collection
-interval.  Using this information, the client can configure the ES
-parameter in "ietf-pm-collection" with any collection interval
+interval.  Using this information, the client can configure the
+"ex:lost-packets" parameter in "ietf-pm-collection" with any collection interval
 that is a multiple of 5 within the range 5 to 1440 minutes, and
-with any of the three collection types, knowing the server will
+with the counts collection type, knowing the server will
 accept the configuration.
 
 When the server also advertises supported measurement methods for

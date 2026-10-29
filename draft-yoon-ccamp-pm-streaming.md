@@ -54,7 +54,6 @@ normative:
   RFC7950:
   RFC8340:
   RFC8341:
-  RFC8525:
   RFC8639:
   RFC8640:
   RFC8641:
@@ -71,19 +70,19 @@ normative:
 
 informative:
   RFC7799:
+  RFC8525:
   RFC8526:
   RFC8342:
   RFC9196:
 
 --- abstract
 
-This document specifies how the generic Performance Monitoring (PM)
-collection YANG data model and its interval-capabilities companion
-model are applied to common transport equipment.  It defines a YANG
-module of transport performance parameter identities, derived from
-the base identity of the PM collection model, together with one
-feature for each of the three transport parameter profiles of
-ITU-T G.7710; it specifies those profiles normatively; and it gives
+This document applies the core Performance Monitoring (PM)
+collection and interval-capabilities YANG data models to common
+transport equipment.  It defines a YANG module of transport
+performance parameter identities, derived from the base identity of
+the PM collection model; it specifies the three transport parameter
+profiles of ITU-T G.7710 normatively; and it gives
 end-to-end examples that show capability discovery followed by
 YANG-Push subscription, notification, and threshold reporting for a
 transport profile.
@@ -104,11 +103,11 @@ Element (NE) is processed into summarized statistics and delivered
 to external clients.  The continuous, push-based delivery of that
 data is referred to in this document as PM streaming.
 
-Two companion documents define the generic models used here.  The
+This document depends on two core documents that define the
+technology-neutral models used here.  The
 PM collection data model {{I-D.yoon-ippm-collection-measure}} defines
 the performance parameter structure, the sampling and collection
-interval hierarchy, the three ITU-T G.7710 {{G7710}} collection
-types (counts, snapshot, and tidemarks), and the threshold-event
+interval hierarchy, the three collection types (counts, snapshot, and tidemarks), and the threshold-event
 notification.  The interval-capabilities model
 {{I-D.yoon-ippm-collection-interval-capabilities}} lets a server advertise
 which intervals, measurement methods, and collection types it
@@ -117,8 +116,8 @@ technology.
 
 This document specifies how those generic models are applied to
 common transport equipment.  It defines a YANG module {{RFC7950}}
-of the transport performance parameters as identities and of the
-transport profiles as features, specifies the three transport
+of the transport performance parameters as identities, specifies
+the three transport
 profiles of ITU-T G.7710 normatively, and gives end-to-end examples
 of capability discovery, subscription, notification, and threshold
 reporting.  This document does not define any new subscription or
@@ -143,50 +142,42 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 BCP 14 {{!RFC2119}} {{!RFC8174}} when, and only when, they appear in
 all capitals, as shown here.
 
-# Relationship to the Companion Documents {#doc-relationship}
+# Relationship to the Core Documents {#doc-relationship}
 
-This document is the transport-equipment member of a three-document
-set, whose structure is shown in {{fig-doc-relationship}}.
+This document is a technology-specific document that depends on the
+two core documents, as shown in {{fig-doc-relationship}}.  Other
+technology-specific documents can depend on the core documents in
+the same way.
 
 ~~~~
-   +-------------------------------------------------+
-   | RFC 9196: ietf-system-capabilities              |
-   |   (system capability discovery anchor)          |
-   +-------------------------------------------------+
-                           ^
-                           | (2) augments, to advertise the supported
-                           | intervals, methods, and collection types
-                           |
-   +-------------------------------------------------+
-   | (2) ietf-pm-interval-capabilities               |
-   |     PM interval capabilities model              |
-   +-------------------------------------------------+
-                           | imports profile-names, collection-type,
-                           | performance-parameter, measurement-method
-                           v
-   +-------------------------------------------------+
-   | (1) ietf-pm-collection                          |
-   |     PM collection model                         |
-   |     (base identity performance-parameter)       |
-   +-------------------------------------------------+
-                           ^
-                           | imports performance-parameter
-                           |
-   +-------------------------------------------------+
-   | (3) ietf-pm-parameters          (THIS DOCUMENT) |
-   |     CCAMP Working Group, Standards Track        |
-   +-------------------------------------------------+
+   +--------------------------------------------------------+
+   |  Core documents (technology-neutral)                   |
+   |                                                        |
+   |  (1) ietf-pm-collection  <----  (2) ietf-pm-interval-  |
+   |      PM collection     imports      capabilities       |
+   |      (base identity                 (augments          |
+   |       performance-parameter)         RFC 9196)         |
+   +--------------------------------------------------------+
+               ^                               ^
+               | imports                       | advertises
+               | (normative)                   | capabilities
+   +--------------------------------------------------------+
+   |  Technology-specific documents                         |
+   |                                                        |
+   |  (3) ietf-pm-parameters (THIS DOCUMENT): transport     |
+   |  (other documents for other technologies)              |
+   +--------------------------------------------------------+
 ~~~~
-{:#fig-doc-relationship title="Relationship between this document and the companion documents"}
+{:#fig-doc-relationship title="Relationship between the core documents and this document"}
 
-The three documents play distinct, layered roles:
+The documents play distinct, layered roles:
 
 * (1) The PM collection model
   {{I-D.yoon-ippm-collection-measure}} (module ietf-pm-collection) is
   the generic, transport-neutral core: the performance parameter
   structure and the "performance-parameter" base identity, the
-  sampling and collection interval hierarchy, the three ITU-T G.7710
-  {{G7710}} collection types (counts, snapshot, and tidemarks), and
+  sampling and collection interval hierarchy, the three collection
+  types (counts, snapshot, and tidemarks), and
   the threshold-event notification.
 
 * (2) The PM interval-capabilities model
@@ -200,8 +191,7 @@ The three documents play distinct, layered roles:
 
 * (3) This document (module ietf-pm-parameters) defines the
   transport-specific PM parameter identities, derived from the
-  "performance-parameter" base identity of (1), and one feature for
-  each transport profile; specifies the transport profiles (see
+  "performance-parameter" base identity of (1); specifies the transport profiles (see
   {{params-profiles}}); and shows how the three modules are used
   together when PM data is streamed from common transport equipment.
 
@@ -406,7 +396,7 @@ each listed parameter.  Each "pm-parameter" entry has a
 the listed duration under which the listed collection types are
 enabled; its "measurement-method" is "passive".
 
-| Profile (feature) | Parameters | Collection types | Sampling interval (default) | Collection interval |
+| Profile | Parameters | Collection types | Sampling interval (default) | Collection interval |
 |-------------------|------------|------------------|-----------------------------|---------------------|
 | itu-transport-maintenance-15min | es, ses, bbe, bbc, uas | counts | 1 second | 15 minutes |
 | itu-transport-maintenance-24hr | es, ses, bbe, bbc, uas, pje | counts | 1 second | 24 hours |
@@ -417,24 +407,7 @@ Collection is always performed on sampled values, so every profile
 entry has a sampling interval.  The sampling interval in
 {{tab-profiles}} is the default.
 
-The module defined in this document declares one YANG feature per
-profile, with the same name as the profile.  A transport profile is
-not an implementation option: ITU-T G.7710 leaves the set of
-performance monitoring functions supported by an NE to the
-technology-specific Recommendations and to the position of the NE
-in the network.  A server advertises in its YANG library
-{{RFC8525}} the feature of each transport profile that it supports
-as required by the applicable technology-specific Recommendation.
-
-A server that advertises a profile feature MUST support the
-corresponding "parameter-profile" entry as defined in
-{{tab-profiles}} for each listed parameter that is applicable to
-the monitored transport layer (for example, PJE applies only to
-layers that use pointer justification): it MUST accept and honour
-the configuration of
-that entry with the listed parameters, collection types, default
-sampling interval, and collection interval, and MUST NOT reject it
-as unsupported.  A server MAY provide the entry as system-defined
+A server MAY provide a transport profile entry as system-defined
 configuration, in which case it is present in the operational
 datastore with origin "system" {{?RFC8342}} without client
 configuration.  A server MAY additionally support other collection
@@ -447,16 +420,12 @@ transport profiles.
 
 The following module defines the transport performance parameters
 as identities derived from "pm-co:performance-parameter" of
-{{I-D.yoon-ippm-collection-measure}}, and one feature for each
-transport profile.  The module defines no data nodes, so it has no
-tree diagram; its identities and features are summarised in
+{{I-D.yoon-ippm-collection-measure}}.  The module defines no data
+nodes, so it has no tree diagram; its identities are summarised in
 {{tab-module}}.
 
 | Statement | Name | Base / reference |
 |-----------|------|------------------|
-| feature | itu-transport-maintenance-15min | {{pm-profiles}} |
-| feature | itu-transport-maintenance-24hr | {{pm-profiles}} |
-| feature | itu-transport-qos-24hr | {{pm-profiles}} |
 | identity | es, ses, bbe, bbc, uas, pje, sep | pm-co:performance-parameter |
 {:#tab-module title="Contents of the ietf-pm-parameters module"}
 
@@ -481,9 +450,7 @@ types, the transport NE supports.
 These capabilities are advertised by augmenting the
 "ietf-system-capabilities" container of {{RFC9196}}, so the client
 retrieves them under "system-capabilities", the same anchor used for
-subscription and notification capabilities.  The transport profiles
-the NE supports are learned from the features it advertises in its
-YANG library {{RFC8525}}.  The client uses a NETCONF `<get-data>`
+subscription and notification capabilities.  The client uses a NETCONF `<get-data>`
 request {{RFC8526}} on the operational datastore, as shown in
 {{fig-cap}}; the subtree filter selects the parameter by its list
 keys, so the whole entry is returned.
@@ -532,10 +499,6 @@ within "system-capabilities" in the reply.
     <pm-parameter>
       <name>pm-pa:ses</name>
       <supported-collection-types>counts</supported-collection-types>
-      <supported-collection-types
-        >snapshot</supported-collection-types>
-      <supported-collection-types
-        >tidemarks</supported-collection-types>
       <interval-relationships>
         <sampling-interval>
           <id>1s</id>
@@ -566,7 +529,7 @@ within "system-capabilities" in the reply.
 The reply shows that the NE supports 1-second sampling and a
 collection interval range of 5 to 1440 minutes with 5-minute
 granularity, defaulting to 15 minutes, and that it supports the
-counts, snapshot, and tidemarks collection types for the parameter,
+counts collection type for the parameter,
 and that it retains the most recently completed collection interval.
 The client therefore selects a 1-second sampling interval, a
 15-minute collection interval, and the counts collection type, which
@@ -727,10 +690,25 @@ and intervals accordingly.  Threshold events, both periodic and the
 non-periodic BUT, EUT, and CSES events, are carried in the
 notification defined by the PM collection model.
 
+# Open Issues
+
+This section is to be removed before publication.
+
+The representation of the transport profiles in YANG is left for
+discussion in the Working Group.  The profile contents (parameters,
+collection types, and default intervals) are given in
+{{tab-profiles}}.  What remains open is how a server indicates the
+profiles it supports, and how the applicability of each parameter
+to a given transport layer is expressed.  Candidates, none of which
+requires changes to the core documents, include one YANG feature per
+profile advertised in the YANG library {{RFC8525}}, the profiles
+published as YANG instance data {{?RFC9195}}, and the capability
+advertisement of {{I-D.yoon-ippm-collection-interval-capabilities}}.
+
 # Security Considerations
 
-The YANG module defined in this document defines only identities
-and features; it defines no data nodes, RPCs, actions, or
+The YANG module defined in this document defines only identities;
+it defines no data nodes, RPCs, actions, or
 notifications, and therefore introduces no new data that could be
 read, written, or delivered through network management protocols.
 The identities defined here are used as values of the "pm-parameter"
@@ -744,9 +722,8 @@ Access Control Model (NACM) {{RFC8341}}.  The security
 considerations of the YANG-Push framework {{RFC8639}} {{RFC8641}}
 also apply.
 
-The features advertised by a server reveal which transport profiles
-it supports, and the exposed performance and capability data can
-reveal information about the transport network; operators may wish
+The exposed performance and capability data can reveal information
+about the transport network; operators may wish
 to restrict access accordingly.
 
 # IANA Considerations

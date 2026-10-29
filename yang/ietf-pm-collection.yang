@@ -19,7 +19,7 @@ module ietf-pm-collection {
      performance monitoring (PM) data in network equipment, based
      on ITU-T G.7710.  It specifies three core collection types:
      counts (cumulative events), snapshot (instantaneous values),
-     and tidemarks (extreme values), as defined in ITU-T G.7710.
+     and tidemarks (extreme values).
 
      The module enables proactive network monitoring through
      configurable sampling and collection intervals, supporting
@@ -31,7 +31,7 @@ module ietf-pm-collection {
      The module defines the base identity 'performance-parameter'
      from which the identities of specific performance parameters
      are derived in other modules, and the 'collection-type'
-     typedef used by companion modules to refer to the three
+     typedef used by other modules to refer to the three
      collection types.
 
      The collected data can be retrieved by clients via
@@ -56,7 +56,7 @@ module ietf-pm-collection {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC
      itself for full legal notices.";
 
-  revision 2026-10-21 {
+  revision 2026-10-29 {
     description
       "Initial revision.";
     reference
@@ -87,10 +87,9 @@ module ietf-pm-collection {
          (e.g., 15min, 24hr, high-priority)
 
        Examples:
-       - itu-transport-maintenance-15min
-       - itu-transport-maintenance-24hr
-       - itu-transport-qos-24hr
-       - ieee-access-availability";
+       - example-ip-qos-15min
+       - example-ip-qos-24hr
+       - example-mobile-availability-24hr";
   }
 
   typedef time-interval-unit {
@@ -133,9 +132,9 @@ module ietf-pm-collection {
       }
     }
     description
-      "The three collection types defined in ITU-T G.7710.  Used
-       by companion modules, for example to advertise which
-       collection types a server supports for a parameter.";
+      "The three collection types.  Used by other modules,
+       for example to advertise which collection types a server
+       supports for a parameter.";
     reference
       "ITU-T G.7710";
   }
@@ -191,8 +190,8 @@ module ietf-pm-collection {
       "Base identity for performance monitoring parameters.  The
        key of each pm-parameter entry is an identity derived from
        this base.  Specific parameters are defined as derived
-       identities in other modules, for example the transport
-       parameters of ITU-T G.7710 in ietf-pm-parameters.";
+       identities in other modules, for example modules that
+       define the parameters of specific network technologies.";
   }
 
   /*
@@ -301,7 +300,7 @@ module ietf-pm-collection {
   }
 
   /*
-   * SUSPECT-REASON IDENTITIES (G.7710 suspect interval)
+   * SUSPECT-REASON IDENTITIES
    */
   identity suspect-reason {
     description
@@ -353,7 +352,7 @@ module ietf-pm-collection {
     description
       "Data collection was intentionally suspended for part or
        all of the interval, so the interval does not cover
-       continuous measurement.  This corresponds to the G.7710
+       continuous measurement.  This corresponds to the
        case in which the interval belongs to a period during
        which the measurement is suspended or resumed, for
        example administrative disabling of the PM function, a
@@ -520,7 +519,7 @@ module ietf-pm-collection {
   grouping interval-data-status {
     description
       "Validity and coverage metadata for a collection interval,
-       aligned with the G.7710 suspect interval flag.  It lets a
+       aligned with the suspect interval flag.  It lets a
        client tell a fully measured interval from an incomplete
        one, and a measured zero from an absent value.";
     reference
@@ -534,8 +533,7 @@ module ietf-pm-collection {
          be unreliable, for example when periodic samples are
          missing, when collection state is reset, when the
          equipment restarts, when interval timing changes, or
-         when collection is suspended.  This is the YANG
-         equivalent of the G.7710 suspect interval flag.
+         when collection is suspended.
 
          For the snapshot collection type the initialization is
          inverted: G.7710 initializes the flag to 'true' at the
@@ -611,8 +609,7 @@ module ietf-pm-collection {
       description
         "Timestamp marking the end of the collection interval to
          which the reported values apply.  This is the
-         end-of-interval timestamp defined in ITU-T G.7710.
-         It is the authoritative
+         end-of-interval timestamp.  It is the authoritative
          measurement time for the interval and should be used for
          correlation in preference to the notification envelope
          eventTime, which reflects when the notification was
@@ -637,7 +634,7 @@ module ietf-pm-collection {
     description
       "Counts collection type for cumulative event tracking over
        a collection interval.  Supports transient and standing
-       threshold reporting, as defined in G.7710.";
+       threshold reporting.";
     container counts {
       presence
         "Enables the counts collection type for this collection
@@ -693,7 +690,7 @@ module ietf-pm-collection {
     description
       "Snapshot collection type for instantaneous values at the
        uniform time within each collection interval.  Supports
-       high/low OOR threshold reporting, as defined in G.7710.";
+       high/low OOR threshold reporting.";
     container snapshot {
       presence
         "Enables the snapshot collection type for this collection
@@ -706,7 +703,7 @@ module ietf-pm-collection {
            from the start of the collection interval at which the
            single snapshot is taken.  Taking snapshots at the same
            uniform time across network elements lets their values
-           be correlated, as defined in ITU-T G.7710.";
+           be correlated.";
         leaf offset-value {
           type uint32;
           description
@@ -738,7 +735,7 @@ module ietf-pm-collection {
     description
       "Tidemarks collection type for maximum and minimum values
        over the collection interval.  Supports high/low OOR
-       threshold reporting, as defined in G.7710.";
+       threshold reporting.";
     container tidemarks {
       presence
         "Enables the tidemarks collection type for this
@@ -771,7 +768,7 @@ module ietf-pm-collection {
   grouping collection-types-gr {
     description
       "Grouping for the three core collection types (counts,
-       snapshot, tidemarks) per ITU-T G.7710.";
+       snapshot, tidemarks).";
     container collection-types {
       description
         "Container for the counts, snapshot, and tidemarks
@@ -830,7 +827,7 @@ module ietf-pm-collection {
         }
         description
           "Specifies the type of standing threshold event that
-           occurred, as defined in G.7710.  A Threshold-Report
+           occurred.  A Threshold-Report
            (TR) is generated when the collection-value reaches
            or exceeds the standing-threshold.  A
            Reset-Threshold-Report (RTR) is generated at the end

@@ -33,8 +33,8 @@ module ietf-pm-interval-capabilities {
      PM collection.
 
      This module provides hierarchical interval capability
-     discovery where collection intervals must be multiples of
-     their corresponding sampling intervals, and each parameter
+     discovery, in which collection intervals are nested within
+     their corresponding sampling interval, and each parameter
      can have different interval capabilities within each
      parameter profile.
 
@@ -66,7 +66,7 @@ module ietf-pm-interval-capabilities {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC
      itself for full legal notices.";
 
-  revision 2026-10-21 {
+  revision 2026-10-29 {
     description
       "Initial revision.";
     reference
@@ -146,9 +146,9 @@ module ietf-pm-interval-capabilities {
     description
       "Capabilities for a single PM parameter within a profile.
        The structure nests collection intervals within their
-       corresponding sampling interval, reflecting the constraint
-       that collection intervals must be multiples of their
-       sampling interval.";
+       corresponding sampling interval, reflecting the
+       constraints that ietf-pm-collection places on the
+       relationship between the two intervals.";
     leaf name {
       type identityref {
         base pm-co:performance-parameter;
@@ -197,15 +197,14 @@ module ietf-pm-interval-capabilities {
          ietf-pm-collection.  An empty or absent list means the
          server does not advertise collection-type information
          for this parameter.";
-      reference
-        "ITU-T G.7710";
     }
     container interval-relationships {
       description
         "Hierarchical relationships between sampling and
-         collection intervals for this parameter.
-         Collection intervals MUST be multiples of their
-         corresponding sampling intervals.";
+         collection intervals for this parameter.  Each
+         advertised combination of sampling and collection
+         interval MUST satisfy the constraints of
+         ietf-pm-collection.";
       list sampling-interval {
         key "id";
         description
@@ -259,7 +258,7 @@ module ietf-pm-interval-capabilities {
         "Name of the parameter profile.  This value
          corresponds to the parameter-profile name leaf in
          ietf-pm-collection (e.g.,
-         itu-transport-maintenance-15min).";
+         example-ip-qos-15min).";
     }
     list pm-parameter {
       key "name";

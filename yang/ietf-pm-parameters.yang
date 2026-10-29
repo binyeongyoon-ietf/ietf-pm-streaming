@@ -21,15 +21,11 @@ module ietf-pm-parameters {
     "This YANG module defines the performance monitoring (PM)
      parameters of common transport equipment, based on ITU-T
      G.7710, as identities derived from the performance-parameter
-     base identity of ietf-pm-collection, and one feature for each
-     of the three transport parameter profiles
-     (itu-transport-maintenance-15min,
-     itu-transport-maintenance-24hr, and itu-transport-qos-24hr).
-     A server advertises by means of these features the profiles
-     that it supports as required by the applicable
-     technology-specific ITU-T Recommendation.  The profiles
-     themselves are instances of
-     the parameter-profile list of ietf-pm-collection.
+     base identity of ietf-pm-collection.  The three transport
+     parameter profiles (itu-transport-maintenance-15min,
+     itu-transport-maintenance-24hr, and itu-transport-qos-24hr)
+     are instances of the parameter-profile list of
+     ietf-pm-collection.
 
      Copyright (c) 2026 IETF Trust and the persons identified as
      authors of the code.  All rights reserved.
@@ -45,51 +41,12 @@ module ietf-pm-parameters {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC
      itself for full legal notices.";
 
-  revision 2026-10-21 {
+  revision 2026-10-29 {
     description
       "Initial revision.";
     reference
       "RFC XXXX: A YANG Data Model for Performance Monitoring
        Streaming on Common Transport Equipment";
-  }
-
-  /*
-   * FEATURES: transport parameter profiles
-   */
-  feature itu-transport-maintenance-15min {
-    description
-      "Indicates that the server supports, as required by the
-       applicable technology-specific Recommendation, the
-       itu-transport-maintenance-15min profile: the parameters
-       es, ses, bbe, bbc, and uas, collected as counts over a
-       15-minute collection interval with a default sampling
-       interval of 1 second, as specified in RFC XXXX.";
-    reference
-      "RFC XXXX; ITU-T G.7710";
-  }
-
-  feature itu-transport-maintenance-24hr {
-    description
-      "Indicates that the server supports, as required by the
-       applicable technology-specific Recommendation, the
-       itu-transport-maintenance-24hr profile: the parameters
-       es, ses, bbe, bbc, uas, and pje, collected as counts over
-       a 24-hour collection interval with a default sampling
-       interval of 1 second, as specified in RFC XXXX.";
-    reference
-      "RFC XXXX; ITU-T G.7710";
-  }
-
-  feature itu-transport-qos-24hr {
-    description
-      "Indicates that the server supports, as required by the
-       applicable technology-specific Recommendation, the
-       itu-transport-qos-24hr profile: the parameters es, ses,
-       bbe, bbc, uas, and sep, collected as counts only over a
-       24-hour collection interval with a default sampling
-       interval of 1 second, as specified in RFC XXXX.";
-    reference
-      "RFC XXXX; ITU-T G.7710";
   }
 
   /*
