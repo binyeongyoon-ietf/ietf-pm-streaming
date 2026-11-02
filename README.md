@@ -9,12 +9,12 @@ technology.
 
 | Document | Module | Target | Status |
 |---|---|---|---|
-| [draft-yoon-ippm-collection-measure](draft-yoon-ippm-collection-measure.md) | `ietf-pm-collection` | BPM WG | Individual, -00 |
-| [draft-yoon-ippm-collection-interval-capabilities](draft-yoon-ippm-collection-interval-capabilities.md) | `ietf-pm-interval-capabilities` | BPM WG | Individual, -00 |
+| [draft-yoon-bpm-pm-collection](draft-yoon-bpm-pm-collection.md) | `ietf-pm-collection` | BPM WG | Individual, -00 (replaces draft-yoon-ippm-collection-measure) |
+| [draft-yoon-bpm-pm-capabilities](draft-yoon-bpm-pm-capabilities.md) | `ietf-pm-capabilities` | BPM WG | Individual, -00 (replaces draft-yoon-ippm-collection-interval-capabilities) |
 | [draft-yoon-ccamp-pm-streaming](draft-yoon-ccamp-pm-streaming.md) | `ietf-pm-parameters` | CCAMP WG | Individual, submitted through -05 |
 
 `draft-yoon-ccamp-pm-streaming` imports both `ietf-pm-collection` and
-`ietf-pm-interval-capabilities`; the three documents and their YANG
+`ietf-pm-capabilities`; the three documents and their YANG
 modules are kept in one repository because of this direct dependency,
 even though they target two different working groups.
 
@@ -23,12 +23,12 @@ even though they target two different working groups.
 ```
 .
 ├── draft-yoon-ccamp-pm-streaming.md
-├── draft-yoon-ippm-collection-measure.md
-├── draft-yoon-ippm-collection-interval-capabilities.md
+├── draft-yoon-bpm-pm-collection.md
+├── draft-yoon-bpm-pm-capabilities.md
 └── yang/
     ├── ietf-pm-parameters@2026-06-03.yang
     ├── ietf-pm-collection@2026-05-02.yang
-    ├── ietf-pm-interval-capabilities@2026-06-11.yang
+    ├── ietf-pm-capabilities@2026-06-11.yang
     └── deps/            # vendored external standard modules, for local
                           # validation only -- see yang/deps/README.md
 ```
@@ -46,7 +46,7 @@ To validate the YANG modules with `pyang`:
 
 ```
 pyang -p yang -p yang/deps yang/ietf-pm-collection@2026-05-02.yang
-pyang -p yang -p yang/deps yang/ietf-pm-interval-capabilities@2026-06-11.yang
+pyang -p yang -p yang/deps yang/ietf-pm-capabilities@2026-06-11.yang
 pyang -p yang -p yang/deps yang/ietf-pm-parameters@2026-06-03.yang
 ```
 

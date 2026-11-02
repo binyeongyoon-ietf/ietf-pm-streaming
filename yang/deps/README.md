@@ -3,7 +3,7 @@
 The modules in this directory are **not defined by this repository's
 drafts**. They are copies of standard, already-published IETF modules,
 vendored here only so that `pyang`/`yanglint` can fully resolve imports
-when validating `ietf-pm-interval-capabilities` and `ietf-pm-collection`
+when validating `ietf-pm-capabilities` and `ietf-pm-collection`
 locally (see the `import` statements at the top of each module in the
 parent `yang/` directory).
 

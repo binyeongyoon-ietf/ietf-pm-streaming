@@ -3,7 +3,7 @@ title: "A YANG Data Model for Performance Monitoring (PM) Collection"
 abbrev: "PM Collection YANG"
 category: std
 
-docname: draft-yoon-ippm-collection-measure-latest
+docname: draft-yoon-bpm-pm-collection-latest
 submissiontype: IETF
 number:
 date:
@@ -17,7 +17,7 @@ keyword:
 
 venue:
   github: "binyeongyoon-ietf/ietf-pm-streaming"
-  latest: "https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-ippm-collection-measure.html"
+  latest: "https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-bpm-pm-collection.html"
 
 author:
   -

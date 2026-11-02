@@ -10,7 +10,8 @@ module ietf-pm-collection {
   }
 
   organization
-    "IETF Benchmarking & Performance Measurements (bpm) Working Group";
+    "IETF Benchmarking & Performance Measurements (bpm)
+     Working Group";
   contact
     "WG Web: <https://datatracker.ietf.org/wg/bpm/>
      Editor: Bin Yeong Yoon <mailto:byyun@etri.re.kr>";
