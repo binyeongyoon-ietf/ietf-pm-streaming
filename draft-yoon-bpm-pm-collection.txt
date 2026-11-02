@@ -10,7 +10,7 @@ Expires: 6 May 2027                                            woori-net
 
 
       A YANG Data Model for Performance Monitoring (PM) Collection
-               draft-yoon-ippm-collection-measure-latest
+                  draft-yoon-bpm-pm-collection-latest
 
 Abstract
 
@@ -30,10 +30,10 @@ About This Document
    This note is to be removed before publishing as an RFC.
 
    The latest revision of this draft can be found at
-   https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-
-   ippm-collection-measure.html.  Status information for this document
-   may be found at https://datatracker.ietf.org/doc/draft-yoon-ippm-
-   collection-measure/.
+   https://binyeongyoon-ietf.github.io/ietf-pm-streaming/draft-yoon-bpm-
+   pm-collection.html.  Status information for this document may be
+   found at https://datatracker.ietf.org/doc/draft-yoon-bpm-pm-
+   collection/.
 
    Source for this draft and an issue tracker can be found at
    https://github.com/binyeongyoon-ietf/ietf-pm-streaming.
@@ -1530,7 +1530,8 @@ Table of Contents
      }
 
      organization
-       "IETF Benchmarking & Performance Measurements (bpm) Working Group";
+       "IETF Benchmarking & Performance Measurements (bpm)
+        Working Group";
      contact
        "WG Web: <https://datatracker.ietf.org/wg/bpm/>
         Editor: Bin Yeong Yoon <mailto:byyun@etri.re.kr>";
