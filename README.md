@@ -9,8 +9,8 @@ technology.
 
 | Document | Module | Target | Status |
 |---|---|---|---|
-| [draft-yoon-ippm-collection-measure](draft-yoon-ippm-collection-measure.md) | `ietf-pm-collection` | IPPM WG | Individual, -00 |
-| [draft-yoon-ippm-collection-interval-capabilities](draft-yoon-ippm-collection-interval-capabilities.md) | `ietf-pm-interval-capabilities` | IPPM WG | Individual, -00 |
+| [draft-yoon-ippm-collection-measure](draft-yoon-ippm-collection-measure.md) | `ietf-pm-collection` | BPM WG | Individual, -00 |
+| [draft-yoon-ippm-collection-interval-capabilities](draft-yoon-ippm-collection-interval-capabilities.md) | `ietf-pm-interval-capabilities` | BPM WG | Individual, -00 |
 | [draft-yoon-ccamp-pm-streaming](draft-yoon-ccamp-pm-streaming.md) | `ietf-pm-parameters` | CCAMP WG | Individual, submitted through -05 |
 
 `draft-yoon-ccamp-pm-streaming` imports both `ietf-pm-collection` and

@@ -9,7 +9,7 @@ number:
 date:
 consensus: false
 v: 3
-workgroup: IPPM Working Group
+workgroup: BPM Working Group
 keyword:
  - performance monitoring
  - interval capabilities
