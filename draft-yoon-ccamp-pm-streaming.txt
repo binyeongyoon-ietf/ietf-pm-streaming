@@ -5,8 +5,8 @@
 CCAMP Working Group                                           B. Y. Yoon
 Internet-Draft                                                      ETRI
 Intended status: Standards Track                                  Y. You
-Expires: 2 May 2027                                            woori-net
-                                                         29 October 2026
+Expires: 6 May 2027                                            woori-net
+                                                         2 November 2026
 
 
     A YANG Data Model for Performance Monitoring Streaming on Common
@@ -64,7 +64,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 2 May 2027.
+   This Internet-Draft will expire on 6 May 2027.
 
 Copyright Notice
 
@@ -881,18 +881,19 @@ Table of Contents
               <https://www.itu.int/rec/T-REC-G.7710>.
 
    [I-D.yoon-ippm-collection-interval-capabilities]
-              Yoon, B. Y. and Y. You, "A YANG Data Model for Collection
-              Interval Capabilities", Work in Progress, Internet-Draft,
-              draft-yoon-ippm-collection-interval-capabilities-00, 5
-              July 2026, <https://datatracker.ietf.org/doc/html/draft-
-              yoon-ippm-collection-interval-capabilities-00>.
+              Yoon, B. Y. and Y. You, "A YANG Data Model for Performance
+              Monitoring (PM) Interval Capabilities", Work in Progress,
+              Internet-Draft, draft-yoon-ippm-collection-interval-
+              capabilities-01, 29 October 2026,
+              <https://datatracker.ietf.org/doc/html/draft-yoon-ippm-
+              collection-interval-capabilities-01>.
 
    [I-D.yoon-ippm-collection-measure]
-              Yoon, B. Y. and Y. You, "A YANG Data Model for Collection
-              Measurement", Work in Progress, Internet-Draft, draft-
-              yoon-ippm-collection-measure-00, 5 July 2026,
-              <https://datatracker.ietf.org/doc/html/draft-yoon-ippm-
-              collection-measure-00>.
+              Yoon, B. Y. and Y. You, "A YANG Data Model for Performance
+              Monitoring (PM) Collection", Work in Progress, Internet-
+              Draft, draft-yoon-ippm-collection-measure-01, 29 October
+              2026, <https://datatracker.ietf.org/doc/html/draft-yoon-
+              ippm-collection-measure-01>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
