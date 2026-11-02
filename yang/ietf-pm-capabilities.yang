@@ -1,8 +1,8 @@
-module ietf-pm-interval-capabilities {
+module ietf-pm-capabilities {
   yang-version 1.1;
   namespace
-    "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities";
-  prefix pm-ic;
+    "urn:ietf:params:xml:ns:yang:ietf-pm-capabilities";
+  prefix pm-cap;
 
   import ietf-pm-collection {
     prefix pm-co;
@@ -19,13 +19,14 @@ module ietf-pm-interval-capabilities {
   }
 
   organization
-    "IETF Benchmarking & Performance Measurements (bpm) Working Group";
+    "IETF Benchmarking & Performance Measurements (bpm)
+     Working Group";
   contact
     "WG Web: <https://datatracker.ietf.org/wg/bpm/>
      Editor: Bin Yeong Yoon <mailto:byyun@etri.re.kr>";
   description
     "This YANG module defines a data model for advertising
-     performance monitoring (PM) interval capabilities in network
+     performance monitoring (PM) capabilities in network
      equipment.  The module enables clients to discover which
      sampling and collection intervals, measurement methods, and
      collection types a server supports for each performance
@@ -66,12 +67,12 @@ module ietf-pm-interval-capabilities {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC
      itself for full legal notices.";
 
-  revision 2026-10-29 {
+  revision 2026-11-03 {
     description
       "Initial revision.";
     reference
       "RFC XXXX: A YANG Data Model for Performance Monitoring (PM)
-       Interval Capabilities";
+       Capabilities";
   }
 
   /*
@@ -142,7 +143,7 @@ module ietf-pm-interval-capabilities {
     }
   }
 
-  grouping parameter-interval-capabilities {
+  grouping parameter-capabilities {
     description
       "Capabilities for a single PM parameter within a profile.
        The structure nests collection intervals within their
@@ -265,7 +266,7 @@ module ietf-pm-interval-capabilities {
       description
         "List of PM parameters and their capabilities within
          this profile.";
-      uses parameter-interval-capabilities;
+      uses parameter-capabilities;
     }
   }
 
@@ -274,12 +275,12 @@ module ietf-pm-interval-capabilities {
    *
    * The capabilities are advertised by augmenting the
    * "system-capabilities" container defined in RFC 9196.  This
-   * places the PM interval capabilities at the same well-known
+   * places the PM capabilities at the same well-known
    * location at which a NETCONF/RESTCONF client discovers
    * subscription and notification capabilities
    * (ietf-notification-capabilities, RFC 9196 Section 3), so that
    * both can be retrieved in a single, standardised query.  The
-   * "pm-interval-capabilities" wrapper container cleanly separates
+   * "pm-capabilities" wrapper container cleanly separates
    * this capability group from other capabilities augmented into
    * the same anchor.  All augmented nodes inherit "config false"
    * from sysc:system-capabilities and therefore reside in the
@@ -287,12 +288,12 @@ module ietf-pm-interval-capabilities {
    */
   augment "/sysc:system-capabilities" {
     description
-      "Augments the system capabilities with PM interval
-       capabilities, advertising the sampling and collection
+      "Augments the system capabilities with PM capabilities,
+       advertising the sampling and collection
        intervals, measurement methods, and collection types that
        this server supports, organised by parameter profile and
        PM parameter.";
-    container pm-interval-capabilities {
+    container pm-capabilities {
       description
         "Read-only advertisement of the PM capabilities of this
          server, organised by parameter profile and PM

@@ -57,8 +57,36 @@ normative:
   RFC8639:
   RFC8640:
   RFC8641:
-  I-D.yoon-ippm-collection-measure:
-  I-D.yoon-ippm-collection-interval-capabilities:
+  I-D.yoon-bpm-pm-collection:
+    # Defined inline until draft-yoon-bpm-pm-collection-00 is posted;
+    # afterwards this can be reduced to the bare key.
+    title: "A YANG Data Model for Performance Monitoring (PM) Collection"
+    author:
+      -
+        name: Bin Yeong Yoon
+        org: ETRI
+      -
+        name: Youngkil You
+        org: woori-net
+    date: 2026-11
+    seriesinfo:
+      Internet-Draft: draft-yoon-bpm-pm-collection-00
+    target: https://datatracker.ietf.org/doc/html/draft-yoon-bpm-pm-collection-00
+  I-D.yoon-bpm-pm-capabilities:
+    # Defined inline until draft-yoon-bpm-pm-capabilities-00 is posted;
+    # afterwards this can be reduced to the bare key.
+    title: "A YANG Data Model for Performance Monitoring (PM) Capabilities"
+    author:
+      -
+        name: Bin Yeong Yoon
+        org: ETRI
+      -
+        name: Youngkil You
+        org: woori-net
+    date: 2026-11
+    seriesinfo:
+      Internet-Draft: draft-yoon-bpm-pm-capabilities-00
+    target: https://datatracker.ietf.org/doc/html/draft-yoon-bpm-pm-capabilities-00
   G7710:
     title: Common Equipment Management Function Requirements
     author:
@@ -78,7 +106,7 @@ informative:
 --- abstract
 
 This document applies the core Performance Monitoring (PM)
-collection and interval-capabilities YANG data models to common
+collection and capabilities YANG data models to common
 transport equipment.  It defines a YANG module of transport
 performance parameter identities, derived from the base identity of
 the PM collection model; it specifies the three transport parameter
@@ -91,7 +119,7 @@ transport profile.
 
 Please replace "RFC XXXX" with the RFC number assigned to this
 document, and "RFC YYYY" with the RFC number assigned to
-{{I-D.yoon-ippm-collection-measure}}, throughout this document and
+{{I-D.yoon-bpm-pm-collection}}, throughout this document and
 in the YANG module, and remove this note.
 
 --- middle
@@ -105,11 +133,11 @@ data is referred to in this document as PM streaming.
 
 This document depends on two core documents that define the
 technology-neutral models used here.  The
-PM collection data model {{I-D.yoon-ippm-collection-measure}} defines
+PM collection data model {{I-D.yoon-bpm-pm-collection}} defines
 the performance parameter structure, the sampling and collection
 interval hierarchy, the three collection types (counts, snapshot, and tidemarks), and the threshold-event
-notification.  The interval-capabilities model
-{{I-D.yoon-ippm-collection-interval-capabilities}} lets a server advertise
+notification.  The PM capabilities model
+{{I-D.yoon-bpm-pm-capabilities}} lets a server advertise
 which intervals, measurement methods, and collection types it
 supports.  Both models are generic and neutral to the transport
 technology.
@@ -173,16 +201,16 @@ the same way.
 The documents play distinct, layered roles:
 
 * (1) The PM collection model
-  {{I-D.yoon-ippm-collection-measure}} (module ietf-pm-collection) is
+  {{I-D.yoon-bpm-pm-collection}} (module ietf-pm-collection) is
   the generic, transport-neutral core: the performance parameter
   structure and the "performance-parameter" base identity, the
   sampling and collection interval hierarchy, the three collection
   types (counts, snapshot, and tidemarks), and
   the threshold-event notification.
 
-* (2) The PM interval-capabilities model
-  {{I-D.yoon-ippm-collection-interval-capabilities}} (module
-  ietf-pm-interval-capabilities) imports the profile-names type and
+* (2) The PM capabilities model
+  {{I-D.yoon-bpm-pm-capabilities}} (module
+  ietf-pm-capabilities) imports the profile-names type and
   the performance-parameter identity from (1) and augments the
   "ietf-system-capabilities" module of {{RFC9196}}, so that a server
   can advertise which sampling and collection intervals, measurement
@@ -201,8 +229,8 @@ This document's YANG module imports module (1) for the
 of the identities defined here, so that the parameter values
 collected under (1), and the capabilities advertised under (2), are
 interpreted using these identities.  The normative collection and
-capability semantics remain in {{I-D.yoon-ippm-collection-measure}}
-and {{I-D.yoon-ippm-collection-interval-capabilities}}; this
+capability semantics remain in {{I-D.yoon-bpm-pm-collection}}
+and {{I-D.yoon-bpm-pm-capabilities}}; this
 document adds the transport-specific parameter module (see
 {{pm-parameters}}), the normative definition of the transport
 profiles, and the applicability guidance.
@@ -212,8 +240,8 @@ profiles, and the applicability guidance.
 The generic models are implemented within the Equipment Management
 Function (EMF) of a transport NE, as defined in ITU-T G.7710
 {{G7710}}.  The PM collection model
-{{I-D.yoon-ippm-collection-measure}} provides the data structures, the
-interval-capabilities model {{I-D.yoon-ippm-collection-interval-capabilities}}
+{{I-D.yoon-bpm-pm-collection}} provides the data structures, the
+capabilities model {{I-D.yoon-bpm-pm-capabilities}}
 advertises the supported intervals, and the transport parameter
 module defined in this document (see {{pm-parameters}}) identifies
 the transport parameters that the profiles refer to.  The data is
@@ -271,7 +299,7 @@ effectively.
 The PM parameters of common transport equipment defined in
 {{G7710}} are listed below, together with the identity by which
 each is referred to in the "pm-parameter" list of
-{{I-D.yoon-ippm-collection-measure}}.  Additional parameters may be
+{{I-D.yoon-bpm-pm-collection}}.  Additional parameters may be
 needed for packet networks and can be defined in the same way by
 deriving further identities from "performance-parameter".
 
@@ -291,14 +319,14 @@ passive measurement in the sense of {{?RFC7799}}: they are derived
 from protocol counters and physical-layer signals already present on
 the monitored connection, without generating synthetic test traffic.
 When these parameters are configured through the PM collection
-model {{I-D.yoon-ippm-collection-measure}}, the optional
+model {{I-D.yoon-bpm-pm-collection}}, the optional
 "measurement-method" leaf of each "pm-parameter" is therefore set to
 "passive".
 
 According to collection types, purposes, and time intervals,
 different parameters are used.  The following three transport
 profiles, named using the profile-naming format of the PM
-collection model {{I-D.yoon-ippm-collection-measure}}, provide
+collection model {{I-D.yoon-bpm-pm-collection}}, provide
 comprehensive coverage for maintenance and QoS monitoring across
 different temporal resolutions.  The "transport" network token
 indicates that a profile applies across multiple transport
@@ -389,7 +417,7 @@ service quality commitments.
 
 The three transport profiles are defined in {{tab-profiles}}, which
 follows {{G7710}}.  Each profile is an entry of the
-"parameter-profile" list of {{I-D.yoon-ippm-collection-measure}},
+"parameter-profile" list of {{I-D.yoon-bpm-pm-collection}},
 keyed by the profile name, containing one "pm-parameter" entry for
 each listed parameter.  Each "pm-parameter" entry has a
 "sampling-interval" entry and, within it, a "collection-interval" of
@@ -412,7 +440,7 @@ configuration, in which case it is present in the operational
 datastore with origin "system" {{?RFC8342}} without client
 configuration.  A server MAY additionally support other collection
 intervals for the parameters of a profile, as advertised through
-{{I-D.yoon-ippm-collection-interval-capabilities}}; the sampling and
+{{I-D.yoon-bpm-pm-capabilities}}; the sampling and
 collection intervals in {{tab-profiles}} are the defaults of the
 transport profiles.
 
@@ -420,7 +448,7 @@ transport profiles.
 
 The following module defines the transport performance parameters
 as identities derived from "pm-co:performance-parameter" of
-{{I-D.yoon-ippm-collection-measure}}.  The module defines no data
+{{I-D.yoon-bpm-pm-collection}}.  The module defines no data
 nodes, so it has no tree diagram; its identities are summarised in
 {{tab-module}}.
 
@@ -444,7 +472,7 @@ threshold reporting.  The examples use the SES parameter
 ## Step 1: Discover Supported Intervals
 
 The client first reads the interval capabilities
-{{I-D.yoon-ippm-collection-interval-capabilities}} for the parameter, to learn
+{{I-D.yoon-bpm-pm-capabilities}} for the parameter, to learn
 which sampling and collection intervals, and which collection
 types, the transport NE supports.
 These capabilities are advertised by augmenting the
@@ -466,9 +494,9 @@ keys, so the whole entry is returned.
       <system-capabilities
           xmlns=
             "urn:ietf:params:xml:ns:yang:ietf-system-capabilities">
-        <pm-interval-capabilities
+        <pm-capabilities
             xmlns=
-          "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
+          "urn:ietf:params:xml:ns:yang:ietf-pm-capabilities"
             xmlns:pm-pa=
               "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
           <parameter-profile>
@@ -477,7 +505,7 @@ keys, so the whole entry is returned.
               <name>pm-pa:ses</name>
             </pm-parameter>
           </parameter-profile>
-        </pm-interval-capabilities>
+        </pm-capabilities>
       </system-capabilities>
     </subtree-filter>
   </get-data>
@@ -485,13 +513,13 @@ keys, so the whole entry is returned.
 ~~~~
 {:#fig-cap title="Capability discovery for a transport parameter"}
 
-{{fig-cap-reply}} shows the "pm-interval-capabilities" data returned
+{{fig-cap-reply}} shows the "pm-capabilities" data returned
 within "system-capabilities" in the reply.
 
 ~~~~ xml
-<pm-interval-capabilities
+<pm-capabilities
     xmlns=
-  "urn:ietf:params:xml:ns:yang:ietf-pm-interval-capabilities"
+  "urn:ietf:params:xml:ns:yang:ietf-pm-capabilities"
     xmlns:pm-pa=
       "urn:ietf:params:xml:ns:yang:ietf-pm-parameters">
   <parameter-profile>
@@ -522,7 +550,7 @@ within "system-capabilities" in the reply.
       </interval-relationships>
     </pm-parameter>
   </parameter-profile>
-</pm-interval-capabilities>
+</pm-capabilities>
 ~~~~
 {:#fig-cap-reply title="Capability discovery reply data for a transport parameter"}
 
@@ -703,7 +731,7 @@ to a given transport layer is expressed.  Candidates, none of which
 requires changes to the core documents, include one YANG feature per
 profile advertised in the YANG library {{RFC8525}}, the profiles
 published as YANG instance data {{?RFC9195}}, and the capability
-advertisement of {{I-D.yoon-ippm-collection-interval-capabilities}}.
+advertisement of {{I-D.yoon-bpm-pm-capabilities}}.
 
 # Security Considerations
 
@@ -712,8 +740,8 @@ it defines no data nodes, RPCs, actions, or
 notifications, and therefore introduces no new data that could be
 read, written, or delivered through network management protocols.
 The identities defined here are used as values of the "pm-parameter"
-name leaf of {{I-D.yoon-ippm-collection-measure}} and of
-{{I-D.yoon-ippm-collection-interval-capabilities}}; the security
+name leaf of {{I-D.yoon-bpm-pm-collection}} and of
+{{I-D.yoon-bpm-pm-capabilities}}; the security
 considerations of those documents apply to the data nodes in which
 these identities appear.  Those data nodes are designed to be
 accessed via NETCONF {{RFC6241}} or RESTCONF over a secure transport
